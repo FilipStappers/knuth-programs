@@ -1054,7 +1054,7 @@ if (cachepages<maxcachepages) {
 done:@;
 
 @ @<Recache the items in the bottom half@>=
-for (k=cachepages>>1;k<cachepages;k++) {
+for (k=0;k<(cachepages>>1);k++) {
   for (o,m=memo_(cachepage[k]);m<memo_(cachepage[k])+cacheslotsperpage;m++)
     if (o,m->r) {
       if (m->h) oo;@+else o; /* mems for computing |cachehash| */
@@ -1918,7 +1918,7 @@ if (vf!=vg) {
   if (!r0) return NULL;
   r1=coprod_rec(node_(f->hi),node_(g->hi));
   if (!r1) {
-    deref(r1);@+return NULL;
+    deref(r0);@+return NULL;
   }
   r=unique_find(v,r0,r1);
 }
@@ -2104,7 +2104,9 @@ if (!r) return NULL;
 if (r!=botsink && node_(g->lo)!=botsink) {
   r1=r;
   f0=ezrem_rec(f,vg);
-  if (!f0) return NULL;
+  if (!f0) {
+    deref(r1);@+return NULL;
+  }
   r0=quot_rec(f0,node_(g->lo));
   deref(f0);
   if (!r0) {
