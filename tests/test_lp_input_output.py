@@ -59,6 +59,24 @@ class LpInputOutput(unittest.TestCase):
                                  '-fsyntax-only', str(self.generated)], capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr.decode())
 
+    def test_negative_constraint_constants_reject(self):
+        for text in ['1\n-1 1\n', '0\n-1 1\n', '3\n-5 2\n']:
+            with self.subTest(text=text):
+                result = self.solve(text)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b'constant', result.stderr)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'Optimal value', result.stdout)
+
+    def test_full_advertised_tableau_dimensions(self):
+        text = ' '.join(['1']*100)+'\n'
+        text += ''.join(str(c)+' '+' '.join(['1']*100)+'\n' for c in range(1, 11))
+        result = self.solve(text)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        self.assertIn(b'=1/1 found', result.stdout)
+        self.assertNotIn(b'runtime error', result.stderr)
+        self.assertNotIn(b'AddressSanitizer', result.stderr)
+
 
 if __name__ == '__main__':
     unittest.main()

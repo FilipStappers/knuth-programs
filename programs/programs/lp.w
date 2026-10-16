@@ -140,7 +140,7 @@ for (i=n=0;;i++) {
       fprintf(stderr,"Row %ld should have %ld numbers!\n>%s",i,n+1,buf);
       exit(-3);
     }
-    if (a[i][j]<0) {
+    if (a[i][0]<0) {
       fprintf(stderr,"Row %ld's constant term shouldn't be negative!\n>%s",
         i,buf);
       exit(-4);
@@ -400,8 +400,8 @@ for (i=0;i<=m;i++) {
   for (j=m;j>0;j--) a[i][j]=(i==j);
   p[i]=q[i]=i;
 }
-for (j=m+n+1;j>=0;j--) denom[j]=1;
-for (i=0;i<=m;i++) for (j=m+n+1;j>=0;j--) aa[i][j]=a[i][j];
+for (j=m+n;j>=0;j--) denom[j]=1;
+for (i=0;i<=m;i++) for (j=m+n;j>=0;j--) aa[i][j]=a[i][j];
 
 @ At this point we have reached a tableau with a negative entry in row~0
 and column~$(w_j)$. Two cases arise: The corresponding column might
