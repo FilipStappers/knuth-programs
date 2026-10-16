@@ -47,6 +47,7 @@ int
 main(int argc,char *argv[]) {
   register int j,k,r,minv;
   for (r=0;r<bdds;r++) {
+    int terminal=0;
     mem[r]=(node*)malloc(memsize*sizeof(node));
     if (!mem[r]) {
       printf("Sorry, I can't allocate mem[%d]!\n",r);
@@ -59,6 +60,18 @@ main(int argc,char *argv[]) {
     }
     for (k=0,minv=varsize;;) {
       if (!fgets(buf,bufsize,infile)) break;
+      if ((buf[0]=='0' || buf[0]=='1') && (buf[1]=='\n' || buf[1]==0)) {
+        if (k || terminal) {
+          fprintf(stderr,"A terminal export must be the only record!\n");
+          exit(-69);
+        }
+        root[r]=buf[0]-'0',terminal=1;
+        continue;
+      }
+      if (terminal) {
+        fprintf(stderr,"A terminal export must be the only record!\n");
+        exit(-69);
+      }
       j=sscanf(buf,"%x: (~%u?%x:%x)\n",&i1,&i2,&i3,&i4);
       if (j!=4)
         printf("! I got only %d inputs from the line %s",j,buf);

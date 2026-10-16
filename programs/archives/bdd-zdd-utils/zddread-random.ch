@@ -108,7 +108,11 @@ void triply_longlong_unif_rand(void) {
 
 @ @<Do our thing@>=
 count[2][1]=1, mem[0][1].mark=1, mem[0][1].v=varsize;
-countsols(root[0]);
+if (root[0]==0) {
+  fprintf(stderr,"No solutions to sample.\n");
+  exit(-1);
+}
+if (root[0]>1) countsols(root[0]);
 for (r=0;r<sols;r++) {
   for (k=root[0];k>1;) {
     j=mem[0][k].lo;

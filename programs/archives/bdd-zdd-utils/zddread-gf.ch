@@ -129,7 +129,8 @@ if (c==0) {
 @ @<Do our thing@>=
 gf[1]=dlong1, gfx(2)=-1, gfptr=2;
 mem[0][1].mark=1, mem[0][1].v=varsize;
-findgf(root[0]);
+if (root[0]==0) gf[1]=dlong0,mem[0][0].mark=1;
+else if (root[0]>1) findgf(root[0]);
 printf("The generating function coefficients are");
 for (k=mem[0][root[0]].mark;gfx(k)>=0;k++) {
   printf(" ");

@@ -40,7 +40,7 @@ void countsols(int p) {
 
 @ @<Do our thing@>=
 count[1]=1, mem[0][1].mark=1, mem[0][1].v=varsize;
-countsols(root[0]);
+if (root[0]>1) countsols(root[0]);
 if ((count[root[0]]+1.0e0)-count[root[0]] == 1.0e0)
   printf("%.0f solutions.\n",count[root[0]]);
 else

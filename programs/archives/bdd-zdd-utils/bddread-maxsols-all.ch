@@ -75,7 +75,9 @@ void printpaths(int p) {
 
 @ @<Do our thing@>=
 mem[0][1].mark=1, mem[0][1].v=varsize;
-prep(root[0]);
-fprintf(stderr,"Maximal solutions have length %d.\n",mem[0][root[0]].mark-1);
-printpaths(root[0]);
+if (root[0]) {
+  if (root[0]>1) prep(root[0]);
+  fprintf(stderr,"Maximal solutions have length %d.\n",mem[0][root[0]].mark-1);
+  printpaths(root[0]);
+}@+else fprintf(stderr,"No solutions.\n");
 @z

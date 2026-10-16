@@ -65,7 +65,7 @@ void countsols(int p) {
 
 @ @<Do our thing@>=
 count[1]=dlong1, mem[0][1].mark=1, mem[0][1].v=varsize;
-countsols(root[0]);
+if (root[0]>1) countsols(root[0]);
 print_dlong(stdout,count[root[0]]);
 printf(" solutions.\n");
 @z

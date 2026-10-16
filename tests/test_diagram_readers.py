@@ -39,8 +39,13 @@ class DiagramReaders(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory()
         cls.work = Path(cls.temp.name)
         cls.programs = {}
+        cls.terminal_programs = {}
         cls.generated = {}
-        for name in ['zddread-count', 'zddread-gf', 'bddread-gf', 'bddread-count']:
+        for change_path in sorted(SOURCES.glob('*read*.ch')):
+            name = change_path.stem
+            sgb = os.environ.get('GRAPHBASE')
+            if name == 'zddread-random' and not sgb:
+                continue
             base = name.split('-')[0]
             literate = cls.work/(base+'.w')
             # Each fixture fits these reduced capacities. No arithmetic changes.
@@ -54,10 +59,15 @@ class DiagramReaders(unittest.TestCase):
                            check=True, capture_output=True)
             program = cls.work/name
             subprocess.run(['gcc', '-std=gnu99', '-O1', '-fsanitize=undefined,bounds',
-                            '-fno-sanitize-recover=all', str(generated), '-o', str(program)],
+                            '-fno-sanitize-recover=all', *(['-I'+sgb] if sgb else []),
+                            str(generated),
+                            *([str(Path(sgb)/'gb_flip.c')] if name == 'zddread-random' else []),
+                            '-o', str(program)],
                            check=True, capture_output=True)
-            cls.programs[name] = program
-            cls.generated[name] = generated
+            cls.terminal_programs[name] = program
+            if name in ['zddread-count', 'zddread-gf', 'bddread-gf', 'bddread-count']:
+                cls.programs[name] = program
+                cls.generated[name] = generated
 
     @classmethod
     def tearDownClass(cls):
@@ -206,6 +216,59 @@ static void *dirty_malloc(size_t n) {
                         low, high = min(counts), max(counts)
                         coefficients = ' '.join(str(counts[k]) for k in range(low, high+1))
                         self.assertIn(f'coefficients are {coefficients} (* z^{low}..z^{high})', output)
+
+    def test_terminal_exports_have_exact_empty_support_counts_and_polynomials(self):
+        path = self.work/'terminal.diagram'
+        for terminal in [0, 1]:
+            for ending in ['\n', '']:
+                path.write_text(str(terminal)+ending)
+                for name in self.programs:
+                    with self.subTest(terminal=terminal, ending=ending, reader=name):
+                        output = self.run_reader(name, path)
+                        if name.endswith('count'):
+                            self.assertEqual(output.strip(), f'{terminal} solutions.')
+                        else:
+                            self.assertIn(f'coefficients are {terminal} (* z^0..z^0)', output)
+
+    def test_terminal_exports_in_evaluation_enumeration_and_selection(self):
+        path = self.work/'terminal-selection.diagram'
+        for terminal in [0, 1]:
+            path.write_text(str(terminal)+'\n')
+            for name, program in self.terminal_programs.items():
+                if name in self.programs:
+                    continue
+                options = [''] if name.endswith('eval') else ['3', '0'] if name.endswith('random') else []
+                result = subprocess.run([str(program), str(path), *options], capture_output=True, timeout=5)
+                with self.subTest(terminal=terminal, reader=name):
+                    if name.endswith('random') and terminal == 0:
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertIn(b'No solutions', result.stderr)
+                        self.assertEqual(result.stdout, b'')
+                        continue
+                    self.assertEqual(result.returncode, 0, result.stderr.decode())
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    if name.endswith('eval'):
+                        self.assertEqual(result.stdout, f'Value is {terminal}.\n'.encode())
+                    elif name.endswith('maxsols-all'):
+                        self.assertEqual(result.stdout, (b'\n' if terminal else b''))
+                    elif name.endswith('sols-all'):
+                        self.assertEqual(result.stdout, (b'0:\n' if terminal else b''))
+                    elif name.endswith('minsols-short'):
+                        self.assertEqual(result.stdout, (b' (length 0)\n' if terminal else b''))
+                    elif name.endswith('random'):
+                        # The singleton empty set requires no random draw.
+                        self.assertEqual(result.stdout, b'\n'*3)
+
+    def test_terminal_records_cannot_be_mixed_with_branch_records(self):
+        path = self.work/'mixed.diagram'
+        for data in ['1\n0\n', '1\n2: (~0?0:1)\n', '2: (~0?0:1)\n1\n']:
+            path.write_text(data)
+            for name in self.programs:
+                result = subprocess.run([str(self.programs[name]), str(path)],
+                                        capture_output=True, timeout=5)
+                with self.subTest(data=data, reader=name):
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn(b'runtime error', result.stderr)
 
 
 if __name__ == '__main__':
