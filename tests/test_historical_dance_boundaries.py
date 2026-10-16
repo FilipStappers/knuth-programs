@@ -62,6 +62,17 @@ class HistoricalDanceBoundaries(unittest.TestCase):
                     self.assertEqual(int(re.search(rb'Altogether (\d+) solutions', result.stdout)[1]),
                                      expected)
 
+    def test_terminal_profile_at_original_maximum_solution_depth(self):
+        for name, n in [('dance', 150), ('gdance', 1000)]:
+            with self.subTest(program=name, depth=n):
+                items = [f'P{i}' for i in range(n)]
+                matrix = (' '.join(items)+'\n'+'\n'.join(items)+'\n').encode()
+                result = self.run_matrix(name, matrix, ['1'])
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                self.assertIn(b'Altogether 1 solutions', result.stdout)
+                # The profile includes the terminal node after all n choices.
+                self.assertNotIn(b'runtime error', result.stderr)
+
 
 if __name__ == '__main__':
     unittest.main()

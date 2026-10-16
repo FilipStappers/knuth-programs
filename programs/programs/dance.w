@@ -54,7 +54,7 @@ int verbose; /* $>0$ to show solutions, $>1$ to show partial ones too */
 long long count=0; /* number of solutions found so far */
 double updates; /* number of times we deleted a list element */
 int spacing=1; /* if |verbose|, we output solutions when |count%spacing==0| */
-double profile[max_level][max_degree]; /* tree nodes of given level and degree */
+double profile[max_level+1][max_degree]; /* includes the terminal level */
 double upd_prof[max_level]; /* updates at a given level */
 int maxb=0; /* maximum branching factor actually needed */
 int maxl=0; /* maximum level actually reached */

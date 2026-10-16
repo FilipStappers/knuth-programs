@@ -68,7 +68,7 @@ unsigned long long count; /* number of solutions found so far */
 unsigned long long updates; /* number of times we deleted a list element */
 unsigned long long purifs; /* number of times we purified a list element */
 int spacing=1; /* if |verbose|, we output solutions when |count%spacing==0| */
-unsigned long long profile[max_level][max_degree]; /* tree nodes of given level and degree */
+unsigned long long profile[max_level+1][max_degree]; /* includes the terminal level */
 unsigned long long upd_prof[max_level]; /* updates at a given level */
 unsigned long long pur_prof[max_level]; /* purifications at a given level */
 int maxb=0; /* maximum branching factor actually needed */

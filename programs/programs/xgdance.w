@@ -77,7 +77,7 @@ int count=0; /* number of solutions found so far */
 unsigned int updates; /* number of times we deleted a list element */
 unsigned int purifs; /* number of times we purified a list element */
 int spacing=1; /* if |verbose|, we output solutions when |count%spacing==0| */
-int profile[max_level][max_degree]; /* tree nodes of given level and degree */
+int profile[max_level+1][max_degree]; /* includes the terminal level */
 unsigned int upd_prof[max_level]; /* updates at a given level */
 unsigned int pur_prof[max_level]; /* purifications at a given level */
 int maxb=0; /* maximum branching factor actually needed */
