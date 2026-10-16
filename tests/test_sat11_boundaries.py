@@ -110,6 +110,25 @@ class Sat11Boundaries(unittest.TestCase):
             with self.subTest(mask=mask):
                 self.check_formula(data, 'k')
 
+    def test_arc_capacity_one_is_rejected_before_rounding_to_zero(self):
+        for variant in ['base', 'k']:
+            result = subprocess.run([str(self.compile_variant(variant)), 'v0', 'm18', 'z1'],
+                                    input=b'a b\n~a c\n', capture_output=True, timeout=5,
+                                    env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
+            with self.subTest(variant=variant):
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b'Usage:', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertEqual(result.stdout, b'')
+
+    def test_small_valid_even_and_odd_arc_capacities(self):
+        data = b'a b\n~a c\n~b c\n~c a\n'
+        for variant in ['base', 'k']:
+            for capacity in [2, 3, 4, 5]:
+                with self.subTest(variant=variant, capacity=capacity):
+                    self.check_formula(data, variant, [f'z{capacity}'])
+
 
 if __name__ == '__main__':
     unittest.main()

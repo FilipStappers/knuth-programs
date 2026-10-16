@@ -76,7 +76,7 @@ case 't': k|=(sscanf(argv[j]+1,""O"d",&theta64)-1);@+break;
 @x
 if (k || hbits<0 || hbits>30 || buf_size<=0 || memk_max<2 || memk_max>31 ||
        alpha<=0.0 || max_score<=0.0 || hlevel_max<3 || levelcand<=0 ||
-       mincutoff<=0 || max_prelook_arcs<=0 || dl_max_iter<=0) {
+       mincutoff<=0 || max_prelook_arcs<2 || dl_max_iter<=0) {
   fprintf(stderr,
      "Usage: "O"s [v<n>] [c<n>] [h<n>] [b<n>] [s<n>] [d<n>] [m<n>]",argv[0]);
   fprintf(stderr," [H<n>] [a<f>] [t<f>] [l<n>] [p<n>] [q<n>] [z<n>]");
@@ -84,7 +84,7 @@ if (k || hbits<0 || hbits>30 || buf_size<=0 || memk_max<2 || memk_max>31 ||
 @y
 if (k || hbits<0 || hbits>30 || buf_size<=0 || memk_max<2 || memk_max>31 ||
        alpha<=0.0 || gamm<=0 || theta64<0 || levelcand<=0 ||
-       mincutoff<=0 || max_prelook_arcs<=0 || dl_max_iter<=0) {
+       mincutoff<=0 || max_prelook_arcs<2 || dl_max_iter<=0) {
   fprintf(stderr,
      "Usage: "O"s [v<n>] [c<n>] [h<n>] [b<n>] [s<n>] [d<n>] [m<n>] ",argv[0]);
   fprintf(stderr," [H<n>] [g<f>] [a<f>] [t<n>] [p<n>] [q<n] [z<n>]");
