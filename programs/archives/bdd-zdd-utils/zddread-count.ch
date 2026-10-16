@@ -29,7 +29,7 @@ $10^{36}$.
 dlong dadd(dlong x,dlong y) {
   dlong z;
   z.c1=x.c1+y.c1;
-  if (z.c1>ten_to_18th) z.c1-=ten_to_18th, z.c2=x.c2+y.c2+1;
+  if (z.c1>=ten_to_18th) z.c1-=ten_to_18th, z.c2=x.c2+y.c2+1;
   else z.c2=x.c2+y.c2;
   if (z.c2>ten_to_18th) {
     fprintf(stderr,"Possible integer overflow!\n");
