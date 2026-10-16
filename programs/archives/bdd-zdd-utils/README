@@ -1,0 +1,82 @@
+This folder contains a suite of utility programs that exploit the output
+of Donald Knuth's "bare bones" BDD package (bdd14) and ZDD package (bdd15).
+It was prepared by Ed Wynn (e.j.w.wynn@gmail.com) in 2023, using
+programs that Knuth had been using privately.
+
+Like bdd14.w and bdd15.w, all programs are written in CWEB. The two
+major ones, bddread.w and zddread.w, are actually identical (and could
+be linked together with UNIX's "ln" command). Furthermore, they have
+the strange property that they don't actually do anything! They are
+only templates to be used with CWEB changefiles; the changefiles 
+themselves tell the computer how to accomplish what we really want.
+
+For example, to create the program "bddread-count", you can use
+the command line
+  ctangle bddread bddread-count ; make bddread-count
+and a similar recipe works for all twelve of the programs discussed below.
+
+Input to bdd14 is given in a file such as this:
+
+easy.zddl:
+  f1=x1|x2
+  o1
+  q
+
+The first line says that funcion f1 is "x1 or x2", where x1 and x2 are Boolean
+variables. The second line causes the BDD for f1 to be written to the
+/tmp directory, as file "/tmp/f1.bdd". The third line quits.
+
+(The command line "bdd14 < easy.zddl" will create the desired output
+for this simple example.)
+
+To find out the number of combinations of the free variables that
+make f1 true, you can say
+  bddread-count /tmp/f1.bdd
+and you will be told that there are "Altogether 3 solutions".
+
+To find out what those solutions are, you can say
+  bddread-sols-all /tmp/f1.bdd
+and you will be told this:
+  There are 2 variables.
+  0: 2
+  1: 1
+  2: 1 2
+
+To find out the generating function, which counts solutions by the
+number of variables that are true, you can say
+  bddread-gf /tmp/f1.bdd
+and voila:
+  The generating function coefficients are 2 1 (* z^1..z^2).
+
+To evaluate that Boolean function when x1=1 and x2=0, you can say
+  bddread-eval /tmp/f1.bdd 10
+and it says "Value is 1." Amazing.
+
+---------------------------
+
+There are five sample change files for bddread, and five sample change
+files for zddread:
+  bddread-count.ch
+  bddread-eval.ch
+  bddread-gv.ch
+  bddread-maxsols-all.ch
+  bddread-sols-all.ch
+  zddread-count.ch
+  zddread-gf.ch
+  zddread-minsols-short.ch
+  zddread-random.ch
+  zddread-sols-all.ch
+and you can design your own once you've psyched these out.
+
+Four files are provided to use for sample inputs:
+  P3P3_connectivity.bdd
+  P3P3_connectivity.zdd
+  binomial-bdd.w
+  binomial-zdd.w
+
+This directory also contains copies of a few other files, for convenience:
+  bdd14.w
+  bdd15.w
+  boilerplate.w
+  cwebmac.tex
+  gb_flip.w

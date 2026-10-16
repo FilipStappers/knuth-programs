@@ -1,0 +1,1103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE keyboard SYSTEM "file://localhost/System/Library/DTDs/KeyboardLayout.dtd">
+<!-- a simple generic English keyboard, but with + swapped with =, and () swapped with [] -->
+<!-- I thought a "Roman" keyboard was supposed to produce 8-bit Apple Roman encoding, not Unicode -->
+<!-- but actually Mac OS converts Unicode into its old Mac Roman font, as explained in
+  the document www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/ROMAN.TXT -->
+<keyboard group = "0" id="2009" name="DonKeys">
+	<layouts>
+		<layout first="0" last="0" modifiers="commonModifiers" mapSet="ANSI" />
+	</layouts>
+	<modifierMap id="commonModifiers" defaultIndex="0">
+		<keyMapSelect mapIndex="0">
+			<modifier keys="command?" />
+			<modifier keys="anyShift? command caps?" />
+		</keyMapSelect>
+		<keyMapSelect mapIndex="1">
+			<modifier keys="anyShift caps?" />
+		</keyMapSelect>
+		<keyMapSelect mapIndex="2">
+			<modifier keys="caps" />
+		</keyMapSelect>
+		<keyMapSelect mapIndex="3">
+			<modifier keys="anyOption" />
+		</keyMapSelect>
+		<keyMapSelect mapIndex="4">
+			<modifier keys="anyShift anyOption command? caps?" />
+		</keyMapSelect>
+		<keyMapSelect mapIndex="5">
+			<modifier keys="anyOption caps" />
+		</keyMapSelect>
+		<keyMapSelect mapIndex="6">
+			<modifier keys="anyOption command caps?" />
+		</keyMapSelect>
+		<keyMapSelect mapIndex="7">
+			<modifier keys="anyShift? anyOption? anyControl caps?" />
+			<modifier keys="anyShift? anyOption? anyControl command?" />
+			<modifier keys="anyShift anyOption rightControl command caps" />
+			<modifier keys="anyShift rightOption? anyControl command caps" />
+			<modifier keys="rightShift? anyOption anyControl command caps" />
+			<modifier keys="anyShift anyOption control command caps" />
+			<modifier keys="anyShift option? anyControl command caps" />
+			<modifier keys="shift? anyOption anyControl command caps" />
+			<modifier keys="anyOption? anyControl command? caps?" />
+		</keyMapSelect>
+	</modifierMap>
+	<keyMapSet id="ANSI">
+		<keyMap index="0"><!-- No modifiers -->
+			<key code="0" action="a" />
+			<key code="1" output="s" />
+			<key code="2" output="d" />
+			<key code="3" output="f" />
+			<key code="4" output="h" />
+			<key code="5" output="g" />
+			<key code="6" output="z" />
+			<key code="7" output="x" />
+			<key code="8" output="c" />
+			<key code="9" output="v" />
+			<!-- gap, 10 -->
+			<key code="11" output="b" />
+			<key code="12" output="q" />
+			<key code="13" output="w" />
+			<key code="14" action="e" />
+			<key code="15" output="r" />
+			<key code="16" action="y" />
+			<key code="17" output="t" />
+			<key code="18" output="1" />
+			<key code="19" output="2" />
+			<key code="20" output="3" />
+			<key code="21" output="4" />
+			<key code="22" output="6" />
+			<key code="23" output="5" />
+			<key code="24" output="+" />
+			<key code="25" output="9" />
+			<key code="26" output="7" />
+			<key code="27" output="-" />
+			<key code="28" output="8" />
+			<key code="29" output="0" />
+			<key code="30" output=")" />
+			<key code="31" action="o" />
+			<key code="32" action="u" />
+			<key code="33" output="(" />
+			<key code="34" action="i" />
+			<key code="35" output="p" />
+			<key code="36" output="&#x000d;" />
+			<key code="37" output="l" />
+			<key code="38" output="j" />
+			<key code="39" output="'" />
+			<key code="40" output="k" />
+			<key code="41" output=";" />
+			<key code="42" output="\" />
+			<key code="43" output="," />
+			<key code="44" output="/" />
+			<key code="45" action="n" />
+			<key code="46" output="m" />
+			<key code="47" output="." />
+			<key code="48" output="&#x0009;" />
+			<key code="49" action=" " />
+			<key code="50" output="`" />
+			<key code="51" output="&#x0008;" />
+			<key code="52" output="&#x0003;" />
+			<key code="53" output="&#x001b;" />
+			<!-- gap, 54 through 64 -->
+			<key code="65" output="." />
+			<key code="66" output="&#x001d;" />
+			<key code="67" output="*" />
+			<!-- gap, 68 -->
+			<key code="69" output="+" />
+			<key code="70" output="&#x001c;" />
+			<key code="71" output="&#x001b;" />
+			<key code="72" output="&#x001f;" />
+			<!-- gap, 73 through 74 -->
+			<key code="75" output="/" />
+			<key code="76" output="&#x0003;" />
+			<key code="77" output="&#x001e;" />
+			<key code="78" output="-" />
+			<!-- gap, 79 through 80 -->
+			<key code="81" output="=" />
+			<key code="82" output="0" />
+			<key code="83" output="1" />
+			<key code="84" output="2" />
+			<key code="85" output="3" />
+			<key code="86" output="4" />
+			<key code="87" output="5" />
+			<key code="88" output="6" />
+			<key code="89" output="7" />
+			<!-- gap, 90 -->
+			<key code="91" output="8" />
+			<key code="92" output="9" />
+			<!-- gap, 93 through 95 -->
+			<key code="96" output="&#x0010;" />
+			<key code="97" output="&#x0010;" />
+			<key code="98" output="&#x0010;" />
+			<key code="99" output="&#x0010;" />
+			<key code="100" output="&#x0010;" />
+			<key code="101" output="&#x0010;" />
+			<key code="102" output="&#x0010;" />
+			<key code="103" output="&#x0010;" />
+			<key code="104" output="&#x0010;" />
+			<key code="105" output="&#x0010;" />
+			<key code="106" output="&#x0010;" />
+			<key code="107" output="&#x0010;" />
+			<key code="108" output="&#x0010;" />
+			<key code="109" output="&#x0010;" />
+			<key code="110" output="&#x0010;" />
+			<key code="111" output="&#x0010;" />
+			<key code="112" output="&#x0010;" />
+			<key code="113" output="&#x0010;" />
+			<key code="114" output="&#x0005;" />
+			<key code="115" output="&#x0001;" />
+			<key code="116" output="&#x000b;" />
+			<key code="117" output="&#x007f;" />
+			<key code="118" output="&#x0010;" />
+			<key code="119" output="&#x0004;" />
+			<key code="120" output="&#x0010;" />
+			<key code="121" output="&#x000c;" />
+			<key code="122" output="&#x0010;" />
+			<key code="123" output="&#x001c;" />
+			<key code="124" output="&#x001d;" />
+			<key code="125" output="&#x001f;" />
+			<key code="126" output="&#x001e;" />
+			<!-- gap, 127 -->
+		</keyMap>
+		<keyMap index="1"><!-- shift -->
+			<key code="0" action="A" />
+			<key code="1" output="S" />
+			<key code="2" output="D" />
+			<key code="3" output="F" />
+			<key code="4" output="H" />
+			<key code="5" output="G" />
+			<key code="6" output="Z" />
+			<key code="7" output="X" />
+			<key code="8" output="C" />
+			<key code="9" output="V" />
+			<!-- gap, 10 -->
+			<key code="11" output="B" />
+			<key code="12" output="Q" />
+			<key code="13" output="W" />
+			<key code="14" action="E" />
+			<key code="15" output="R" />
+			<key code="16" action="Y" />
+			<key code="17" output="T" />
+			<key code="18" output="!" />
+			<key code="19" output="@" />
+			<key code="20" output="#" />
+			<key code="21" output="$" />
+			<key code="22" output="^" />
+			<key code="23" output="%" />
+			<key code="24" output="=" />
+			<key code="25" output="[" />
+			<key code="26" output="&#x0026;" />
+			<key code="27" output="_" />
+			<key code="28" output="*" />
+			<key code="29" output="]" />
+			<key code="30" output="}" />
+			<key code="31" action="O" />
+			<key code="32" action="U" />
+			<key code="33" output="{" />
+			<key code="34" action="I" />
+			<key code="35" output="P" />
+			<key code="36" output="&#x000d;" />
+			<key code="37" output="L" />
+			<key code="38" output="J" />
+			<key code="39" output="&#x0022;" />
+			<key code="40" output="K" />
+			<key code="41" output=":" />
+			<key code="42" output="|" />
+			<key code="43" output="&#x003c;" />
+			<key code="44" output="?" />
+			<key code="45" action="N" />
+			<key code="46" output="M" />
+			<key code="47" output="&#x003e;" />
+			<key code="48" output="&#x0009;" />
+			<key code="49" action=" " />
+			<key code="50" output="~" />
+			<key code="51" output="&#x0008;" />
+			<key code="52" output="&#x0003;" />
+			<key code="53" output="&#x001b;" />
+			<!-- gap, 54 through 64 -->
+			<key code="65" output="." />
+			<key code="66" output="&#x001d;" />
+			<key code="67" output="*" />
+			<!-- gap, 68 -->
+			<key code="69" output="+" />
+			<key code="70" output="&#x001c;" />
+			<key code="71" output="&#x001b;" />
+			<key code="72" output="&#x001f;" />
+			<!-- gap, 73 through 74 -->
+			<key code="75" output="/" />
+			<key code="76" output="&#x0003;" />
+			<key code="77" output="&#x001e;" />
+			<key code="78" output="-" />
+			<!-- gap, 79 through 80 -->
+			<key code="81" output="=" />
+			<key code="82" output="0" />
+			<key code="83" output="1" />
+			<key code="84" output="2" />
+			<key code="85" output="3" />
+			<key code="86" output="4" />
+			<key code="87" output="5" />
+			<key code="88" output="6" />
+			<key code="89" output="7" />
+			<!-- gap, 90 -->
+			<key code="91" output="8" />
+			<key code="92" output="9" />
+			<!-- gap, 93 through 95 -->
+			<key code="96" output="&#x0010;" />
+			<key code="97" output="&#x0010;" />
+			<key code="98" output="&#x0010;" />
+			<key code="99" output="&#x0010;" />
+			<key code="100" output="&#x0010;" />
+			<key code="101" output="&#x0010;" />
+			<key code="102" output="&#x0010;" />
+			<key code="103" output="&#x0010;" />
+			<key code="104" output="&#x0010;" />
+			<key code="105" output="&#x0010;" />
+			<key code="106" output="&#x0010;" />
+			<key code="107" output="&#x0010;" />
+			<key code="108" output="&#x0010;" />
+			<key code="109" output="&#x0010;" />
+			<key code="110" output="&#x0010;" />
+			<key code="111" output="&#x0010;" />
+			<key code="112" output="&#x0010;" />
+			<key code="113" output="&#x0010;" />
+			<key code="114" output="&#x0005;" />
+			<key code="115" output="&#x0001;" />
+			<key code="116" output="&#x000b;" />
+			<key code="117" output="&#x007f;" />
+			<key code="118" output="&#x0010;" />
+			<key code="119" output="&#x0004;" />
+			<key code="120" output="&#x0010;" />
+			<key code="121" output="&#x000c;" />
+			<key code="122" output="&#x0010;" />
+			<key code="123" output="&#x001c;" />
+			<key code="124" output="&#x001d;" />
+			<key code="125" output="&#x001f;" />
+			<key code="126" output="&#x001e;" />
+			<!-- gap, 127 -->
+		</keyMap>
+		<keyMap index="2"><!-- caps lock -->
+			<key code="0" action="A" />
+			<key code="1" output="S" />
+			<key code="2" output="D" />
+			<key code="3" output="F" />
+			<key code="4" output="H" />
+			<key code="5" output="G" />
+			<key code="6" output="Z" />
+			<key code="7" output="X" />
+			<key code="8" output="C" />
+			<key code="9" output="V" />
+			<!-- gap, 10 -->
+			<key code="11" output="B" />
+			<key code="12" output="Q" />
+			<key code="13" output="W" />
+			<key code="14" action="E" />
+			<key code="15" output="R" />
+			<key code="16" action="Y" />
+			<key code="17" output="T" />
+			<key code="18" output="1" />
+			<key code="19" output="2" />
+			<key code="20" output="3" />
+			<key code="21" output="4" />
+			<key code="22" output="6" />
+			<key code="23" output="5" />
+			<key code="24" output="+" />
+			<key code="25" output="9" />
+			<key code="26" output="7" />
+			<key code="27" output="-" />
+			<key code="28" output="8" />
+			<key code="29" output="0" />
+			<key code="30" output=")" />
+			<key code="31" action="O" />
+			<key code="32" action="U" />
+			<key code="33" output="(" />
+			<key code="34" action="I" />
+			<key code="35" output="P" />
+			<key code="36" output="&#x000d;" />
+			<key code="37" output="L" />
+			<key code="38" output="J" />
+			<key code="39" output="'" />
+			<key code="40" output="K" />
+			<key code="41" output=";" />
+			<key code="42" output="\" />
+			<key code="43" output="," />
+			<key code="44" output="/" />
+			<key code="45" action="N" />
+			<key code="46" output="M" />
+			<key code="47" output="." />
+			<key code="48" output="&#x0009;" />
+			<key code="49" action=" " />
+			<key code="50" output="`" />
+			<key code="51" output="&#x0008;" />
+			<key code="52" output="&#x0003;" />
+			<key code="53" output="&#x001b;" />
+			<!-- gap, 54 through 64 -->
+			<key code="65" output="." />
+			<key code="66" output="&#x001d;" />
+			<key code="67" output="*" />
+			<!-- gap, 68 -->
+			<key code="69" output="+" />
+			<key code="70" output="&#x001c;" />
+			<key code="71" output="&#x001b;" />
+			<key code="72" output="&#x001f;" />
+			<!-- gap, 73 through 74 -->
+			<key code="75" output="/" />
+			<key code="76" output="&#x0003;" />
+			<key code="77" output="&#x001e;" />
+			<key code="78" output="-" />
+			<!-- gap, 79 through 80 -->
+			<key code="81" output="=" />
+			<key code="82" output="0" />
+			<key code="83" output="1" />
+			<key code="84" output="2" />
+			<key code="85" output="3" />
+			<key code="86" output="4" />
+			<key code="87" output="5" />
+			<key code="88" output="6" />
+			<key code="89" output="7" />
+			<!-- gap, 90 -->
+			<key code="91" output="8" />
+			<key code="92" output="9" />
+			<!-- gap, 93 through 95 -->
+			<key code="96" output="&#x0010;" />
+			<key code="97" output="&#x0010;" />
+			<key code="98" output="&#x0010;" />
+			<key code="99" output="&#x0010;" />
+			<key code="100" output="&#x0010;" />
+			<key code="101" output="&#x0010;" />
+			<key code="102" output="&#x0010;" />
+			<key code="103" output="&#x0010;" />
+			<key code="104" output="&#x0010;" />
+			<key code="105" output="&#x0010;" />
+			<key code="106" output="&#x0010;" />
+			<key code="107" output="&#x0010;" />
+			<key code="108" output="&#x0010;" />
+			<key code="109" output="&#x0010;" />
+			<key code="110" output="&#x0010;" />
+			<key code="111" output="&#x0010;" />
+			<key code="112" output="&#x0010;" />
+			<key code="113" output="&#x0010;" />
+			<key code="114" output="&#x0005;" />
+			<key code="115" output="&#x0001;" />
+			<key code="116" output="&#x000b;" />
+			<key code="117" output="&#x007f;" />
+			<key code="118" output="&#x0010;" />
+			<key code="119" output="&#x0004;" />
+			<key code="120" output="&#x0010;" />
+			<key code="121" output="&#x000c;" />
+			<key code="122" output="&#x0010;" />
+			<key code="123" output="&#x001c;" />
+			<key code="124" output="&#x001d;" />
+			<key code="125" output="&#x001f;" />
+			<key code="126" output="&#x001e;" />
+			<!-- gap, 127 -->
+		</keyMap>
+		<keyMap index="3">	<!-- option -->
+			<key code="0" output="&#x00e5;" /><!-- \aa -->
+			<key code="1" output="&#x00df;" /><!-- \ss -->
+			<key code="2" output="&#x2202;" /><!-- \partial -->
+			<key code="3" output="&#x0192;" /><!-- \it f -->
+			<key code="4" output="&#x02d9;" /><!-- \dot -->
+			<key code="5" output="&#x00a9;" /><!-- \copyright -->
+			<key code="6" output="&#x03a9;" /><!-- \Omega -->
+			<key code="7" output="&#x2248;" /><!-- \approx -->
+			<key code="8" output="&#x00e7;" /><!-- \c{c} -->
+			<key code="9" output="&#x221a;" /><!-- \sqrt -->
+			<!-- gap, 10 -->
+			<key code="11" output="&#x222b;" /><!-- \int -->
+			<key code="12" output="&#x0153;" /><!-- \oe -->
+			<key code="13" output="&#x2211;" /><!-- \sum -->
+			<key code="14" action="acute" />
+			<key code="15" output="&#x00ae;" /><!-- &reg; -->
+			<key code="16" output="&#x00a5;" /><!-- yen -->
+			<key code="17" output="&#x2020;" /><!-- \dag -->
+			<key code="18" output="&#x00a1;" /><!-- !` -->
+			<key code="19" output="&#x2122;" /><!-- TM -->
+			<key code="20" output="&#x00a3;" /><!-- sterling -->
+			<key code="21" output="&#x00a2;" /><!-- cents -->
+			<key code="22" output="&#x00a7;" /><!-- \S -->
+			<key code="23" output="&#x221e;" /><!-- \infty -->
+			<key code="24" output="&#x00b1;" /><!-- \pm -->
+			<key code="25" output="&#x00aa;" /><!-- ^a -->
+			<key code="26" output="&#x00b6;" /><!-- \P -->
+			<key code="27" output="&#x2013;" /><!-- endash -->
+			<key code="28" output="&#x2022;" /><!-- \bullet -->
+			<key code="29" output="&#x00ba;" /><!-- ^o -->
+			<key code="30" output="&#x2018;" /><!-- leftquote -->
+			<key code="31" output="&#x00f8;" /><!-- \o -->
+			<key code="32" action="umlaut" />
+			<key code="33" output="&#x201c;" /><!-- `` -->
+			<key code="34" action="circumflex" />
+			<key code="35" output="&#x03c0;" /><!-- \pi -->
+			<key code="36" output="&#x000d;" /><!-- return -->
+			<key code="37" output="&#x00ac;" /><!-- \lnot -->
+			<key code="38" output="&#x2206;" /><!-- \Delta -->
+			<key code="39" output="&#x00e6;" /><!-- \ae -->
+			<key code="40" output="&#x02da;" /><!-- ring accent -->
+			<key code="41" output="&#x2026;" /><!-- \dots -->
+			<key code="42" output="&#x00ab;" /><!-- left double guillemet -->
+			<key code="43" output="&#x2264;" /><!-- \le -->
+			<key code="44" output="&#x00f7;" /><!-- \div -->
+			<key code="45" action="tilde" />
+			<key code="46" output="&#x00b5;" /><!-- \mu -->
+			<key code="47" output="&#x2265;" /><!-- \ge -->
+			<key code="48" output="&#x0009;" /><!-- tab -->
+			<key code="49" output="&#x00a0;" /><!-- nobreak space -->
+			<key code="50" action="grave" />
+			<key code="51" output="&#x0008;" />
+			<key code="52" output="&#x0003;" />
+			<key code="53" output="&#x001b;" />
+			<!-- gap, 54 through 64 -->
+			<key code="65" output="." />
+			<key code="66" output="&#x001d;" />
+			<key code="67" output="*" />
+			<!-- gap, 68 -->
+			<key code="69" output="+" />
+			<key code="70" output="&#x001c;" />
+			<key code="71" output="&#x001b;" />
+			<key code="72" output="&#x001f;" />
+			<!-- gap, 73 through 74 -->
+			<key code="75" output="/" />
+			<key code="76" output="&#x0003;" />
+			<key code="77" output="&#x001e;" />
+			<key code="78" output="-" />
+			<!-- gap, 79 through 80 -->
+			<key code="81" output="=" />
+			<key code="82" output="0" />
+			<key code="83" output="1" />
+			<key code="84" output="2" />
+			<key code="85" output="3" />
+			<key code="86" output="4" />
+			<key code="87" output="5" />
+			<key code="88" output="6" />
+			<key code="89" output="7" />
+			<!-- gap, 90 -->
+			<key code="91" output="8" />
+			<key code="92" output="9" />
+			<!-- gap, 93 through 95 -->
+			<key code="96" output="&#x0010;" />
+			<key code="97" output="&#x0010;" />
+			<key code="98" output="&#x0010;" />
+			<key code="99" output="&#x0010;" />
+			<key code="100" output="&#x0010;" />
+			<key code="101" output="&#x0010;" />
+			<key code="102" output="&#x0010;" />
+			<key code="103" output="&#x0010;" />
+			<key code="104" output="&#x0010;" />
+			<key code="105" output="&#x0010;" />
+			<key code="106" output="&#x0010;" />
+			<key code="107" output="&#x0010;" />
+			<key code="108" output="&#x0010;" />
+			<key code="109" output="&#x0010;" />
+			<key code="110" output="&#x0010;" />
+			<key code="111" output="&#x0010;" />
+			<key code="112" output="&#x0010;" />
+			<key code="113" output="&#x0010;" />
+			<key code="114" output="&#x0005;" />
+			<key code="115" output="&#x0001;" />
+			<key code="116" output="&#x000b;" />
+			<key code="117" output="&#x007f;" />
+			<key code="118" output="&#x0010;" />
+			<key code="119" output="&#x0004;" />
+			<key code="120" output="&#x0010;" />
+			<key code="121" output="&#x000c;" />
+			<key code="122" output="&#x0010;" />
+			<key code="123" output="&#x001c;" />
+			<key code="124" output="&#x001d;" />
+			<key code="125" output="&#x001f;" />
+			<key code="126" output="&#x001e;" />
+			<!-- gap, 127 -->
+		</keyMap>
+		<keyMap index="4">	<!-- option shift -->
+			<key code="0" output="&#x00c5;" /><!-- \AA -->
+			<key code="1" output="&#x00cd;" /><!-- \'I -->
+			<key code="2" output="&#x00ce;" /><!-- \^I -->
+			<key code="3" output="&#x00cf;" /><!-- \"I -->
+			<key code="4" output="&#x00d3;" /><!-- \'O -->
+			<key code="5" output="&#x02dd;" /><!-- \H -->
+			<key code="6" output="&#x00b8;" /><!-- \c -->
+			<key code="7" output="&#x02db;" /><!-- ogonek -->
+			<key code="8" output="&#x00c7;" /><!-- \c{C} -->
+			<key code="9" output="&#x25ca;" /><!-- \diamondsuit -->
+			<!-- gap, 10 -->
+			<key code="11" output="&#x0131;" /><!-- \i -->
+			<key code="12" output="&#x0152;" /><!-- \OE -->
+			<key code="13" output="&#x201e;" /><!-- low `` -->
+			<key code="14" output="&#x00b4;" /><!-- \acute -->
+			<key code="15" output="&#x2030;" /><!-- per mille -->
+			<key code="16" output="&#x00c1;" /><!-- \'A -->
+			<key code="17" output="&#x02c7;" /><!-- \check -->
+			<key code="18" output="&#x2044;" /><!-- fraction slash -->
+			<key code="19" output="&#x20ac;" /><!-- euro -->
+			<key code="20" output="&#x2039;" /><!-- left guillemet -->
+			<key code="21" output="&#x203a;" /><!-- right guillemet -->
+			<key code="22" output="&#xfb02;" /><!-- fl -->
+			<key code="23" output="&#xfb01;" /><!-- fi -->
+			<key code="24" output="&#x2260;" /><!-- \ne -->
+			<key code="25" output="&#x00b7;" /><!-- \cdot -->
+			<key code="26" output="&#x2021;" /><!-- \ddag -->
+			<key code="27" output="&#x2014;" /><!-- emdash -->
+			<key code="28" output="&#x00b0;" /><!-- ^\circ -->
+			<key code="29" output="&#x201a;" /><!-- low ' -->
+			<key code="30" output="&#x2019;" /><!-- right quote -->
+			<key code="31" output="&#x00d8;" /><!-- \O -->
+			<key code="32" output="&#x00a8;" /><!-- \ddot -->
+			<key code="33" output="&#x201d;" /><!-- '' -->
+			<key code="34" output="&#x02c6;" /><!-- \hat -->
+			<key code="35" output="&#x220f;" /><!-- \prod -->
+			<key code="36" output="&#x000d;" /><!-- return -->
+			<key code="37" output="&#x00d2;" /><!-- \`O -->
+			<key code="38" output="&#x00d4;" /><!-- \^O -->
+			<key code="39" output="&#x00c6;" /><!-- \AE -->
+			<key code="40" output="&#xf8ff;" /><!-- apple logo -->
+			<key code="41" output="&#x00da;" /><!-- \'U -->
+			<key code="42" output="&#x00bb;" /><!-- right double guillemet -->
+			<key code="43" output="&#x00af;" /><!-- \bar -->
+			<key code="44" output="&#x00bf;" /><!-- ?` -->
+			<key code="45" output="&#x02dc;" /><!-- \tilde -->
+			<key code="46" output="&#x00c2;" /><!-- \^A -->
+			<key code="47" output="&#x02d8;" /><!-- \breve -->
+			<key code="48" output="&#x0009;" /><!-- tab -->
+			<key code="49" output="&#x00a0;" /><!-- nobreak space -->
+			<key code="50" output="`" />
+			<key code="51" output="&#x0008;" />
+			<key code="52" output="&#x0003;" />
+			<key code="53" output="&#x001b;" />
+			<!-- gap, 54 through 64 -->
+			<key code="65" output="." />
+			<key code="66" output="&#x001d;" />
+			<key code="67" output="*" />
+			<!-- gap, 68 -->
+			<key code="69" output="+" />
+			<key code="70" output="&#x001c;" />
+			<key code="71" output="&#x001b;" />
+			<key code="72" output="&#x001f;" />
+			<!-- gap, 73 through 74 -->
+			<key code="75" output="/" />
+			<key code="76" output="&#x0003;" />
+			<key code="77" output="&#x001e;" />
+			<key code="78" output="-" />
+			<!-- gap, 79 through 80 -->
+			<key code="81" output="=" />
+			<key code="82" output="0" />
+			<key code="83" output="1" />
+			<key code="84" output="2" />
+			<key code="85" output="3" />
+			<key code="86" output="4" />
+			<key code="87" output="5" />
+			<key code="88" output="6" />
+			<key code="89" output="7" />
+			<!-- gap, 90 -->
+			<key code="91" output="8" />
+			<key code="92" output="9" />
+			<!-- gap, 93 through 95 -->
+			<key code="96" output="&#x0010;" />
+			<key code="97" output="&#x0010;" />
+			<key code="98" output="&#x0010;" />
+			<key code="99" output="&#x0010;" />
+			<key code="100" output="&#x0010;" />
+			<key code="101" output="&#x0010;" />
+			<key code="102" output="&#x0010;" />
+			<key code="103" output="&#x0010;" />
+			<key code="104" output="&#x0010;" />
+			<key code="105" output="&#x0010;" />
+			<key code="106" output="&#x0010;" />
+			<key code="107" output="&#x0010;" />
+			<key code="108" output="&#x0010;" />
+			<key code="109" output="&#x0010;" />
+			<key code="110" output="&#x0010;" />
+			<key code="111" output="&#x0010;" />
+			<key code="112" output="&#x0010;" />
+			<key code="113" output="&#x0010;" />
+			<key code="114" output="&#x0005;" />
+			<key code="115" output="&#x0001;" />
+			<key code="116" output="&#x000b;" />
+			<key code="117" output="&#x007f;" />
+			<key code="118" output="&#x0010;" />
+			<key code="119" output="&#x0004;" />
+			<key code="120" output="&#x0010;" />
+			<key code="121" output="&#x000c;" />
+			<key code="122" output="&#x0010;" />
+			<key code="123" output="&#x001c;" />
+			<key code="124" output="&#x001d;" />
+			<key code="125" output="&#x001f;" />
+			<key code="126" output="&#x001e;" />
+			<!-- gap, 127 -->
+		</keyMap>
+		<keyMap index="5"><!-- option caps lock -->
+			<key code="0" output="&#x00c5;" /><!-- \AA -->
+			<key code="1" output="&#x00df;" /><!-- \ss -->
+			<key code="2" output="&#x2202;" /><!-- \partial -->
+			<key code="3" output="&#x0192;" /><!-- \it f -->
+			<key code="4" output="&#x02d9;" /><!-- \dot -->
+			<key code="5" output="&#x00a9;" /><!-- \copyright -->
+			<key code="6" output="&#x03a9;" /><!-- \Omega -->
+			<key code="7" output="&#x2248;" /><!-- \approx -->
+			<key code="8" output="&#x00c7;" /><!-- \c{C} -->
+			<key code="9" output="&#x221a;" /><!-- \sqrt -->
+			<!-- gap, 10 -->
+			<key code="11" output="&#x222b;" /><!-- \int -->
+			<key code="12" output="&#x0152;" /><!-- \OE -->
+			<key code="13" output="&#x2211;" /><!-- \sum -->
+			<key code="14" action="acute" />
+			<key code="15" output="&#x00ae;" /><!-- &reg; -->
+			<key code="16" output="&#x00a5;" /><!-- yen -->
+			<key code="17" output="&#x2020;" /><!-- \dag -->
+			<key code="18" output="&#x00a1;" /><!-- !` -->
+			<key code="19" output="&#x2122;" /><!-- TM -->
+			<key code="20" output="&#x00a3;" /><!-- sterling -->
+			<key code="21" output="&#x00a2;" /><!-- cents -->
+			<key code="22" output="&#x00a7;" /><!-- \S -->
+			<key code="23" output="&#x221e;" /><!-- \infty -->
+			<key code="24" output="&#x00b1;" /><!-- \pm -->
+			<key code="25" output="&#x00aa;" /><!-- ^a -->
+			<key code="26" output="&#x00b6;" /><!-- \P -->
+			<key code="27" output="&#x2013;" /><!-- endash -->
+			<key code="28" output="&#x2022;" /><!-- \bullet -->
+			<key code="29" output="&#x00ba;" /><!-- ^o -->
+			<key code="30" output="&#x2018;" /><!-- leftquote -->
+			<key code="31" output="&#x00d8;" /><!-- \O -->
+			<key code="32" action="umlaut" />
+			<key code="33" output="&#x201c;" /><!-- `` -->
+			<key code="34" action="circumflex" />
+			<key code="35" output="&#x220f;" /><!-- \prod -->
+			<key code="36" output="&#x000d;" /><!-- return -->
+			<key code="37" output="&#x00ac;" /><!-- \lnot -->
+			<key code="38" output="&#x2206;" /><!-- \Delta -->
+			<key code="39" output="&#x00c6;" /><!-- \AE -->
+			<key code="40" output="&#x02da;" /><!-- ring accent -->
+			<key code="41" output="&#x2026;" /><!-- \dots -->
+			<key code="42" output="&#x00ab;" /><!-- left double guillemet -->
+			<key code="43" output="&#x2264;" /><!-- \le -->
+			<key code="44" output="&#x00f7;" /><!-- \div -->
+			<key code="45" action="tilde" />
+			<key code="46" output="&#x00b5;" /><!-- \mu -->
+			<key code="47" output="&#x2265;" /><!-- \ge -->
+			<key code="48" output="&#x0009;" /><!-- tab -->
+			<key code="49" output="&#x00a0;" /><!-- nobreak space -->
+			<key code="50" action="grave" />
+			<key code="51" output="&#x0008;" />
+			<key code="52" output="&#x0003;" />
+			<key code="53" output="&#x001b;" />
+			<!-- gap, 54 through 64 -->
+			<key code="65" output="." />
+			<key code="66" output="&#x001d;" />
+			<key code="67" output="*" />
+			<!-- gap, 68 -->
+			<key code="69" output="+" />
+			<key code="70" output="&#x001c;" />
+			<key code="71" output="&#x001b;" />
+			<key code="72" output="&#x001f;" />
+			<!-- gap, 73 through 74 -->
+			<key code="75" output="/" />
+			<key code="76" output="&#x0003;" />
+			<key code="77" output="&#x001e;" />
+			<key code="78" output="-" />
+			<!-- gap, 79 through 80 -->
+			<key code="81" output="=" />
+			<key code="82" output="0" />
+			<key code="83" output="1" />
+			<key code="84" output="2" />
+			<key code="85" output="3" />
+			<key code="86" output="4" />
+			<key code="87" output="5" />
+			<key code="88" output="6" />
+			<key code="89" output="7" />
+			<!-- gap, 90 -->
+			<key code="91" output="8" />
+			<key code="92" output="9" />
+			<!-- gap, 93 through 95 -->
+			<key code="96" output="&#x0010;" />
+			<key code="97" output="&#x0010;" />
+			<key code="98" output="&#x0010;" />
+			<key code="99" output="&#x0010;" />
+			<key code="100" output="&#x0010;" />
+			<key code="101" output="&#x0010;" />
+			<key code="102" output="&#x0010;" />
+			<key code="103" output="&#x0010;" />
+			<key code="104" output="&#x0010;" />
+			<key code="105" output="&#x0010;" />
+			<key code="106" output="&#x0010;" />
+			<key code="107" output="&#x0010;" />
+			<key code="108" output="&#x0010;" />
+			<key code="109" output="&#x0010;" />
+			<key code="110" output="&#x0010;" />
+			<key code="111" output="&#x0010;" />
+			<key code="112" output="&#x0010;" />
+			<key code="113" output="&#x0010;" />
+			<key code="114" output="&#x0005;" />
+			<key code="115" output="&#x0001;" />
+			<key code="116" output="&#x000b;" />
+			<key code="117" output="&#x007f;" />
+			<key code="118" output="&#x0010;" />
+			<key code="119" output="&#x0004;" />
+			<key code="120" output="&#x0010;" />
+			<key code="121" output="&#x000c;" />
+			<key code="122" output="&#x0010;" />
+			<key code="123" output="&#x001c;" />
+			<key code="124" output="&#x001d;" />
+			<key code="125" output="&#x001f;" />
+			<key code="126" output="&#x001e;" />
+			<!-- gap, 127 -->
+		</keyMap>
+		<keyMap index="6"><!-- option command -->
+                        <!-- like option alone, but there are no dead keys -->
+			<key code="0" output="&#x00e5;" /><!-- \aa -->
+			<key code="1" output="&#x00df;" /><!-- \ss -->
+			<key code="2" output="&#x2202;" /><!-- \partial -->
+			<key code="3" output="&#x0192;" /><!-- \it f -->
+			<key code="4" output="&#x02d9;" /><!-- \dot -->
+			<key code="5" output="&#x00a9;" /><!-- \copyright -->
+			<key code="6" output="&#x03a9;" /><!-- \Omega -->
+			<key code="7" output="&#x2248;" /><!-- \approx -->
+			<key code="8" output="&#x00e7;" /><!-- \c{c} -->
+			<key code="9" output="&#x221a;" /><!-- \sqrt -->
+			<!-- gap, 10 -->
+			<key code="11" output="&#x222b;" /><!-- \int -->
+			<key code="12" output="&#x0153;" /><!-- \oe -->
+			<key code="13" output="&#x2211;" /><!-- \sum -->
+			<key code="14" output="&#x00b4;" /><!-- \acute -->
+			<key code="15" output="&#x00ae;" /><!-- &reg; -->
+			<key code="16" output="&#x00a5;" /><!-- yen -->
+			<key code="17" output="&#x2020;" /><!-- \dag -->
+			<key code="18" output="&#x00a1;" /><!-- !` -->
+			<key code="19" output="&#x2122;" /><!-- TM -->
+			<key code="20" output="&#x00a3;" /><!-- sterling -->
+			<key code="21" output="&#x00a2;" /><!-- cents -->
+			<key code="22" output="&#x00a7;" /><!-- \S -->
+			<key code="23" output="&#x221e;" /><!-- \infty -->
+			<key code="24" output="&#x00b1;" /><!-- \pm -->
+			<key code="25" output="&#x00aa;" /><!-- ^a -->
+			<key code="26" output="&#x00b6;" /><!-- \P -->
+			<key code="27" output="&#x2013;" /><!-- endash -->
+			<key code="28" output="&#x2022;" /><!-- \bullet -->
+			<key code="29" output="&#x00ba;" /><!-- ^o -->
+			<key code="30" output="&#x2018;" /><!-- leftquote -->
+			<key code="31" output="&#x00f8;" /><!-- \o -->
+			<key code="32" output="&#x00a8;" /><!-- \ddot -->
+			<key code="33" output="&#x201c;" /><!-- `` -->
+			<key code="34" output="&#x02c6;" /><!-- \hat -->
+			<key code="35" output="&#x03c0;" /><!-- \pi -->
+			<key code="36" output="&#x000d;" /><!-- return -->
+			<key code="37" output="&#x00ac;" /><!-- \lnot -->
+			<key code="38" output="&#x2206;" /><!-- \Delta -->
+			<key code="39" output="&#x00e6;" /><!-- \ae -->
+			<key code="40" output="&#x02da;" /><!-- ring accent -->
+			<key code="41" output="&#x2026;" /><!-- \dots -->
+			<key code="42" output="&#x00ab;" /><!-- left double guillemet -->
+			<key code="43" output="&#x2264;" /><!-- \le -->
+			<key code="44" output="&#x00f7;" /><!-- \div -->
+			<key code="45" output="&#x02dc;" /><!-- \tilde -->
+			<key code="46" output="&#x00b5;" /><!-- \mu -->
+			<key code="47" output="&#x2265;" /><!-- \ge -->
+			<key code="48" output="&#x0009;" /><!-- tab -->
+			<key code="49" output="&#x00a0;" /><!-- nobreak space -->
+			<key code="50" output="`" />
+			<key code="51" output="&#x0008;" />
+			<key code="52" output="&#x0003;" />
+			<key code="53" output="&#x001b;" />
+			<!-- gap, 54 through 64 -->
+			<key code="65" output="." />
+			<key code="66" output="&#x001d;" />
+			<key code="67" output="*" />
+			<!-- gap, 68 -->
+			<key code="69" output="+" />
+			<key code="70" output="&#x001c;" />
+			<key code="71" output="&#x001b;" />
+			<key code="72" output="&#x001f;" />
+			<!-- gap, 73 through 74 -->
+			<key code="75" output="/" />
+			<key code="76" output="&#x0003;" />
+			<key code="77" output="&#x001e;" />
+			<key code="78" output="-" />
+			<!-- gap, 79 through 80 -->
+			<key code="81" output="=" />
+			<key code="82" output="0" />
+			<key code="83" output="1" />
+			<key code="84" output="2" />
+			<key code="85" output="3" />
+			<key code="86" output="4" />
+			<key code="87" output="5" />
+			<key code="88" output="6" />
+			<key code="89" output="7" />
+			<!-- gap, 90 -->
+			<key code="91" output="8" />
+			<key code="92" output="9" />
+			<!-- gap, 93 through 95 -->
+			<key code="96" output="&#x0010;" />
+			<key code="97" output="&#x0010;" />
+			<key code="98" output="&#x0010;" />
+			<key code="99" output="&#x0010;" />
+			<key code="100" output="&#x0010;" />
+			<key code="101" output="&#x0010;" />
+			<key code="102" output="&#x0010;" />
+			<key code="103" output="&#x0010;" />
+			<key code="104" output="&#x0010;" />
+			<key code="105" output="&#x0010;" />
+			<key code="106" output="&#x0010;" />
+			<key code="107" output="&#x0010;" />
+			<key code="108" output="&#x0010;" />
+			<key code="109" output="&#x0010;" />
+			<key code="110" output="&#x0010;" />
+			<key code="111" output="&#x0010;" />
+			<key code="112" output="&#x0010;" />
+			<key code="113" output="&#x0010;" />
+			<key code="114" output="&#x0005;" />
+			<key code="115" output="&#x0001;" />
+			<key code="116" output="&#x000b;" />
+			<key code="117" output="&#x007f;" />
+			<key code="118" output="&#x0010;" />
+			<key code="119" output="&#x0004;" />
+			<key code="120" output="&#x0010;" />
+			<key code="121" output="&#x000c;" />
+			<key code="122" output="&#x0010;" />
+			<key code="123" output="&#x001c;" />
+			<key code="124" output="&#x001d;" />
+			<key code="125" output="&#x001f;" />
+			<key code="126" output="&#x001e;" />
+			<!-- gap, 127 -->
+		</keyMap>
+		<keyMap index="7"><!-- control -->
+			<key code="0" output="&#x0001;" />
+			<key code="1" output="&#x0013;" />
+			<key code="2" output="&#x0004;" />
+			<key code="3" output="&#x0006;" />
+			<key code="4" output="&#x0008;" />
+			<key code="5" output="&#x0007;" />
+			<key code="6" output="&#x001a;" />
+			<key code="7" output="&#x0018;" />
+			<key code="8" output="&#x0003;" />
+			<key code="9" output="&#x0016;" />
+			<key code="10" output="0" />
+			<key code="11" output="&#x0002;" />
+			<key code="12" output="&#x0011;" />
+			<key code="13" output="&#x0017;" />
+			<key code="14" output="&#x0005;" />
+			<key code="15" output="&#x0012;" />
+			<key code="16" output="&#x0019;" />
+			<key code="17" output="&#x0014;" />
+			<key code="18" output="1" />
+			<key code="19" output="2" />
+			<key code="20" output="3" />
+			<key code="21" output="4" />
+			<key code="22" output="6" />
+			<key code="23" output="5" />
+			<key code="24" output="+" />
+			<key code="25" output="9" />
+			<key code="26" output="7" />
+			<key code="27" output="&#x001f;" />
+			<key code="28" output="8" />
+			<key code="29" output="0" />
+			<key code="30" output="&#x001d;" />
+			<key code="31" output="&#x000f;" />
+			<key code="32" output="&#x0015;" />
+			<key code="33" output="&#x001b;" />
+			<key code="34" output="&#x0009;" />
+			<key code="35" output="&#x0010;" />
+			<key code="36" output="&#x000d;" />
+			<key code="37" output="&#x000c;" />
+			<key code="38" output="&#x000a;" />
+			<key code="39" output="'" />
+			<key code="40" output="&#x000b;" />
+			<key code="41" output=";" />
+			<key code="42" output="&#x001c;" />
+			<key code="43" output="," />
+			<key code="44" output="/" />
+			<key code="45" output="&#x000e;" />
+			<key code="46" output="&#x000d;" />
+			<key code="47" output="." />
+			<key code="48" output="&#x0009;" />
+			<key code="49" action=" " />
+			<key code="50" output="`" />
+			<key code="51" output="&#x0008;" />
+			<key code="52" output="&#x0003;" />
+			<key code="53" output="&#x001b;" />
+			<!-- gap, 54 through 64 -->
+			<key code="65" output="." />
+			<key code="66" output="&#x001d;" />
+			<key code="67" output="*" />
+			<!-- gap, 68 -->
+			<key code="69" output="+" />
+			<key code="70" output="&#x001c;" />
+			<key code="71" output="&#x001b;" />
+			<key code="72" output="&#x001f;" />
+			<!-- gap, 73 through 74 -->
+			<key code="75" output="/" />
+			<key code="76" output="&#x0003;" />
+			<key code="77" output="&#x001e;" />
+			<key code="78" output="-" />
+			<!-- gap, 79 through 80 -->
+			<key code="81" output="=" />
+			<key code="82" output="0" />
+			<key code="83" output="1" />
+			<key code="84" output="2" />
+			<key code="85" output="3" />
+			<key code="86" output="4" />
+			<key code="87" output="5" />
+			<key code="88" output="6" />
+			<key code="89" output="7" />
+			<!-- gap, 90 -->
+			<key code="91" output="8" />
+			<key code="92" output="9" />
+			<!-- gap, 93 through 95 -->
+			<key code="96" output="&#x0010;" />
+			<key code="97" output="&#x0010;" />
+			<key code="98" output="&#x0010;" />
+			<key code="99" output="&#x0010;" />
+			<key code="100" output="&#x0010;" />
+			<key code="101" output="&#x0010;" />
+			<key code="102" output="&#x0010;" />
+			<key code="103" output="&#x0010;" />
+			<key code="104" output="&#x0010;" />
+			<key code="105" output="&#x0010;" />
+			<key code="106" output="&#x0010;" />
+			<key code="107" output="&#x0010;" />
+			<key code="108" output="&#x0010;" />
+			<key code="109" output="&#x0010;" />
+			<key code="110" output="&#x0010;" />
+			<key code="111" output="&#x0010;" />
+			<key code="112" output="&#x0010;" />
+			<key code="113" output="&#x0010;" />
+			<key code="114" output="&#x0005;" />
+			<key code="115" output="&#x0001;" />
+			<key code="116" output="&#x000b;" />
+			<key code="117" output="&#x007f;" />
+			<key code="118" output="&#x0010;" />
+			<key code="119" output="&#x0004;" />
+			<key code="120" output="&#x0010;" />
+			<key code="121" output="&#x000c;" />
+			<key code="122" output="&#x0010;" />
+			<key code="123" output="&#x001c;" />
+			<key code="124" output="&#x001d;" />
+			<key code="125" output="&#x001f;" />
+			<key code="126" output="&#x001e;" />
+			<!-- gap, 127 -->
+		</keyMap>
+	</keyMapSet>
+
+	<actions>
+		<!-- actions for initiating dead key states -->
+		<action id="acute">
+			<when state="none" next="acute" />
+		</action>
+		<action id="grave">
+			<when state="none" next="grave" />
+		</action>
+		<action id="circumflex">
+			<when state="none" next="circumflex" />
+		</action>
+		<action id="umlaut">
+			<when state="none" next="umlaut" />
+		</action>
+		<action id="tilde">
+			<when state="none" next="tilde" />
+		</action>
+
+		<!-- actions for completing dead key states -->
+		<action id=" ">
+			<when state="none" output=" " />
+			<when state="acute" output="&#x00b4;" />
+			<when state="grave" output="`" />
+			<when state="circumflex" output="&#x02c6;" />
+			<when state="umlaut" output="&#x00a8;" />
+			<when state="tilde" output="&#x02dc;" />
+		</action>
+		<action id="A">
+			<when state="none" output="A" />
+			<when state="acute" output="&#x00c1;" />
+			<when state="grave" output="&#x00c0;" />
+			<when state="circumflex" output="&#x00c2;" />
+			<when state="umlaut" output="&#x00c4;" />
+			<when state="tilde" output="&#x00c3;" />
+		</action>
+		<action id="a">
+			<when state="none" output="a" />
+			<when state="acute" output="&#x00e1;" />
+			<when state="grave" output="&#xe0;" />
+			<when state="circumflex" output="&#x00e2;" />
+			<when state="umlaut" output="&#x00e4;" />
+			<when state="tilde" output="&#x00e3;" />
+		</action>
+		<action id="E">
+			<when state="none" output="E" />
+			<when state="acute" output="&#x00c9;" />
+			<when state="grave" output="&#x00c8;" />
+			<when state="circumflex" output="&#x00ca;" />
+			<when state="umlaut" output="&#x00cb;" />
+		</action>
+		<action id="e">
+			<when state="none" output="e" />
+			<when state="acute" output="&#x00e9;" />
+			<when state="grave" output="&#x00e8;" />
+			<when state="circumflex" output="&#x00ea;" />
+			<when state="umlaut" output="&#x00eb;" />
+		</action>
+		<action id="I">
+			<when state="none" output="I" />
+			<when state="acute" output="&#x00cd;" />
+			<when state="grave" output="&#x00cc;" />
+			<when state="circumflex" output="&#x00ce;" />
+			<when state="umlaut" output="&#x00cf;" />
+		</action>
+		<action id="i">
+			<when state="none" output="i" />
+			<when state="acute" output="&#x00ed;" />
+			<when state="grave" output="&#x00ec;" />
+			<when state="circumflex" output="&#x00ee;" />
+			<when state="umlaut" output="&#x00ef;" />
+		</action>
+		<action id="N">
+			<when state="none" output="N" />
+			<when state="tilde" output="&#x00d1;" />
+		</action>
+		<action id="n">
+			<when state="none" output="n" />
+			<when state="tilde" output="&#x00f1;" />
+		</action>
+		<action id="O">
+			<when state="none" output="O" />
+			<when state="acute" output="&#x00d3;" />
+			<when state="grave" output="&#x00d2;" />
+			<when state="circumflex" output="&#x00d4;" />
+			<when state="umlaut" output="&#x00d6;" />
+			<when state="tilde" output="&#x00d5;" />
+		</action>
+		<action id="o">
+			<when state="none" output="o" />
+			<when state="acute" output="&#x00f3;" />
+			<when state="grave" output="&#x00f2;" />
+			<when state="circumflex" output="&#x00f4;" />
+			<when state="umlaut" output="&#x00f6;" />
+			<when state="tilde" output="&#x00f5;" />
+		</action>
+		<action id="U">
+			<when state="none" output="U" />
+			<when state="acute" output="&#x00da;" />
+			<when state="grave" output="&#x00d9;" />
+			<when state="circumflex" output="&#x00db;" />
+			<when state="umlaut" output="&#x00dc;" />
+		</action>
+		<action id="u">
+			<when state="none" output="u" />
+			<when state="acute" output="&#x00fa;" />
+			<when state="grave" output="&#x00f9;" />
+			<when state="circumflex" output="&#x00fb;" />
+			<when state="umlaut" output="&#x00fc;" />
+		</action>
+		<action id="Y">
+			<when state="none" output="Y" />
+			<when state="umlaut" output="&#x0178;" />
+		</action>
+		<action id="y">
+			<when state="none" output="y" />
+			<when state="umlaut" output="&#x00ff;" />
+		</action>
+	</actions>
+	<terminators>
+		<when state="acute" output="&#x00b4;" />
+		<when state="grave" output="`" />
+		<when state="circumflex" output="&#x02c6;" />
+		<when state="umlaut" output="&#x00a8;" />
+		<when state="tilde" output="&#x02dc;" />
+	</terminators>
+</keyboard>

@@ -1,0 +1,10 @@
+# Generated builds and local caches
+__pycache__/
+*.pyc
+*.exe
+*.elf
+*.o
+*.obj
+*.dvi
+build/
+.DS_Store
