@@ -21,6 +21,8 @@ calling it a ``printed-circuit problem.''
 
 The command line should specify the graph. The subsets are specified
 in $t$ lines of |stdin|, by listing the vertex names (separated by spaces).
+The last line need not end with a newline. Each line may contain at most
+|bufsize-1| characters before the newline; embedded null bytes are rejected.
 
 I introduce Boolean variables by appending a character to each vertex name.
 Therefore all vertex names should have length 7 or less.
@@ -54,7 +56,7 @@ char namew[bufsize],namez[bufsize];
 char code[]=
   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 main (int argc, char*argv[]) {
-  register int j,t,m,mm;
+  register int j,t,m,mm,ch,len;
   register Graph *g;
   register Vertex *v,*w,*z;
   register Arc *a, *b, *c;
@@ -62,7 +64,23 @@ main (int argc, char*argv[]) {
   @<Process the command line@>;
   @<Mark all vertices unseen@>;
   for (m=0,t=1;;t++) {
-    if (!fgets(buf,bufsize,stdin)) break;
+    for (len=0;;) {
+      ch=getchar();
+      if (ch==EOF || ch=='\n') break;
+      if (ch==0 || len==bufsize-1) {
+        fprintf(stderr,"Input line is too long or contains a null byte!\n");
+        exit(-7);
+      }
+      buf[len++]=ch;
+    }
+    if (ch==EOF) {
+      if (ferror(stdin)) {
+        fprintf(stderr,"I couldn't read standard input!\n");
+        exit(-7);
+      }
+      if (len==0) break;
+    }
+    buf[len]='\0';
     @<Generate clauses for a new set of vertices@>;
   }
   @<Disable singleton vertices@>;
@@ -91,10 +109,10 @@ for (v=g->vertices;v<g->vertices+g->n;v++) v->seen=0;
 @ @<Generate clauses for a new set of vertices@>=
 mm=m; /* remember the number of clauses sets for previous colors */
 for (p=buf; *p==' '; p++); /* skip blanks */
-if (*p=='\n')
+if (*p=='\0')
   fprintf(stderr,"Warning: An empty line of input is being ignored!\n");
 else {
-  for (namew[0]=*p, q=p+1; *q!=' ' && *q!='\n'; q++) namew[q-p]=*q;
+  for (namew[0]=*p, q=p+1; *q!=' ' && *q!='\0'; q++) namew[q-p]=*q;
   namew[q-p]='\0';
   if (q-p>7) {
     fprintf(stderr,"Sorry, the name of vertex %s is too long!\n",
@@ -115,8 +133,8 @@ else {
   w->seen=1;
   while (1) {
     for (p=q; *p==' '; p++); /* skip blanks */
-    if (*p=='\n') break;
-    for (namez[0]=*p, q=p+1; *q!=' ' && *q!='\n'; q++) namez[q-p]=*q;
+    if (*p=='\0') break;
+    for (namez[0]=*p, q=p+1; *q!=' ' && *q!='\0'; q++) namez[q-p]=*q;
     namez[q-p]='\0';
     if (q-p>7) {
       fprintf(stderr,"Sorry, the name of vertex %s is too long!\n",

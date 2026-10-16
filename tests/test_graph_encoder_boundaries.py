@@ -217,6 +217,40 @@ int main(int argc, char **argv) {
                     self.assertEqual(satisfiable(formula+fixed), sum(bits) % 2 == (vertex == 0),
                                      (n, mask, vertex, bits))
 
+    def test_connection_final_records_match_newline_terminated_records(self):
+        for text in [b'a b', b'  a b   ', b'a', b'   ', b'a b\nc', b' '*76+b'a b']:
+            with self.subTest(text=text):
+                results = [subprocess.run([str(self.programs['connection']), str(self.work/'4-63.gb')],
+                                          input=record, capture_output=True, timeout=5, env=ENV)
+                           for record in [text, text+b'\n']]
+                for result in results:
+                    self.assertEqual(result.returncode, 0, result.stderr.decode())
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertEqual(results[0].stdout, results[1].stdout)
+
+    def test_connection_rejects_oversized_and_nul_records(self):
+        for text in [b' '*77+b'a b\n', b' '*1000+b'a b', b'a\0 b\n', b'\0\n',
+                     b'a b\0c\n']:
+            with self.subTest(text=text[:85]):
+                result = subprocess.run([str(self.programs['connection']), str(self.work/'4-63.gb')],
+                                        input=text, capture_output=True, timeout=5, env=ENV)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertFalse(any(line and not line.startswith(b'~ ')
+                                     for line in result.stdout.splitlines()))
+
+    def test_connection_input_read_error_is_not_clean_eof(self):
+        descriptor = os.open(self.work, os.O_RDONLY)
+        try:
+            result = subprocess.run([str(self.programs['connection']), str(self.work/'4-63.gb')],
+                                    stdin=descriptor, capture_output=True, timeout=5, env=ENV)
+        finally:
+            os.close(descriptor)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b'input', result.stderr.lower())
+
 
 if __name__ == '__main__':
     unittest.main()
