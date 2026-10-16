@@ -36,6 +36,31 @@ class ZarankCardinality(unittest.TestCase):
         return subprocess.run([str(self.programs[mode]), *map(str, parameters)], capture_output=True,
                               timeout=5, env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
 
+    def test_parameter_ranges_reject_before_product_and_array_arithmetic(self):
+        cases = [[0, 0, 0, 0, 0], [-1, -1, 0, 0, 0], [46341, 46341, 0, 0, 0],
+                      [2, 2, -1, 0, 0], [2, 2, 5, 0, 0], [2, 2, 1, -1, 0],
+                      [2, 2, 1, 0, -1], [2, 2, 1, 3, 0], [2, 2, 1, 0, 3]]
+        for mode in self.programs:
+            for parameters in cases:
+                with self.subTest(mode=mode, parameters=parameters):
+                    result = self.encode(mode, parameters)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertNotIn(b'AddressSanitizer', result.stderr)
+                    self.assertEqual(result.stdout, b'')
+
+    def test_parameter_capacity_uses_all_supported_tree_storage_safely(self):
+        for m, n in [(1, 1000), (1000, 1)]:
+            result = self.encode('base', [m, n, 1, 0, 0])
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            formula = [line.split() for line in result.stdout.decode().splitlines()
+                       if line.strip() and not line.startswith('~ ')]
+            names = {f'{i}.{j}' for i in range(m) for j in range(n)}
+            fixed = [['~'+name] for name in sorted(names)]
+            self.assertFalse(satisfiable(formula+fixed))
+            fixed[0] = [fixed[0][0][1:]]
+            self.assertTrue(satisfiable(formula+fixed))
+
     def test_cardinality_and_single_cell_match_every_small_matrix(self):
         for m, n in [(1, 1), (1, 2), (2, 1), (2, 2), (2, 3), (3, 2)]:
             for mode in self.programs:

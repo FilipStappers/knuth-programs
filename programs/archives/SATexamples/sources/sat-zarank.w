@@ -51,10 +51,13 @@ if (argc!=6 || sscanf(argv[1],"%d",
                                argv[0]);
   exit(-1);
 }
+if (m<=0 || n<=0 || m>nmax/n) {
+  fprintf(stderr,"Dimensions must be positive with product at most %d!\n",nmax);
+  exit(-2);
+}
 mn=m*n;
-if (mn>nmax) {
-  fprintf(stderr,"Sorry: mn is %d, and I'm set up for at most %d!\n",
-                           mn,nmax);
+if (r<0 || r>mn || p<0 || q<0) {
+  fprintf(stderr,"Require 0<=r<=mn and nonnegative ordering prefixes!\n");
   exit(-2);
 }
 if (p>n) {
