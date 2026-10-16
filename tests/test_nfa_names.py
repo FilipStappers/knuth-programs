@@ -34,6 +34,24 @@ class NfaNames(unittest.TestCase):
         subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-O1',
                         '-fsanitize=address,undefined,bounds', '-fno-sanitize-recover=all',
                         str(generated), '-o', str(cls.program)], check=True, capture_output=True)
+        driver = work/'short-transition.c'
+        driver.write_text('''
+#include <stdlib.h>
+#include <string.h>
+#define main published_main
+#include "nfa.c"
+#undef main
+int main(int argc,char **argv) {
+  char *transition=malloc(strlen(argv[1])+1);
+  char *args[]={"nfa","1","a","a",transition,NULL};
+  strcpy(transition,argv[1]);
+  return published_main(5,args);
+}
+''')
+        cls.short_program = work/'short-transition'
+        subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-O1',
+                        '-fsanitize=address,undefined,bounds', '-fno-sanitize-recover=all',
+                        str(driver), '-o', str(cls.short_program)], check=True, capture_output=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -70,6 +88,32 @@ class NfaNames(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn(b'nonempty', result.stderr)
                 self.assertEqual(result.stdout, b'')
+
+    def test_short_transition_is_checked_before_indexing(self):
+        for transition in ['', 'a', 'a0', 'a0aa', 'a2a']:
+            with self.subTest(transition=transition):
+                result = subprocess.run([str(self.short_program), transition], capture_output=True,
+                                        timeout=5, env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b'Improper transition', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertEqual(result.stdout, b'')
+
+    def test_length_bounds_keep_every_variable_within_native_name_capacity(self):
+        for n in [-2147483648, -1, 10000, 2147483647]:
+            with self.subTest(n=n):
+                result = self.encode(n, 'a', 'a', ['a0a'])
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b'length', result.stderr)
+                self.assertEqual(result.stdout, b'')
+        result = self.encode(9999, 'a', 'a', ['a0a'])
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        names = {lit.removeprefix('~') for row in clauses(result.stdout) for lit in row}
+        self.assertTrue(all(1 <= len(name) <= 8 for name in names))
+        self.assertIn('T6109999', names)
+        self.assertIn('S619999', names)
+        self.assertIn('9999', names)
 
     def test_complete_small_language_projections(self):
         automata = [('a', 'a', ['a0a', 'a1a']),

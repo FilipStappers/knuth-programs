@@ -15,7 +15,8 @@ Those changes were incorporated into the file \.{7.2.2.2.tex} on 22 October.]
 The specifications for the automaton are given entirely on the command line.
 Each state is represented by a single ASCII character, between \.{!} and
 \.{\char`\}} inclusive, other than \.0 or \.1; I recommend using letters.
-The first argument specifies the string length, $n$.
+The first argument specifies the string length, $n$, from 0 through 9999.
+This bound keeps all generated variable names within eight characters.
 The next argument specifies one or more input states.
 The next argument specifies one or more output states.
 The remaining arguments are the transitions.
@@ -38,6 +39,7 @@ I apologize for writing this in a huge hurry.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 int n; /* command-line argument */
 char isinput[128],isoutput[128],isstate[128];
 char istrans[128][2];
@@ -62,6 +64,10 @@ if (argc<4 || sscanf(argv[1],"%d",
                                argv[0]);
   exit(-1);
 }
+if (n<0 || n>9999) {
+  fprintf(stderr,"String length must be between 0 and 9999!\n");
+  exit(-2);
+}
 if (!argv[2][0] || !argv[3][0]) {
   fprintf(stderr,"Input and output state sets must be nonempty!\n");
   exit(-2);
@@ -85,7 +91,7 @@ for (j=0;argv[3][j];j++) {
   isoutput[k]=isstate[k]=1;
 }
 for (j=4;j<argc;j++) {
-  if (badstate(argv[j][0]) || badstate(argv[j][2]) ||
+  if (strlen(argv[j])!=3 || badstate(argv[j][0]) || badstate(argv[j][2]) ||
       argv[j][1]<'0' || argv[j][1]>'1' || argv[j][3]) {
      fprintf(stderr,"Improper transition `%s'!\n",
                                          argv[j]);
