@@ -21,8 +21,8 @@ mutual exclusion property.
   }
 @z
 @x
-if (r<=0) {
-  fprintf(stderr,"Parameter r must be positive!\n");
+if (r<=0 || r>9999) {
+  fprintf(stderr,"Parameter r must be between 1 and 9999!\n");
 @y
 if (r<=0 || r>=100) {
   fprintf(stderr,"Parameter r must be between 1 and 99!\n");

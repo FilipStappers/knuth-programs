@@ -88,13 +88,16 @@ main(int argc,char*argv[]) {
   @<Generate clauses to force concurrent critical sections at time |r|@>;
 }
 
-@ @<Process the command line@>=
+@ Times may use at most four decimal digits, since a four-character step
+name must still fit the native SAT limit of eight characters.
+
+@<Process the command line@>=
 if (argc!=2 || sscanf(argv[1],"%d",&r)!=1) {
   fprintf(stderr,"Usage: %s r < foo.dat\n",argv[0]);
   exit(-1);
 }
-if (r<=0) {
-  fprintf(stderr,"Parameter r must be positive!\n");
+if (r<=0 || r>9999) {
+  fprintf(stderr,"Parameter r must be between 1 and 9999!\n");
   exit(-2);
 }
 printf("~ sat-mutex %d\n",r);

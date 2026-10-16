@@ -56,6 +56,31 @@ class MutexExclusion(unittest.TestCase):
         self.assertNotIn(b'runtime error', result.stderr)
         return result.stdout.decode() if raw else native_clauses(result.stdout.decode())
 
+    def test_horizon_names_fit_native_eight_character_limit(self):
+        data = 'A000 maybe goto A000\nB000 maybe goto B000\n'
+        lemmas = self.work/'horizon.lemmas'
+        lemmas.write_text('A000\nB000\n')
+        for name in VARIANTS:
+            limit = 99 if 'distinct' in name else 9999
+            for r in [limit, limit+1]:
+                args = [str(r)]
+                if name.endswith('-lemmas'):
+                    args.append(str(lemmas))
+                elif name == 'sat-mutex-starve':
+                    args.append('0')
+                result = subprocess.run([str(self.programs[name]), *args], input=data.encode(),
+                                        capture_output=True, timeout=10)
+                with self.subTest(variant=name, r=r):
+                    if r > limit:
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertEqual(result.stdout, b'')
+                    else:
+                        self.assertEqual(result.returncode, 0, result.stderr.decode())
+                        clauses = native_clauses(result.stdout.decode())
+                        self.assertTrue(clauses)
+                        self.assertTrue(all(len(lit.lstrip('~')) <= 8
+                                            for clause in clauses for lit in clause))
+
     def test_absent_critical_goal_is_unsatisfiable(self):
         for critical in ['', 'A', 'B']:
             data = ''.join(f'{p}0 maybe goto {p}1\n{p}1 '+
