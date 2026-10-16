@@ -430,6 +430,7 @@ whose goal is to parse and store the input data and to check its validity.
 @d panic(m) {@+fprintf(stderr,""O"s!\n"O"d: "O".99s\n",m,p,buf);@+exit(-666);@+}
 
 @<Input the item names@>=
+p=0; /* a defined diagnostic position even if the first read reaches EOF */
 if (max_nodes<=2*max_cols) {
   fprintf(stderr,"Recompile me: max_nodes must exceed twice max_cols!\n");
   exit(-999);
