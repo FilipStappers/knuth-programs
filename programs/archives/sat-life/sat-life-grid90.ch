@@ -14,6 +14,8 @@ Moreover, this version assumes that $m=n$ and that the configurations
 all have symmetry under 90-degree rotation. (The situation at
 $(x,y)$ is identical to the situation at $(n+1-y,x)$.) Thus the
 number of independent variables is essentially reduced by a factor of~4.
+The center of an odd grid is its own rotation orbit and must be retained
+as a representative instead of being rotated repeatedly.
 @z
 @x
 int tt; /* time as given on the command line */
@@ -87,7 +89,7 @@ if (pp(x-1,y-1)+pp(x-1,y)+pp(x-1,y+1)+
     y=clause[p]&0xfff;
 @y
     y=clause[p]&0xfff;
-    if (c==0) while (x>y || x+y>nn) t=x,x=nn+1-y,y=t;
+    if (c==0) while (x>y || x+y>nn+(x==y)) t=x,x=nn+1-y,y=t;
 @z
 @x
   if (k==0 && (x<xmin || x>xmax || y<ymin || y>ymax || p[x][y]==0))
