@@ -104,6 +104,28 @@ class MultiplicityCover(unittest.TestCase):
                         self.assertIn(b'Forced stack overflow', result.stderr)
                         self.assertEqual(result.stdout, b'')
 
+    def test_nonfinite_weight_parameters_reject(self):
+        data = b'A B | Y\nB Y\nB Y\nA Y\nA\n'
+        for mode in ['base', 'wtd']:
+            for arg in ['wnan', 'winf', 'w-inf', 'w1e1000', 'Wnan', 'Winf', 'W-inf']:
+                with self.subTest(mode=mode, arg=arg):
+                    result = self.solve(mode, data, [arg])
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(b'finite', result.stderr)
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertEqual(result.stdout, b'')
+
+    def test_finite_weight_extremes_preserve_complete_family(self):
+        data = b'A B | Y\nB Y\nB Y\nA Y\nA\n'
+        expected = Counter({(('A',), ('B', 'Y')): 2})
+        for mode in ['base', 'wtd']:
+            for args in [(), ('w0',), ('w-1',), ('w1e-38',), ('w1e38', 'W1e38'),
+                         ('w1', 'W-1'), ('w1', 'W0')]:
+                with self.subTest(mode=mode, args=args):
+                    result = self.solve(mode, data, args)
+                    self.assertEqual(result.returncode, 0, result.stderr.decode())
+                    self.assertEqual(Counter(sparse_covers(result.stdout)), expected)
+
     def test_independent_multiplicity_families(self):
         rng = random.Random(51002)
         for case in range(60):
