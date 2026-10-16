@@ -10,6 +10,8 @@ As in that program, we specify the two lists of words on the command line,
 by naming the files that contain them.
 Those word lists can be limited by appending, say, `\.{:500}'
 to the file name if we want to use only 500 of its words.
+Words must have a common length from 1 through 16 within each list.
+The final word needn't be followed by a newline.
 
 @d infinity 100000000
 
@@ -20,6 +22,26 @@ to the file name if we want to use only 500 of its words.
 int maxmm=infinity, maxnn=infinity;
 FILE *mfile,*nfile;
 char mbuf[80],nbuf[80];
+int read_word(FILE *stream,char *word) {
+  int ch,len=0;
+  while ((ch=fgetc(stream))!=EOF && ch!='\n') {
+    if (!ch || len==16) {
+      fprintf(stderr,"Invalid word or word length exceeds 16!\n");
+      exit(-666);
+    }
+    word[len++]=ch;
+  }
+  if (ferror(stream)) {
+    fprintf(stderr,"Error reading word list!\n");
+    exit(-667);
+  }
+  if (len==0 && ch=='\n') {
+    fprintf(stderr,"Empty word in word list!\n");
+    exit(-666);
+  }
+  word[len]=0;
+  return len;
+}
 main(int argc, char*argv[]) {
   register int i,j,k,m,n;
   register char *w;
@@ -46,15 +68,9 @@ if (!(mfile=fopen(argv[1],"r"))) {
   fprintf(stderr,"I can't open file `%s' for reading m-words!\n",argv[1]);
   exit(-2);
 }
-if (!fgets(mbuf,80,mfile)) {
+if (!(m=read_word(mfile,mbuf))) {
   fprintf(stderr,"The file `%s' of m-words is empty!\n",argv[1]);
   exit(-222);
-}
-m=strchr(mbuf,'\n')-mbuf;
-if (m>16) {
-  fprintf(stderr,"I don't allow m=%d, since that's bigger than 16!\n",
-                                          m);
-  exit(-666);
 }
 w=strchr(argv[2],':');
 if (w) { /* colon in filename */
@@ -68,15 +84,9 @@ if (!(nfile=fopen(argv[2],"r"))) {
   fprintf(stderr,"I can't open file `%s' for reading n-words!\n",argv[2]);
   exit(-3);
 }
-if (!fgets(nbuf,80,nfile)) {
+if (!(n=read_word(nfile,nbuf))) {
   fprintf(stderr,"The file `%s' of n-words is empty!\n",argv[1]);
   exit(-333);
-}
-n=strchr(nbuf,'\n')-nbuf;
-if (n>16) {
-  fprintf(stderr,"I don't allow n=%d, since that's bigger than 16!\n",
-                                          n);
-  exit(-666);
 }
 printf("| word-rect-dlx");
 if (maxmm<infinity) printf(" %s:%d",
@@ -112,8 +122,13 @@ for (k=1;;k++) {
               i,j,mbuf[i]);
     printf("\n");
   }
-  if (!fgets(mbuf,80,mfile)) break;
   if (k==maxmm) break;
+  i=read_word(mfile,mbuf);
+  if (!i) break;
+  if (i!=m) {
+    fprintf(stderr,"Column word has length %d, expected %d!\n",i,m);
+    exit(-666);
+  }
 }
 fprintf(stderr,"OK, I've read %d words from file `%s',\n",
                            k,argv[1]);
@@ -127,8 +142,13 @@ for (k=1;;k++) {
               i,j,nbuf[j]);
     printf("\n");
   }
-  if (!fgets(nbuf,80,nfile)) break;
   if (k==maxnn) break;
+  j=read_word(nfile,nbuf);
+  if (!j) break;
+  if (j!=n) {
+    fprintf(stderr,"Row word has length %d, expected %d!\n",j,n);
+    exit(-666);
+  }
 }
 fprintf(stderr," and read %d words from file `%s'.\n",
                            k,argv[2]);
