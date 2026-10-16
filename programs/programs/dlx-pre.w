@@ -123,7 +123,7 @@ $$\vcenter{\halign{\tt#\cr
 \char"7C\ (from 4)\cr
  B\cr
 \char"7C\ (from 5)\cr
- C\cr
+ E\cr
 \char"7C\ (from 1)\cr
 }}$$
 And from the second problem it is similar, but not quite as simple:
