@@ -66,7 +66,7 @@ abort:@+@<Increase the weight of |tough_itm|@>;
     }@+else {
       o,w=wt(item[k]);
       tscore=s/w;
-      if (tscore>=infty) tscore=dangerous;
+      if (!isfinite(tscore) || tscore>=infty) tscore=dangerous;
       if (tscore<=score) {
         if (tscore<score) best_itm=item[k],score=tscore,t=s;
         else if (item[k]<best_itm) best_itm=item[k];

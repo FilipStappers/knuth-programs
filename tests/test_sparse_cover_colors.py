@@ -62,8 +62,8 @@ class SparseCoverColors(unittest.TestCase):
     def tearDownClass(cls):
         cls.temp.cleanup()
 
-    def run_matrix(self, program, matrix):
-        return subprocess.run([str(program), 'm1', 'v1'], input=matrix,
+    def run_matrix(self, program, matrix, args=()):
+        return subprocess.run([str(program), 'm1', 'v1', *args], input=matrix,
                               capture_output=True, timeout=5,
                               env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
 
@@ -75,6 +75,28 @@ class SparseCoverColors(unittest.TestCase):
                     self.assertNotEqual(result.returncode, 0)
                     self.assertIn(b'Primary item must be uncolored', result.stderr)
                     self.assertNotIn(b'runtime error', result.stderr)
+
+    def test_nonfinite_weight_parameters_reject_before_search(self):
+        matrix = b'A B | Y\nB Y\nB Y\nA Y\nA\n'
+        for name in ['ssxcc-binary', 'ssxcc-wtd']:
+            for arg in ['wnan', 'winf', 'w-inf', 'w1e1000', 'Wnan', 'Winf', 'W-inf']:
+                with self.subTest(program=name, arg=arg):
+                    result = self.run_matrix(self.programs[name], matrix, [arg])
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(b'finite', result.stderr)
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertEqual(result.stdout, b'')
+
+    def test_finite_weight_extremes_preserve_the_complete_cover_family(self):
+        matrix = b'A B | Y\nB Y\nB Y\nA Y\nA\n'
+        expected = Counter({(('A',), ('B', 'Y')): 2})
+        for name in ['ssxcc-binary', 'ssxcc-wtd']:
+            for args in [(), ('w0',), ('w-1',), ('w1e-38',), ('w1e38', 'W1e38'),
+                         ('w1', 'W-1'), ('w1', 'W0')]:
+                with self.subTest(program=name, args=args):
+                    result = self.run_matrix(self.programs[name], matrix, args)
+                    self.assertEqual(result.returncode, 0, result.stderr.decode())
+                    self.assertEqual(Counter(sparse_covers(result.stdout)), expected)
 
     def test_complete_colored_and_uncolored_families_with_duplicate_options(self):
         types = [('A',), ('B',), ('A', 'B'), ('A', 'X'), ('B', 'X'), ('A', 'B', 'X')]

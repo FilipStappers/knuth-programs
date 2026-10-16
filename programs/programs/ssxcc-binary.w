@@ -64,6 +64,7 @@ input or to format the output.)
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 #include "gb_flip.h"
 typedef unsigned int uint; /* a convenient abbreviation */
 typedef unsigned long long ullng; /* ditto */
@@ -199,6 +200,10 @@ case 'S': shape_name=argv[j]+1, shape_file=fopen(shape_name,"w");
       shape_name);
   break;
 default: k=1; /* unrecognized command-line option */
+}
+if (!isfinite(dw) || !isfinite(dwfactor)) {
+  fprintf(stderr,"Weight parameters must be finite!\n");
+  exit(-2);
 }
 if (k) {
   fprintf(stderr, "Usage: "O"s [v<n>] [m<n>] [s<n>] [d<n>]"
@@ -747,7 +752,8 @@ forward: nodes++;
     o,best_itm=force[--forced];
     @<Do a forced move and |goto advance|@>;
   }
-  if (t==inf_size) @<Visit a solution and |goto backup|@>;
+  for (k=0;k<active;k++) if (o,item[k]<second) break;
+  if (k==active) @<Visit a solution and |goto backup|@>;
   @<Save the currently active items and their sizes@>;
 advance: oo,choice[level]=cur_choice=set[best_itm].i;
   o,deg[level]=t;
