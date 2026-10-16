@@ -346,7 +346,7 @@ want to bother with fancy coding that would determine $h$ automatically.
 while (1) {
   if (!fgets(buf,buf_size,stdin)) break;
   clauses++;
-  if (buf[strlen(buf)-1]!='\n') {
+  if (buf[0]==0 || buf[strlen(buf)-1]!='\n') {
     fprintf(stderr,
       "The clause on line "O"lld ("O".20s...) is too long for me;\n",clauses,buf);
     fprintf(stderr," my buf_size is only "O"d!\n",buf_size);

@@ -212,7 +212,7 @@ while (1) {
 for (kk=0;kk<kkk;kk++) {
   if (!fgets(buf,buf_size,erp_file)) break;
   clauses++;
-  if (buf[strlen(buf)-1]!='\n') {
+  if (buf[0]==0 || buf[strlen(buf)-1]!='\n') {
     fprintf(stderr,
       "The clause on line "O"lld ("O".20s...) is too long for me;\n",clauses,buf);
     fprintf(stderr," my buf_size is only "O"d!\n",buf_size);
