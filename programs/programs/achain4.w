@@ -329,6 +329,7 @@ doublecheck:@+while (p<a[r] && a[r-1]==b[r-1]) r--;
       else q=b[r-2],p=a[s]-q;
     }
   }
+  if (p>limit[s]) goto backup; /* fixed slots may exhaust the candidates */
   if (ubq>=s) ubq=s-1;
   while (q>=a[ubq+1]) ubq++;
   while (q<a[ubq]) ubq--;
