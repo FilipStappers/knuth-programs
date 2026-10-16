@@ -49,7 +49,7 @@ we also set |c[l]| to 1 if we swapped, 0 if we didn't.
 
 @<Global variables@>=
 int n; /* number of elements to be reflected */
-int a[10]; /* array that shows progress */
+int a[11]; /* array that shows progress, indexed 1 through |n| */
 int k; /* number of inversions yet to be removed */
 int j; /* current place in array */
 int l; /* current choice level */
