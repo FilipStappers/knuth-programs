@@ -1811,7 +1811,7 @@ if (r) {
 return r;  
 
 @ The disproduct operation is similar to product, but it evaluates
-$\{\alpha\cup\beta\mid \alpha\in f, \beta\in g, \alpha\cup\beta=\emptyset\}$.
+$\{\alpha\cup\beta\mid \alpha\in f, \beta\in g, \alpha\cap\beta=\emptyset\}$.
 (In other words, all unions of {\it disjoint\/} members of $f$ and~$g$, not
 all unions of the members.)
 
