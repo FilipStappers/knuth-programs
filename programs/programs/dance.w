@@ -28,6 +28,8 @@ even more verbose.
 
 @c
 #include <stdio.h>
+#include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
@@ -41,7 +43,17 @@ main(argc,argv)
 {
   @<Local variables@>;
   verbose=argc-1;
-  if (verbose) sscanf(argv[1],"%d",&spacing);
+  if (verbose) {
+    char *end;
+    long value;
+    errno=0;
+    value=strtol(argv[1],&end,10);
+    if (errno==ERANGE || end==argv[1] || *end || value<=0 || value>INT_MAX) {
+      fprintf(stderr,"Spacing must be a positive integer at most %d!\n",INT_MAX);
+      exit(-2);
+    }
+    spacing=(int)value;
+  }
   @<Initialize the data structures@>;
   @<Backtrack through all solutions@>;
   printf("Altogether %lld solutions, after %.15g updates.\n",count,updates);

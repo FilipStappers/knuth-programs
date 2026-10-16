@@ -21,7 +21,7 @@ class HistoricalDanceBoundaries(unittest.TestCase):
             subprocess.run(['ctangle', str(ROOT/'programs/programs'/(name+'.w')),
                             '-', str(generated)], check=True, capture_output=True)
             program = cls.work/name
-            subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-include', 'stdlib.h',
+            subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-Werror=implicit-function-declaration',
                             '-O1', '-fsanitize=address,undefined,bounds', '-fno-sanitize-recover=all',
                             str(generated), '-o', str(program)], check=True, capture_output=True)
             cls.programs[name] = program
@@ -71,6 +71,42 @@ class HistoricalDanceBoundaries(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr.decode())
                 self.assertIn(b'Altogether 1 solutions', result.stdout)
                 # The profile includes the terminal node after all n choices.
+                self.assertNotIn(b'runtime error', result.stderr)
+
+    def test_solution_spacing_requires_a_positive_representable_integer(self):
+        for name in self.programs:
+            for value in ['0', '-1', 'junk', '1x', '99999999999999999999999']:
+                with self.subTest(program=name, spacing=value):
+                    result = self.run_matrix(name, b'A\nA\n', [value])
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(b'Spacing', result.stderr)
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertNotIn(b'AddressSanitizer', result.stderr)
+            for value in ['1', '2', '2147483647']:
+                result = self.run_matrix(name, b'A\nA\n', [value])
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                self.assertIn(b'Altogether 1 solutions', result.stdout)
+
+    def test_distributed_historical_changes_still_compose(self):
+        for base, change in [('dance', 'dance-random'), ('gdance', 'gdance-cutoff')]:
+            with self.subTest(change=change):
+                generated = self.work/(change+'.c')
+                subprocess.run(['ctangle', str(ROOT/'programs/programs'/(base+'.w')),
+                                str(ROOT/'programs/programs'/(change+'.ch')), str(generated)],
+                               check=True, capture_output=True)
+                sgb = os.environ.get('GRAPHBASE')
+                if base == 'dance' and not sgb:
+                    continue  # tangle is still checked without the optional RNG library
+                program = self.work/change
+                command = ['gcc', '-std=gnu99', '-Wno-implicit-int', '-Werror=implicit-function-declaration',
+                           '-O1', '-fsanitize=undefined,bounds', '-fno-sanitize-recover=all',
+                           str(generated)]
+                if base == 'dance':
+                    command += ['-I'+sgb, str(Path(sgb)/'gb_flip.c')]
+                subprocess.run(command+['-o', str(program)], check=True, capture_output=True)
+                result = subprocess.run([str(program), '1'], input=b'A\nA\n',
+                                        capture_output=True, timeout=5)
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
                 self.assertNotIn(b'runtime error', result.stderr)
 
 
