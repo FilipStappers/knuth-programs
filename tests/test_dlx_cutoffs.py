@@ -63,7 +63,7 @@ class DlxCutoffs(unittest.TestCase):
         self.assertTrue(optimal <= set(actual), (rows, actual, optimal))
         return actual
 
-    def test_both_changes_compose_and_preserve_deterministic_minimax_families(self):
+    def test_both_changes_preserve_minimax_families_with_or_without_random_ties(self):
         rng = random.Random(48054)
         for case in range(70):
             rows = set()
@@ -76,8 +76,14 @@ class DlxCutoffs(unittest.TestCase):
                 rows.add(tuple(row))
             # Colored secondaries leave the combined variant's special kludge inactive.
             for name, program in self.programs.items():
-                with self.subTest(case=case, change=name):
-                    self.check_family(sorted(rows), ['A', 'B', 'C'], program)
+                for args in [(), ('s1',), ('s17',)]:
+                    with self.subTest(case=case, change=name, args=args):
+                        self.check_family(sorted(rows), ['A', 'B', 'C'], program, args)
+
+    def test_random_seed_preserves_order_required_by_cutoffs(self):
+        rows = [('A',), ('A', 'C', 'X', 'Y:a'), ('A', 'X:b', 'Y:b'),
+                ('B', 'C', 'X:b', 'Y:a'), ('B', 'C', 'Y:a'), ('B', 'X:b', 'Y:b')]
+        self.check_family(rows, ['A', 'B', 'C'], self.programs['dlx2-cutoff'], ['s1'])
 
 
 if __name__ == '__main__':

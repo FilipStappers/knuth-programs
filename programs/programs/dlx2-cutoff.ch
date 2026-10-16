@@ -38,6 +38,20 @@ int cutoff=max_nodes; /* nodes after this point have essentially disappeared */
 @d sanity_checking 0 /* set this to 1 if you suspect a bug */
 @z
 @x
+if (!randomizing) {
+  o,r=nd[k].up; /* the ``bottom'' node of the item list */
+  ooo,nd[r].down=nd[k].up=last_node,nd[last_node].up=r,nd[last_node].down=k;
+}@+else {
+  mems+=4,t=gb_unif_rand(t); /* choose a random number of nodes to skip past */
+  for (o,r=k;t;o,r=nd[r].down,t--) ;
+  ooo,q=nd[r].up,nd[q].down=nd[r].up=last_node;
+  o,nd[last_node].up=q,nd[last_node].down=r;
+}
+@y
+o,r=nd[k].up; /* cutoff trimming requires original option order */
+ooo,nd[r].down=nd[k].up=last_node,nd[last_node].up=r,nd[last_node].down=k;
+@z
+@x
 @ I used to think that it was important to uncover an item by
 processing its options from bottom to top, since covering was done
 from top to bottom. But while writing this
