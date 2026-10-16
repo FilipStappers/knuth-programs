@@ -1468,8 +1468,8 @@ so we can write $f(x,y)=\bigl(x\lor\alpha(y)\bigr)\land
 \bigl(\bar x\lor\beta(y)\bigr)\land\gamma(y)$, where $\alpha$, $\beta$,
 and $\gamma$ are also in~{\mc CNF}. Since $\exists x\,f(x,y)=
 f(0,y)\lor f(1,y)$, we can eliminate~$x$ and get the $x$-free problem
-$\exists y\,\bigl(\alpha(y)\lor\gamma(y)\bigr)\land
-            \bigl(\beta (y)\lor\gamma(y)\bigr)=
+$\exists y\,\bigl(\alpha(y)\land\gamma(y)\bigr)\lor
+            \bigl(\beta (y)\land\gamma(y)\bigr)=
  \exists y\,\bigl(\alpha(y)\lor\beta(y)\bigr)\land\gamma(y)$.
 
 Computationally this means that
