@@ -171,12 +171,12 @@ for (j=0;j<n;j++) {
     box[x][d-1]=k+1;
   }
   if (boxcount[x]==0) bc++;
-  if (inbox[k][j]&(1<<x)) {
+  if (inbox[k][j]&(1U<<x)) {
     fprintf(stderr,"box %c already contains the cell in row %c, column %c!\n",
                              encode(x),encode(k),encode(j));
     exit(-13);
   }
-  inbox[k][j]|=1<<x, boxcount[x]++;
+  inbox[k][j]|=1U<<x, boxcount[x]++;
   if (boxcount[x]>n) {
     fprintf(stderr,"box %c contains more than %d cells!\n",
                          encode(x),n);
@@ -229,14 +229,14 @@ printf("\n");
 for (i=0;i<n;i++) for (j=0;j<n;j++) for (d=0;d<n;d++) {
   if (pos[i][j]!=0 || row[i][d]!=0 || col[j][d]!=0) continue;
   for (x=0;x<32;x++) {
-    if ((inbox[i][j]&(1<<x))==0) continue;
+    if ((inbox[i][j]&(1U<<x))==0) continue;
     if (box[x][d]!=0) break;
   }
   if (x<32) continue;
   printf("p%c%c r%c%c c%c%c",
              encode(i),encode(j),encode(i),encode(d+1),encode(j),encode(d+1));
   for (x=0;x<32;x++) {
-    if ((inbox[i][j]&(1<<x))==0) continue;
+    if ((inbox[i][j]&(1U<<x))==0) continue;
     printf(" b%c%c",
              encode(x),encode(d+1));
   }
