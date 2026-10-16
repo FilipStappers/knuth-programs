@@ -94,6 +94,7 @@ impatient to see the interesting stuff.)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "gb_flip.h"
 typedef unsigned int uint; /* a convenient abbreviation */
 typedef unsigned long long ullng; /* ditto */
@@ -1924,11 +1925,12 @@ obsolete.)
 
 @<Initialize the heap from a file@>=
 {
+  char buf[10]; /* eight name bytes, an optional tilde, and the terminator */
   if (true_prob>=1.0) true_prob_thresh=0x80000000;
   else true_prob_thresh=(int)(true_prob*2147483648.0);
   for (q=0;;) {
     register tmp_var *p;
-    if (fscanf(polarity_infile,""O"s",buf)!=1) break;
+    if (!read_polarity_token(polarity_infile,buf)) break;
     if (buf[0]=='~') i=j=1;
     else i=j=0;
     @<Put the variable name...@>;
@@ -1957,6 +1959,32 @@ obsolete.)
     o,heap[q]=v;
   }
   hn=vars;
+}
+
+@ Polarity tokens have their own bounded buffer, independent of the clause
+buffer size. Validate the complete literal before looking up its name.
+
+@<Subroutines@>=
+int read_polarity_token(FILE *file, char token[10]) {
+  int c,k=0;
+  do c=fgetc(file); while (c!=EOF && isspace((unsigned char)c));
+  if (c==EOF) {
+    if (ferror(file)) goto bad_polarity;
+    return 0;
+  }
+  do {
+    if (k==9 || !((c>='!' && c<='}') || (k==0 && c=='~')))
+      goto bad_polarity;
+    token[k++]=c;
+    c=fgetc(file);
+  } while (c!=EOF && !isspace((unsigned char)c));
+  if (ferror(file) || k==(token[0]=='~') || (k==9 && token[0]!='~'))
+    goto bad_polarity;
+  token[k]=0;
+  return 1;
+bad_polarity:
+  fprintf(stderr,"Invalid or overlong polarity literal!\n");
+  exit(-667);
 }
 
 @ @<Glob...@>=

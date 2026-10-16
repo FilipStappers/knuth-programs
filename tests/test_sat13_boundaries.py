@@ -201,6 +201,35 @@ for (k=1;k<=vars;k++) if (vmem[k].activity<0.0) {
                 with self.subTest(text=text, build=build):
                     self.check_formula(data, ['z'+str(path)], build)
 
+    def test_polarity_tokens_are_bounded_independently_of_clause_buffer(self):
+        path = self.work/'long.polarity'
+        for size in [9, 1024, 4096]:
+            for prefix in ['', '~']:
+                path.write_text(prefix+'x'*size+'\n')
+                result = self.run_solver(b'x\n', ['b3', 'z'+str(path)])
+                with self.subTest(size=size, prefix=prefix):
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn(b'AddressSanitizer', result.stderr)
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertEqual(result.stdout, b'')
+
+    def test_polarity_grammar_and_complete_eight_character_names(self):
+        path = self.work/'tokens.polarity'
+        for token in [b'~', b'a~', b'x\0junk', b'\x7f', b'\xff']:
+            path.write_bytes(token+b'\n')
+            result = self.run_solver(b'x\n', ['z'+str(path)])
+            with self.subTest(token=token):
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertNotIn(b'runtime error', result.stderr)
+        for token in [b'abcdefgh', b'~abcdefgh', b'abcdefgh\t~ijklmnop']:
+            path.write_bytes(token)  # EOF may terminate a token.
+            with self.subTest(token=token):
+                self.check_formula(b'abcdefgh ijklmnop\n', ['z'+str(path)])
+        # An unknown eight-byte name must also fit when the clause buffer is tiny.
+        path.write_bytes(b'abcdefgh')
+        self.check_formula(b'x\n', ['b3', 'z'+str(path)])
+
 
 if __name__ == '__main__':
     unittest.main()
