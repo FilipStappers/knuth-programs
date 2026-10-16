@@ -24,6 +24,7 @@ that has this name.
 means that nothing about boxes is being specified for this cell in this group.
 \smallskip\noindent
 Boxes can overlap, but only if they're specified in different groups.
+Box labels at holes are ignored; holes do not contribute to box sizes.
 When the input has ended, every box that has been specified should contain
 at most $n$ cells.
 
@@ -162,6 +163,7 @@ for (j=0;j<n;j++) {
     exit(-7);
   }
   d=pos[k][j];
+  if (d<0) continue;
   if (d>0) {
     if (box[x][d-1]) {
       fprintf(stderr,"digit %c appears in rows %c and %c of box %c!\n",

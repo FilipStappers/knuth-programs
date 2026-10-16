@@ -1,9 +1,11 @@
 """B052: generalized Sudoku matrices and direct filling families."""
 import os
+import itertools
 from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from test_dlx6_memo import subsets
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -28,6 +30,44 @@ class GeneralSudoku(unittest.TestCase):
     def solve(self, data):
         return subprocess.run([str(self.program)], input=data, capture_output=True, timeout=5,
                               env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
+
+    def test_holes_do_not_increase_region_coverage_demands(self):
+        groups_cases = [[], [['00', '..']], [['00', '..'], ['1.', '1.']]]
+        positions = [(i, j) for i in range(2) for j in range(2)]
+        for mask in range(16):
+            holes = {p for bit, p in enumerate(positions) if mask >> bit & 1}
+            grid = [''.join('#' if (i, j) in holes else '.' for j in range(2)) for i in range(2)]
+            cells = [p for p in positions if p not in holes]
+            for groups in groups_cases:
+                with self.subTest(mask=mask, groups=groups):
+                    regions = [{(i, j) for i, j in cells if group[i][j] == label}
+                               for group in groups for label in '01']
+                    units = [{(i, j) for j in range(2)} for i in range(2)]
+                    units += [{(i, j) for i in range(2)} for j in range(2)]
+                    units += regions
+                    expected = set()
+                    for values in itertools.product([1, 2], repeat=len(cells)):
+                        filling = dict(zip(cells, values))
+                        if all(len(vals := [value for p, value in filling.items() if p in unit])
+                               == len(set(vals)) for unit in units):
+                            expected.add(tuple(sorted(filling.items())))
+                    data = ('\n'.join(grid+sum(groups, []))+'\n').encode()
+                    result = self.solve(data)
+                    self.assertEqual(result.returncode, 0, result.stderr.decode())
+                    lines = [line.split() for line in result.stdout.decode().splitlines()
+                             if not line.startswith('|sudoku')]
+                    primary = lines[0][:lines[0].index('|')]
+                    rows = lines[1:]
+                    actual = set()
+                    for chosen in subsets(rows, primary):
+                        filling = {}
+                        for index in chosen:
+                            row = rows[index-1]
+                            pos = next(t for t in row if t.startswith('p'))
+                            digit = int(next(t for t in row if t.startswith('r'))[2])
+                            filling[int(pos[1]), int(pos[2])] = digit
+                        actual.add(tuple(sorted(filling.items())))
+                    self.assertEqual(actual, expected)
 
     def test_unsigned_box_bits_for_all_supported_sizes(self):
         for n in [1, 2, 9, 32]:
