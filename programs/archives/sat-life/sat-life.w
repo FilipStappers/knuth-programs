@@ -158,12 +158,12 @@ for (x=1;;x++) {
   }
 }
 
-@ @d pp(xx,yy) ((xx)>=0 && (yy)>=0? p[xx][yy]: 0)
+@ @d pp(xx,yy) ((xx)>=0 && (yy)>=0 && (xx)<maxx+2 && (yy)<maxy+2? p[xx][yy]: 0)
 
 @<If cell $(x,y)$ is obviously dead at time $t+1$, |continue|@>=
 if (pp(x-1,y-1)+pp(x-1,y)+pp(x-1,y+1)+
-    pp(x,y-1)+p[x][y]+p[x][y+1]+
-    pp(x+1,y-1)+p[x+1][y]+p[x+1][y+1]<3) continue;
+    pp(x,y-1)+pp(x,y)+pp(x,y+1)+
+    pp(x+1,y-1)+pp(x+1,y)+pp(x+1,y+1)<3) continue;
 
 @ Clauses are assembled in the |clause| array (surprise), where we
 put encoded literals.

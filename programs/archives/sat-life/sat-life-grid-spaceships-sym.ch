@@ -63,12 +63,12 @@ if (argc!=5 || sscanf(argv[1],"%d",&mm)!=1 ||
 printf("~ sat-life-grid-spaceships-sym %d %d %d %d\n",mm,nn,r,s);
 @z
 @x
-@ @d pp(xx,yy) ((xx)>=0 && (yy)>=0? p[xx][yy]: 0)
+@ @d pp(xx,yy) ((xx)>=0 && (yy)>=0 && (xx)<maxx+2 && (yy)<maxy+2? p[xx][yy]: 0)
 
 @<If cell $(x,y)$ is obviously dead at time $t+1$, |continue|@>=
 if (pp(x-1,y-1)+pp(x-1,y)+pp(x-1,y+1)+
-    pp(x,y-1)+p[x][y]+p[x][y+1]+
-    pp(x+1,y-1)+p[x+1][y]+p[x+1][y+1]<3) continue;
+    pp(x,y-1)+pp(x,y)+pp(x,y+1)+
+    pp(x+1,y-1)+pp(x+1,y)+pp(x+1,y+1)<3) continue;
 @y
 @ @d pp(xx,yy) (((xx)<xmin || (yy)<ymin || (xx)>xmax || (yy)>ymax)? 0: 1)
 
