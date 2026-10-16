@@ -2723,9 +2723,12 @@ prev_learned=0;
 recycle_point=0;
 
 @ @<Compress the database@>=
-for (o,j=minrange,s=asserts+rangedist[j];s<budget&&j<maxrange;)
-  o,s+=rangedist[++j];
-if (s>budget) @<Remove |t=s-budget| clauses at the threshold@>;
+j=0; /* keep asserting clauses even if they already fill the budget */
+if (asserts<budget && minrange<buckets) {
+  for (o,j=minrange,s=asserts+rangedist[j];s<budget&&j<maxrange;)
+    o,s+=rangedist[++j];
+  if (s>budget) @<Remove |t=s-budget| clauses at the threshold@>;
+}
 for (k=minrange>>1;k+k<=maxrange;k++) o,rangedist[k+k]=rangedist[k+k+1]=0;
 for (h=0,cc=c=first_learned;c<max_learned;c=endc+learned_extra) {
   o,jj=endc=c+size(c);

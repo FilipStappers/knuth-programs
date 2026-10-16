@@ -1,6 +1,7 @@
 """B056: SAT13 storage and auxiliary-input regressions with Boolean oracles."""
 import itertools
 import os
+import random
 from pathlib import Path
 import subprocess
 import tempfile
@@ -90,6 +91,57 @@ class Sat13Boundaries(unittest.TestCase):
                            if mask & (1 << i)).encode()
             with self.subTest(mask=mask):
                 self.check_formula(data)
+
+    def test_recycling_when_no_old_clause_has_a_scored_range(self):
+        data = '\n'.join(' '.join(('~' if bit else '')+f'v{i}'
+                                  for i, bit in enumerate(bits))
+                         for bits in itertools.product([False, True], repeat=3))+'\n'
+        for build in self.programs:
+            with self.subTest(build=build):
+                self.check_formula(data.encode(), ('w2', 'j2', 'J2'), build)
+
+    def check_learned_proof(self, data, build):
+        path = self.work/'learned.sat'
+        self.check_formula(data, ('w2', 'j2', 'J2', 't1', 's37', 'l'+str(path)), build)
+        known = [line.split() for line in data.decode().splitlines()]
+        for clause in [line.split() for line in path.read_text().splitlines()]:
+            # Reverse unit propagation: negate this clause, then derive conflict.
+            assigned = {lit.lstrip('~'): lit.startswith('~') for lit in clause}
+            conflict = any(name in clause and '~'+name in clause for name in assigned)
+            changed = True
+            while changed and not conflict:
+                changed = False
+                for old in known:
+                    if any(lit.lstrip('~') in assigned and
+                           assigned[lit.lstrip('~')] != lit.startswith('~') for lit in old):
+                        continue
+                    free = [lit for lit in old if lit.lstrip('~') not in assigned]
+                    if not free:
+                        conflict = True
+                        break
+                    if len(free) == 1:
+                        lit = free[0]
+                        assigned[lit.lstrip('~')] = not lit.startswith('~')
+                        changed = True
+            self.assertTrue(conflict, f'Failed RUP: {clause}')
+            known.append(clause)
+
+    def test_saved_recycling_witness_and_aggressive_learned_proofs(self):
+        saved = (b'~v6 v2 v4\nv3 ~v7 v6\n~v7 ~v4 v5\n~v2 v3 v4\n'
+                 b'~v3 ~v2 ~v6\n~v7 ~v8 ~v2\nv1 ~v8 v6\nv1 ~v7 v8\n'
+                 b'~v7 ~v6 ~v5\nv6 ~v3 ~v1\n')
+        rng = random.Random(56013)
+        cases = [saved]
+        for _ in range(32):
+            clauses = []
+            for _ in range(rng.randint(20, 36)):
+                clauses.append(' '.join(('~' if rng.getrandbits(1) else '')+f'v{i}'
+                                        for i in rng.sample(range(1, 9), 3)))
+            cases.append(('\n'.join(clauses)+'\n').encode())
+        for case, data in enumerate(cases):
+            for build in self.programs:
+                with self.subTest(case=case, build=build):
+                    self.check_learned_proof(data, build)
 
 
 if __name__ == '__main__':
