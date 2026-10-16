@@ -1,6 +1,7 @@
 """B054: bounded SAT9 error paths and residual-formula contracts."""
 import os
 import itertools
+import random
 from pathlib import Path
 import subprocess
 import tempfile
@@ -61,9 +62,9 @@ class Sat9Reduction(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr.decode())
         self.assertNotIn(b'AddressSanitizer', result.stderr)
         self.assertNotIn(b'runtime error', result.stderr)
-        if result.stdout.strip() == b'~~?':
+        if result.stdout.split()[-1:] == [b'~~?']:
             self.assertTrue(allow_unknown)
-            return
+            return False
         partial = result.stdout.decode().split()
         self.assertFalse(any('~'+lit in partial for lit in partial))
         assigned = {lit.lstrip('~'): not lit.startswith('~') for lit in partial}
@@ -82,9 +83,36 @@ class Sat9Reduction(unittest.TestCase):
         for bits in itertools.product([False, True], repeat=len(free)):
             assignment = assigned | dict(zip(free, bits))
             self.assertEqual(value(original, assignment), value(residual, assignment))
+        return True
 
     def test_ordinary_reduction_keeps_projected_semantics(self):
         self.check_residual(b'a b\n', 50, 123, allow_unknown=False)
+
+    def test_zero_confidence_peer_crash(self):
+        data = (b'abcdefgh ijklmnop ~qrstuvwx ~yzABCDEF\n'
+                b'~abcdefgh ~ijklmnop ~qrstuvwx ~yzABCDEF\n'
+                b'abcdefgh ~ijklmnop qrstuvwx ~yzABCDEF\n'
+                b'abcdefgh ~ijklmnop ~qrstuvwx yzABCDEF\n')
+        # Detecting a contradiction in a heuristic choice may return UNKNOWN.
+        # A crash or a residual inconsistent with the printed choice may not.
+        self.check_residual(data, 0, 980003)
+
+    def test_confidence_boundaries_preserve_residual_truth_tables(self):
+        rng = random.Random(54009)
+        names = ['abcdefgh', 'ijklmnop', 'qrstuvwx', 'yzABCDEF']
+        reduced = dict.fromkeys([0, 1, 50, 100], 0)
+        for case in range(40):
+            clauses = []
+            for _ in range(rng.randint(1, 6)):
+                clause = [(('~' if rng.getrandbits(1) else '')+name)
+                          for name in rng.sample(names, rng.randint(1, 4))]
+                clauses.append(' '.join(clause))
+            data = ('\n'.join(clauses)+'\n').encode()
+            for confidence in reduced:
+                with self.subTest(case=case, confidence=confidence):
+                    reduced[confidence] += self.check_residual(data, confidence,
+                                                             990000+case*101+confidence)
+        self.assertTrue(all(reduced.values()), reduced)
 
 
 if __name__ == '__main__':

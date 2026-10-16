@@ -946,6 +946,7 @@ for (l=0;l<vars+vars;l+=2) {
   if (acc<0) acc=-acc;
   j=(int)(100.0*acc);
   if (j>=confidence) {
+    if (acc==0.0) o,lmem[l].rating=+1; /* fix a tie positively, as in |fixlist| */
     oo,lmem[l+1].rating=bucket[j];
     o,bucket[j]=l+1;
     fixcount++;
@@ -1061,8 +1062,10 @@ contra: printf("\n");
 }
 
 @ @<Reduce the problem@>=
-for (k=100;k>=confidence;k--)
+for (k=100;;k--) {
   if (ooo,fixlist(bucket[k],k)==0) goto contradiction;
+  if (k==confidence) break;
+}
 while (unit&1) {
   p=unit, unit=2;
   if (oo,fixlist(p,-1)==0) goto contradiction;
