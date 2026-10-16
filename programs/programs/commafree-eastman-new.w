@@ -62,6 +62,10 @@ if (argc<4) {
   exit(-1);
 }
 n=argc-1;
+if (n>maxn) {
+  fprintf(stderr,"The number of items must be at most %d!\n",maxn);
+  exit(-4);
+}
 if ((n&1)==0) {
   fprintf(stderr,"The number of items, n, should be odd, not %d!\n",n);
   exit(-2);
