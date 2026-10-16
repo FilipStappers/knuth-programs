@@ -6,7 +6,7 @@
   }
 @y [this was hacked from dlx1-polycube.ch in the obvious way]
   if (spacing && (count mod spacing==0)) {
-    register cc,d,l,t,x,y,piece='?';
+    register cc,d,t,x,y,piece='?';
     for (k=0;k<=level;k++) {
       for (r=choice[k]+1;;) {
         cc=nd[r].itm;
@@ -28,7 +28,6 @@
           if (y>ymax) ymax=y;
           if (x<xmin) xmin=x;
           if (y<ymin) ymin=y;
-          l++;
           if (k<10) box[x+1][y+1]=k+'0';
           else if (k<36) box[x+1][y+1]=k-10+'a';
           else if (k<62) box[x+1][y+1]=k-36+'A';
