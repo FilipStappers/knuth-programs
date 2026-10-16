@@ -75,7 +75,15 @@ if (x0<-y0) {
   fprintf(stderr,"The value of x0 should be at least -y0!\n");
   exit(-3);
 }
-r=(x0>0?2*(x0+y0):x0+2*y0);
+{
+  long long rounds=(x0>0?2LL*(x0+(long long)y0):x0+2LL*y0);
+  if (rounds>(maxx-1)/2 || rounds>(maxy-1)/2 ||
+      rounds>(int)sizeof(timecode)-2) {
+    fprintf(stderr,"The required board or time codes exceed compiled capacity!\n");
+    exit(-666);
+  }
+  r=(int)rounds;
+}
 printf("~ sat-life-upper %d %d\n",x0,y0);
 @z
 @x
