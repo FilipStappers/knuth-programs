@@ -579,6 +579,10 @@ for (j=92;j;j--) for (k=0;k<8;k++)
 @ @<Put the variable name beginning at |buf[j]| in |cur_tmp_var->name|...@>=
 cur_tmp_var->name.lng=0;
 for (h=l=0;buf[j+l]>' '&&buf[j+l]<='~';l++) {
+  if (buf[j+l]=='~') {
+    fprintf(stderr,"Illegal tilde in variable name!\n");
+    exit(-8);
+  }
   if (l>7) {
     fprintf(stderr,
         "Variable name "O".9s... in the clause on line "O"lld is too long!\n",
