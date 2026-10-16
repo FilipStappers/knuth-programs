@@ -5,29 +5,31 @@ the literals of the form \.{$d$a$d$} into the rectangular ``\.{dots}''
 format of periods and asterisks.
 
 Input and output go from |stdin| to |stdout|.
+End of file terminates the input; a final line need not end with a newline.
 
 @c
 #include <stdio.h>
 #include <stdlib.h>
 char pix[101][101];
 @<Subroutine@>;
-main() {
+int main(void) {
   register int c,i,j,bit,maxi=0,maxj=0;
   while (1) {
-    if (feof(stdin)) break;
+    c=fgetc(stdin);
+    if (c==EOF) break;
     @<Process the next line of input@>;
   }
+  return ferror(stdin)?1:0;
 }
 
 @ @<Subroutine@>=
 int nextchar(void) {
   register int c=fgetc(stdin);
-  if (c!=EOF) return c;
-  exit(-1);
+  return c==EOF?'\n':c;
 }
   
 @ @<Process the next line of input@>=
-for (c=nextchar();c==' ';) {
+for (;c==' ';) {
   @<Process a literal@>;
 }
 @<Output the pixels found@>;
