@@ -1494,12 +1494,12 @@ bytes+=vars*sizeof(char);
 freed while we're reformatting the clause and variable data.
 
 @<Allocate the auxiliary arrays@>=
-leveldat=(int*)malloc(vars*2*sizeof(int));
+leveldat=(int*)malloc((vars*2+3)*sizeof(int));
 if (!leveldat) {
   fprintf(stderr,"Oops, I can't allocate the leveldat array!\n");
   exit(-16);
 }
-bytes+=vars*2*sizeof(int);
+bytes+=(vars*2+3)*sizeof(int);
 
 @*Forcing. This program spends most of its time adding literals
 to the current trail when they are forced to be true because of
@@ -3031,7 +3031,9 @@ if (verbose&show_details) {
   for (k=0;k<eptr;k++)
       fprintf(stderr,""O"s"O".8s is given\n",litname(trail[k]));
 }
-for (k=0;k<vars;k++) o,leveldat[k+k]=-1,leveldat[k+k+1]=0;
+/* Include the deepest decision and the following full-run/sanity sentinel. */
+for (k=0;k<=vars;k++) o,leveldat[k+k]=-1,leveldat[k+k+1]=0;
+o,leveldat[vars+vars+2]=-1;
 
 @ @<Schedule the next restart@>=
 if ((restart_u&-restart_u)==restart_v)
