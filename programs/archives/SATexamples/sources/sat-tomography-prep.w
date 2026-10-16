@@ -40,15 +40,15 @@ if (!list_file) {
 }
 
 @ @<Input the raster@>=
-kmax=0;
+kmax=-1;
 for (j=0;j<mmax;j++) {
   if (!fgets(buf,bufsize,stdin)) break;
   for (k=0;k<nmax;k++) {
-    if (buf[k]=='\n') break;
+    if (buf[k]=='\n' || buf[k]=='\0') break;
     rast[j][k]=(buf[k]=='*');
     if (rast[j][k]) fprintf(list_file,"~%dx%d\n",
                                j+1,k+1);
-   if (k>kmax && rast[j][k]) kmax=k;
+    if (k>kmax) kmax=k;
   }
 }
 jmax=j-1;
