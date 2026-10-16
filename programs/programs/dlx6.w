@@ -614,7 +614,8 @@ all of the small-numbered items have been covered.
      "Overflow in cache memory ("O"s="O"d)!\n",pname,p);@+exit(-667);@+}
 
 @<Initialize the memo cache@>=
-hash=(hashentry*)malloc(hashsize*sizeof(hashentry));
+hash=(hashentry*)calloc(hashsize,sizeof(hashentry));
+  /* empty signatures and failed-result ZDD references must start at zero */
 if (!hash) {
   fprintf(stderr,"Couldn't allocate the hash table (hashsize="O"d)!\n",
                                  hashsize);
