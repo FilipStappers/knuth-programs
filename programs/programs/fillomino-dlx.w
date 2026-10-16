@@ -56,10 +56,12 @@ main() {
 @ @<Read the input...@>=
 for (i=n=t=0;i<=maxn;i++) {
   if (!fgets(buf,bufsize,stdin)) break;
+  if (i==maxn) panic("too many rows");
   printf("| %s",
                  buf);
   for (j=k=0;;j++,k++) {
     if (buf[k]=='\n') break;
+    if (j>=maxn) panic("too many columns");
     if (buf[k]=='.') continue;
     if (buf[k]>='1' && buf[k]<='9')
       board(i,j)=buf[k]-'0',t++;
