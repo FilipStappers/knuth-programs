@@ -5,6 +5,7 @@
 @*Intro. Here I try to generate SAT instances for partial van der
 Waerden configurations: There are to be no $t$ equally spaced ones,
 in $x_1\ldots x_n$. Furthermore I try to make $x_1+\cdots+x_n=r$.
+The progression length $t$ must be at least two.
 
 One key idea is to use the Sinz-inspired clauses
 with $(n-r)r$ auxiliary variables 
@@ -104,6 +105,10 @@ if (argc!=4 || sscanf(argv[1],"%d",&t)!=1 ||
   fprintf(stderr,"Usage: %s t n r\n",argv[0]);
   exit(-1);
 }
+if (t<2) {
+  fprintf(stderr,"Progression length must be at least two!\n");
+  exit(-2);
+}
 if (r>maxr) {
   fprintf(stderr,"Sorry, r (%d) should not exceed %d!\n",r,maxr);
   exit(-2);
@@ -129,8 +134,8 @@ for (j=1;j<r;j++) {
 table[r]=n;
 
 @ @<Output the negative clauses@>=
-for (d=1;1+(t-1)*d<=n;d++) {
-  for (i=1;i+(t-1)*d<=n;i++) {
+for (d=1;d<=(n-1)/(t-1);d++) {
+  for (i=1;i<=n-(t-1)*d;i++) {
     for (j=0;j<t;j++) printf(" ~x%d",i+j*d);
     printf("\n");
   }
