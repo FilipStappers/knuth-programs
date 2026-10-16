@@ -1,3 +1,5 @@
 * -text
 
 # Preserve archival bytes, including historical CR/LF and binary fixtures.
+/tests/** text eol=lf
+/.gitattributes text eol=lf
