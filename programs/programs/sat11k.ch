@@ -79,7 +79,7 @@ if (k || hbits<0 || hbits>30 || buf_size<=0 || memk_max<2 || memk_max>31 ||
        mincutoff<=0 || max_prelook_arcs<=0 || dl_max_iter<=0) {
   fprintf(stderr,
      "Usage: "O"s [v<n>] [c<n>] [h<n>] [b<n>] [s<n>] [d<n>] [m<n>]",argv[0]);
-  fprintf(stderr," [H<n>] [a<f>] [t<f>] [l<n>] [p<n>] [q<n] [z<n>]");
+  fprintf(stderr," [H<n>] [a<f>] [t<f>] [l<n>] [p<n>] [q<n>] [z<n>]");
   fprintf(stderr," [i<n>] [r<f>] [x<foo>] [V<foo>] [T<n>] < foo.sat\n");
 @y
 if (k || hbits<0 || hbits>30 || buf_size<=0 || memk_max<2 || memk_max>31 ||
