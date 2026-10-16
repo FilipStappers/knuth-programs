@@ -57,18 +57,24 @@ class PrefixChainSearch(unittest.TestCase):
     def tearDownClass(cls):
         cls.temp.cleanup()
 
-    def run_search(self, program, payloads=None):
+    def run_search(self, program, payloads=None, long_prefixes=False):
         with tempfile.TemporaryDirectory() as td:
             work = Path(td)
+            input_prefix = 'i'*150 if long_prefixes else 'input'
+            output_prefix = 'o'*150 if long_prefixes else 'output'
             for k, data in (payloads or {}).items():
-                (work/f'input-{k}').write_bytes(data)
-            result = subprocess.run([str(program), 'input', 'output'], cwd=work,
+                (work/f'{input_prefix}-{k}').write_bytes(data)
+            result = subprocess.run([str(program), input_prefix, output_prefix], cwd=work,
                                     capture_output=True, timeout=15,
                                     env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
             self.assertEqual(result.returncode, 0, result.stderr.decode())
             self.assertNotIn(b'AddressSanitizer', result.stderr)
             self.assertNotIn(b'runtime error', result.stderr)
-            return {k: (work/f'output-{k}').read_bytes() for k in self.expected}
+            return {k: (work/f'{output_prefix}-{k}').read_bytes() for k in self.expected}
+
+    def test_long_valid_input_and_output_prefixes(self):
+        for payloads in [None, self.expected]:
+            self.assertEqual(self.run_search(self.programs[0], payloads, True), self.expected)
 
     def test_fifteen_has_a_five_addition_chain_starting_with_one_two(self):
         result = self.run_search(self.programs[0])

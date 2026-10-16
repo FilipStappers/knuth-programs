@@ -38,6 +38,7 @@ further checking.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 char l[20][nmax];
 int a[128],b[128];
@@ -48,11 +49,12 @@ struct {
 } stack[128];
 int tail[128],outdeg[128],outsum[128],limit[128];
 FILE *infile[64], *outfile[64];
-char buf[100];
+char *buf;
 int main(int argc, char* argv[])
 {
   register int i,j,n,p,q,r,s,ubp,ubq,lbp,lbq,ptrp,ptrq;
   int lg2n,kk,lb,ub,timer=0;
+  size_t bufsize;
   @<Process the command line@>;
   a[0]=b[0]=1, a[1]=b[1]=2; /* an addition chain always begins like this */
   for (n=2;n<nmax;n++) {
@@ -69,6 +71,7 @@ done: @<Output the value of $l_k(n)$@>;
       timer=j;    
     }
   }
+  free(buf);
 }
 
 @ @<Process the command line@>=
@@ -76,10 +79,22 @@ if (argc!=3) {
   fprintf(stderr,"Usage: %s foo bar\n",argv[0]);
   exit(-1);
 }
+bufsize=strlen(argv[1]);
+if (strlen(argv[2])>bufsize) bufsize=strlen(argv[2]);
+if (bufsize>(size_t)-1-(3*sizeof(int)+3)) {
+  fprintf(stderr,"Filename prefix is too long!\n");
+  exit(-3);
+}
+bufsize+=3*sizeof(int)+3; /* room for the dash, integer, and null byte */
+buf=(char*)malloc(bufsize);
+if (!buf) {
+  fprintf(stderr,"Can't allocate the filename buffer!\n");
+  exit(-3);
+}
 
 @ @<Output the value of $l_k(n)$@>=
 if (!outfile[kk]) {
-  sprintf(buf,"%s-%d",argv[2],kk);
+  snprintf(buf,bufsize,"%s-%d",argv[2],kk);
   outfile[kk]=fopen(buf,"w");
   if (!outfile[kk]) {
     fprintf(stderr,"Can't open file `%s' for writing!\n",buf);
@@ -94,7 +109,7 @@ in the previous programs.
 
 @<Try to input...@>=
 if (!infile[kk]) {
-  sprintf(buf,"%s-%d",argv[1],kk);
+  snprintf(buf,bufsize,"%s-%d",argv[1],kk);
   infile[kk]=fopen(buf,"r");
   if (!infile[kk]) infile[kk]=(FILE*)1;
 }
