@@ -99,13 +99,13 @@ columns \.{!1}, \.{!2}, \.{!3}, using \.{!$c$} when
 $c+d=8$ at the bottom. Then if we put \.{!1}, \.{!2}, and \.{!3} on
 every top-row rectangle with $c'+d'>8$, we'll forbid
 such rectangles whenever the bottom-row policy has not
-already broken left-right symmetry. Furthermore, when
-$c'+d'=8$ at the top, we put \.{!1} together with \.{x01} \.{y26},
-and we put both \.{!1} and \.{!2} together with \.{x01} \.{y35}.
-It can be seen that this completely breaks left-symmetry
-in all cases, because no solution has $c=c'$ and $d=d'$.
+already broken left-right symmetry.
 
-(Think about it.)
+If $c'+d'=8$ at the top too, both of these rectangles are fixed
+by reflection. Comparing their widths cannot distinguish the two
+orientations of the rest of the dissection. We retain both in this case;
+this policy preserves every reflection class but does not select exactly
+one representative when both the top and bottom rectangles are centered.
 
 It's tempting to believe, as the author once did, that the same idea
 will break top-bottom symmetry too. But that would be fallacious:
@@ -121,11 +121,9 @@ for (j=a;j<b;j++) for (k=c;k<d;k++)
              encode(j),encode(k));
 if (a==m-1 && c+d==n) printf(" !%d",
                                         c); /* flag a symmetric bottom row */
-if (b==1 && c+d>=n) { /* disallow top rectangle if bottom one is symmetric */
-  if (c+d!=n) for (k=1;k+k<n;k++) printf(" !%d",
-                                         k);
-  else for (k=1;k<c;k++) printf(" !%d",
-                                         k);
+if (b==1 && c+d>n) { /* disallow top rectangle if bottom one is symmetric */
+  for (k=1;k+k<n;k++) printf(" !%d",
+                               k);
 }
 if (a) printf(" x%c",
                    encode(a));
