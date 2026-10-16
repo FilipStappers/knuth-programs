@@ -37,6 +37,10 @@ formula is $m+\Sigma A-A=n+B$, where $\Sigma A$ is the sum of in-degrees
 of all ordinary gates. Notice that $A+n=\hbox{|g->n|}$ and
 $\Sigma A=\hbox{|g->m|}$ in terms of the input graph; hence we're
 adding $2B=2(m+\hbox{|g->m|}-\hbox{|g->n|})$ clone vertices to that graph.)
+These bottom counts assume that every vertex is used at least once. In
+general, including unused inputs or gates, we count
+$B=\sum_v\max(\deg(v)-1,0)$ directly, where the degree counts uses as
+gate inputs or external outputs.
 
 No two outputs can share the same wire, nor can a wire be associated
 with more than one input port to a gate or a junction.
@@ -100,7 +104,9 @@ for (a=g->outs;a;a=a->next)
   k++,a->tip->deg++;
 
 @ @<Create the new graph, |gg|@>=
-gg=gb_new_graph(2*k-g->n);
+for (k=0,u=g->vertices;u<g->vertices+g->n;u++)
+  if (u->deg>1) k+=u->deg-1;
+gg=gb_new_graph(g->n+2*k);
 if (!gg) {
   fprintf(stderr,"I couldn't create a new graph!\n");
   exit(-99);
