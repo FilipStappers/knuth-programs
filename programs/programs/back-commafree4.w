@@ -98,6 +98,8 @@ void confusion(char *s) {
 array |mem| of 16-bit quantities. Everything in |mem| also has a
 16-bit address. Thus I can undo the changes made at one level
 if I maintain a stack that holds 32-bit items, $(\rm address,oldvalue)$.
+The store parameters and the packing shift use unsigned arithmetic,
+so the whole 16-bit address and value range is available.
 
 In this implementation I use a ``stamp'' to see whether the
 former |mem| value has already been saved. This makes the
@@ -108,7 +110,7 @@ rather than $5r$~mems; so it saves time if $r$ is usually greater than~1.
 happens in practice.)
 
 @<Sub...@>=
-inline void store(register short a,register short x) {
+inline void store(register unsigned int a,register unsigned int x) {
   if (o,stamp[a]!=curstamp) {
     o,stamp[a]=curstamp;
     oo,undo[uptr++]=(a<<16)+mem[a];
