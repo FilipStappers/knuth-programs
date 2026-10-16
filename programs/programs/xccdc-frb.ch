@@ -81,15 +81,21 @@ Their significance is described below.
 @y
   if (!include_option(cur_choice)) {
     nmems+=mems-tmems;
-    @<Take account of a failure for |best_itm|@>;
+    if (stage>=groundstage) {
+      @<Take account of a failure for |best_itm|@>;
+    }
     goto tryagain;
   }
   if (!empty_the_queue()) {
     nmems+=mems-tmems;
-    @<Take account of a failure for |best_itm|@>;
+    if (stage>=groundstage) {
+      @<Take account of a failure for |best_itm|@>;
+    }
     goto tryagain;
   }
-  @<Take account of a nonfailure for |best_itm|@>;
+  if (stage>=groundstage) {
+    @<Take account of a nonfailure for |best_itm|@>;
+  }
 @z
 @x
 @ The ``best item'' is considered to be an item that minimizes the
@@ -148,6 +154,9 @@ in their paper cited above.
 @^Li, Hongbo@>
 @^Yin, Minghao@>
 @^Li, Zhanshan@>
+
+Checkpoint replay specifies an option without selecting a branching item.
+Only choices made at or beyond |groundstage| contribute to failure statistics.
 
 @<Take account of a nonfailure for |best_itm|@>=
 oo,assigns(best_itm)++;

@@ -75,6 +75,33 @@ class DomainCover(unittest.TestCase):
                 self.assertNotIn(b'AddressSanitizer', result.stderr)
                 self.assertEqual(result.stdout, b'')
 
+    def test_checkpoint_parts_reconstruct_complete_family(self):
+        fixtures = [
+            (b'A B | S\nA S:r\nA S:b\nB S:r\nB S:b\n', [1, 2]),
+            (b'A B C | X\nA X:a\nA\nB X:a\nB X:b\nC\nA B C\n', [1, 2]),
+        ]
+        for mode in self.programs:
+            for data, cutoffs in fixtures:
+                lines = data.decode().splitlines()
+                primaries = lines[0].split(' |')[0].split()
+                rows = [tuple(line.split()) for line in lines[1:]]
+                expected = Counter(tuple(sorted(tuple(sorted(rows[i-1])) for i in cover))
+                                   for cover in subsets(rows, primaries))
+                for cutoff in cutoffs:
+                    with self.subTest(mode=mode, data=data, cutoff=cutoff):
+                        for path in self.work.glob('part[0-9]*'):
+                            path.unlink()
+                        split = self.solve(mode, data, ['x'+str(cutoff)])
+                        self.assertEqual(split.returncode, 0, split.stderr.decode())
+                        actual = Counter(sparse_covers(split.stdout))
+                        parts = list(self.work.glob('part[0-9]*'))
+                        self.assertTrue(parts)
+                        for part in parts:
+                            resumed = self.solve(mode, data, ['X'+part.name])
+                            self.assertEqual(resumed.returncode, 0, resumed.stderr.decode())
+                            actual.update(sparse_covers(resumed.stdout))
+                        self.assertEqual(actual, expected)
+
     def test_independent_complete_families(self):
         rng = random.Random(51001)
         families = [[], [('A',), ('B',), ('A', 'B')]]
