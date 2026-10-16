@@ -358,8 +358,8 @@ such values can't be present. Numbers with small |l[p]| are harder
 to rule out, so it should be helpful to penalize them.
 
 @<Make forced moves if |p| has a special form@>=
-i=p-(1<<(ubp-1));
-if (i && ((i&(i-1))==0) && (i<<4)<p) {
+i=(ubp>0 && ubp<=24? p-(1<<(ubp-1)):0); /* 24-bit values only */
+if (i>0 && ((i&(i-1))==0) && (i<<4)<p) {
   for (j=ubp-2;(i&1)==0;i>>=1,j--);
   if (b[j]<(1<<j)) goto failp;
   for (;a[j]<(1<<j);j--) newa(j,1<<j);
@@ -401,8 +401,8 @@ if (b[ubq]!=q) {
 @<Make forced moves if |q| has a special form@>;
 
 @ @<Make forced moves if |q| has a special form@>=
-i=q-(1<<(ubq-1));
-if (i && ((i&(i-1))==0) && (i<<4)<q) {
+i=(ubq>0 && ubq<=24? q-(1<<(ubq-1)):0); /* 24-bit values only */
+if (i>0 && ((i&(i-1))==0) && (i<<4)<q) {
   for (j=ubq-2;(i&1)==0;i>>=1,j--);
   if (b[j]<(1<<j)) goto failq;
   for (;a[j]<(1<<j);j--) newa(j,1<<j);

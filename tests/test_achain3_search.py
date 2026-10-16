@@ -45,9 +45,9 @@ class PrefixChainSearch(unittest.TestCase):
         cls.programs = []
         for mode in ['signed', 'unsigned']:
             program = cls.work/mode
-            # The shared signed undo-tag/shift finding is repaired separately.
             subprocess.run(['gcc', '-std=gnu99', '-O1', '-f'+mode+'-char',
-                            '-fsanitize=address,bounds', str(generated), '-o', str(program)],
+                            '-fsanitize=address,undefined,bounds', '-fno-sanitize-recover=all',
+                            str(generated), '-o', str(program)],
                            check=True, capture_output=True)
             cls.programs.append(program)
         cls.expected = {k: bytes(minimum(n, k)+32 for n in range(1 << k, NMAX))
@@ -67,6 +67,7 @@ class PrefixChainSearch(unittest.TestCase):
                                     env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
             self.assertEqual(result.returncode, 0, result.stderr.decode())
             self.assertNotIn(b'AddressSanitizer', result.stderr)
+            self.assertNotIn(b'runtime error', result.stderr)
             return {k: (work/f'output-{k}').read_bytes() for k in self.expected}
 
     def test_fifteen_has_a_five_addition_chain_starting_with_one_two(self):
