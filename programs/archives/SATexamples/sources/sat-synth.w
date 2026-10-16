@@ -44,6 +44,9 @@ $$\vcenter{\halign{\tt#\hfil\quad&#\hfil\cr
 In general, a `true' line in the input generates one clause of size~$K$
 and $NK$ clauses of size~2; a `false' line generates $K$ clauses of size~$N$.
 
+For $K=0$, a positive observation generates contradictory units, since
+the disjunction of zero terms is identically false.
+
 @d maxn 100 /* we assume that $N$ doesn't exceed this */
 @d O "%" /* used for percent signs in format strings */
 
@@ -100,8 +103,11 @@ else {
 @ @<Generate clauses for a `true' line@>=
 {
   t++;
-  for (i=1;i<=K;i++) printf(" "O"d."O"d",i,t);
-  printf("\n");
+  if (K==0) printf("zero\n~zero\n");
+  else {
+    for (i=1;i<=K;i++) printf(" "O"d."O"d",i,t);
+    printf("\n");
+  }
   for (i=1;i<=K;i++) for (j=1;j<=N;j++)
     printf("~"O"d."O"d ~"O"d"O"c"O"d\n",i,t,i,buf[j-1]=='0'? '+':'-',j);
 }
