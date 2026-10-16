@@ -17,6 +17,7 @@ subscripts that appear, and it makes fairly careful syntax checks.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 int r[mmax+1],c[mmax+1],a[mmax+nmax],b[mmax+nmax]; /* the given data */
 char given[4][mmax+nmax]; /* presence is independent of the given value */
 int count[mmax+mmax+nmax+nmax]; /* leaf counts for the BB method */
@@ -35,13 +36,25 @@ main() {
 m=n=0;
 while (1) {
   if (!fgets(buf,80,stdin)) break;
-  for (d=0,p=buf+1;*p>='0' && *p<='9';p++) d=10*d+*p-'0';
+  for (d=0,p=buf+1;*p>='0' && *p<='9';p++) {
+    if (d>(INT_MAX-(*p-'0'))/10) {
+      fprintf(stderr,"Number out of range!\nBad line: %s",buf);
+      exit(-7);
+    }
+    d=10*d+(*p-'0');
+  }
   if (*p++!='=') {
     fprintf(stderr,"Missing `=' sign!\nBad line: %s",
                            buf);
     exit(-1);
   }
-  for (l=0;*p>='0' && *p<='9';p++) l=10*l+*p-'0';
+  for (l=0;*p>='0' && *p<='9';p++) {
+    if (l>(INT_MAX-(*p-'0'))/10) {
+      fprintf(stderr,"Number out of range!\nBad line: %s",buf);
+      exit(-7);
+    }
+    l=10*l+(*p-'0');
+  }
   if (*p!='\n') {
     fprintf(stderr,"Missing \\n character!\nBad line %s",
                            buf);

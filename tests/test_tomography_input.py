@@ -32,6 +32,16 @@ class TomographyInput(unittest.TestCase):
         return subprocess.run([str(self.program)], input=data.encode(),
                               capture_output=True, timeout=5)
 
+    def test_decimal_overflow_rejects_before_accumulation(self):
+        for family, number in itertools.product('rcab', ['2147483646', '2147483647', '2147483648', '9'*60]):
+            for line in [family+number+'=0\n', family+'1='+number+'\n']:
+                result = self.encode(line)
+                with self.subTest(line=line):
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertIn(b'out of range', result.stderr)
+                    self.assertEqual(result.stdout, b'')
+
     def test_duplicate_values_including_zero_reject(self):
         for family in 'rcab':
             for first, second in itertools.product([0, 1], repeat=2):
