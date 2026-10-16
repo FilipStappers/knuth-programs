@@ -1936,6 +1936,10 @@ obsolete.)
       if (p->name.lng==cur_tmp_var->name.lng) break;
     if (p) {
       v=p->serial+1;
+      if (vmem[v].tloc==0) {
+        fprintf(stderr,"Duplicate polarity variable: "O".8s!\n",p->name.ch8);
+        exit(-667);
+      }
       o,vmem[v].oldval=i,vmem[v].hloc=q;
       o,heap[q]=v;
       o,vmem[v].activity=(vars-q)/(double)vars;
@@ -1946,6 +1950,7 @@ obsolete.)
   for (v=0;q<vars;q++) {
     while (o,vmem[++v].tloc==0) ; /* bypass variables already seen */
     vmem[v].hloc=q;
+    o,vmem[v].activity=0.0;
     if (true_prob_thresh && (mems+=4,gb_next_rand()<true_prob_thresh))
       vmem[v].oldval=0;
     else vmem[v].oldval=1;

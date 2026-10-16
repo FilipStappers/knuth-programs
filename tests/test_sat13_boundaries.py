@@ -19,6 +19,7 @@ class Sat13Boundaries(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory()
         cls.work = Path(cls.temp.name)
         cls.source = (ROOT/'programs/programs/sat13.w').read_text()
+        cls.sgb = sgb
         cls.programs = {}
         for name, source in [('normal', cls.source),
                              ('sanity', cls.source.replace('@d sanity_checking 0',
@@ -142,6 +143,63 @@ class Sat13Boundaries(unittest.TestCase):
             for build in self.programs:
                 with self.subTest(case=case, build=build):
                     self.check_learned_proof(data, build)
+
+    def test_duplicate_polarity_variables_are_rejected_before_heap_corruption(self):
+        path = self.work/'duplicate.polarity'
+        for text in ['x x\n', 'x ~x\n', 'y x y\n']:
+            path.write_text(text)
+            result = self.run_solver(b'x y\n~x y\nx ~y\n', ['z'+str(path)])
+            with self.subTest(text=text):
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b'Duplicate polarity variable', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertEqual(result.stdout, b'')
+
+    def test_partial_polarity_heap_initializes_fallback_activity(self):
+        # Poison only the activity slots in fresh vmem before ordinary setup.
+        # Observe the independently stated nonnegative initial-activity invariant.
+        setup = 'for (k=1;k<=vars;k++) o,vmem[k].value=unset,vmem[k].tloc=-1;'
+        self.assertEqual(self.source.count(setup), 1)
+        source = self.source.replace(setup,
+                                    'for (k=1;k<=vars;k++) vmem[k].activity=-123.0;\n'+setup)
+        insertion = 'else @<Initialize the heap randomly@>;'
+        self.assertEqual(source.count(insertion), 1)
+        source = source.replace(insertion, insertion+'''
+for (k=1;k<=vars;k++) if (vmem[k].activity<0.0) {
+  fprintf(stderr,"Uninitialized fallback activity!\\n");
+  exit(90);
+}
+''')
+        literate = self.work/'activity-observer.w'
+        literate.write_text(source)
+        generated = self.work/'activity-observer.c'
+        program = self.work/'activity-observer'
+        subprocess.run(['ctangle', str(literate), '-', str(generated)],
+                       check=True, capture_output=True)
+        subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-O1',
+                        '-I'+self.sgb, '-fsanitize=address,undefined,bounds',
+                        '-fno-sanitize-recover=all', str(generated),
+                        str(Path(self.sgb)/'gb_flip.c'), '-lm', '-o', str(program)],
+                       check=True, capture_output=True)
+        path = self.work/'partial.polarity'
+        for text in ['', 'x\n', '~y\n', 'obsolete\nx\n']:
+            path.write_text(text)
+            result = subprocess.run([str(program), 'v0', 'm18', 'z'+str(path)],
+                                    input=b'x y\n~x y\nx ~y\n', capture_output=True,
+                                    timeout=5, env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
+            with self.subTest(text=text):
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                self.assertEqual(set(result.stdout.decode().split()), {'x', 'y'})
+
+    def test_partial_and_complete_polarity_files_preserve_formula_models(self):
+        data = b'x y z\n~x y\n~y z\n~z x\n'
+        path = self.work/'valid.polarity'
+        for text in ['', 'x\n', '~y\n', 'obsolete\nx\n', 'z ~y x\n', 'y z ~x\n']:
+            path.write_text(text)
+            for build in self.programs:
+                with self.subTest(text=text, build=build):
+                    self.check_formula(data, ['z'+str(path)], build)
 
 
 if __name__ == '__main__':
