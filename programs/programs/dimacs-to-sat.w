@@ -28,7 +28,7 @@ would instead be ignored, losing the contradiction.
 char buf[buf_size];
 int m,n,v;
 @<Subroutines@>@;
-main() {
+int main(void) {
   register int j,k,l,p;
   @<Read the preamble@>;
   if (m==0 || n==0) {
@@ -36,6 +36,11 @@ main() {
     exit(-1);
   }
   @<Read and translate the clauses@>;
+  if (fflush(stdout)==EOF || ferror(stdin)) {
+    fprintf(stderr,"I/O error during conversion!\n");
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
 }
 
 @ @<Read the preamble@>=
