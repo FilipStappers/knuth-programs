@@ -54,6 +54,10 @@ if (c<=0) {
   exit(-3);
 }
 printf("~ sat-color-log3 %s %d\n",argv[1],c);
+if (c==1) {
+  if (g->m) printf("onecolor\n~onecolor\n");
+  return 0;
+}
 
 @ @<Generate clauses to keep $u$ and $v$ from having the same color@>=
 {

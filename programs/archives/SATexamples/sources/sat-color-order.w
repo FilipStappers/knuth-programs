@@ -44,6 +44,10 @@ if (c<=0) {
   exit(-3);
 }
 printf("~ sat-color-order %s %d\n",argv[1],c);
+if (c==1) {
+  if (g->m) printf("onecolor\n~onecolor\n");
+  return 0;
+}
 
 @ @<Generate the ordering clauses@>=
 for (v=g->vertices;v<g->vertices+g->n;v++)

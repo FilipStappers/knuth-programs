@@ -54,6 +54,10 @@ if (c<=0) {
   exit(-3);
 }
 printf("~ sat-color-log2 %s %d\n",argv[1],c);
+if (c==1) {
+  if (g->m) printf("onecolor\n~onecolor\n");
+  return 0;
+}
 
 @ @<Generate negative clauses to rule out bad colors@>=
 for (i=0;i<t;i++) if (((c-1)&(1<<i))==0) {
