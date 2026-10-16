@@ -169,7 +169,7 @@ for (x=bxmin-xmin;x<=bxmax-xmax;x++)
   for (y=bymin-ymin;y<=bymax-ymax;y++) {
     for (j=0;j<n;j++)
       if (!board[x+xx[j]][y+yy[j]][zz[j]]) goto nope;
-    printf(name);
+    printf("%s",name);
     for (j=0;j<n;j++) {
       printf(" %c%c",encode(x+xx[j]),encode(y+yy[j]));
       if (zz[j]) printf("*");

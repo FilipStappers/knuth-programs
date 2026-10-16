@@ -187,7 +187,7 @@ for (x=bxmin-xmin;x<=bxmax-xmax;x++)
   for (y=bymin-ymin;y<=bymax-ymax;y++) {
     for (j=0;j<n;j++)
       if (zz[j]!=1 && !board[x+xx[j]][y+yy[j]][zz[j]]) goto nope;
-    printf(name);
+    printf("%s",name);
     for (j=0;j<n;j++) if (board[x+xx[j]][y+yy[j]][zz[j]]) {
       printf(" %c%c%c",codeletter[zz[j]],encode(x+xx[j]),encode(y+yy[j]));
     }
