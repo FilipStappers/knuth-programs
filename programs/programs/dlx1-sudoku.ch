@@ -13,8 +13,13 @@ int n=7; /* size of the prespecified clue board */
   if (o,p==0 || buf[--p]!='\n') panic("Input line way too long or empty");
   for (j=0;j<8;j++) if (buf[j]!="|sudoku!"[j]) break;
   if (j==8) {
-    for (n=1;buf[n+7]!='!';n++) ;
-    n--;
+    for (n=0;n<=32 && n+8<p && buf[n+8]!='!';n++) ;
+    if (n<1 || n>32) panic("Invalid sudoku clue size");
+    if (p!=7+n*(n+1) &&
+        !(p==8+n*(n+1) && buf[p-1]=='!'))
+      panic("Invalid sudoku clue shape");
+    for (k=0;k<n;k++)
+      if (buf[7+(n+1)*k]!='!') panic("Invalid sudoku clue separator");
     for (k=0;k<n;k++) for (j=0;j<n;j++) {
       i=buf[(n+1)*k+j+8];
       if ((i>='1' && i<='9') || (i>='a' && i<='w')) board[k][j]=i;
