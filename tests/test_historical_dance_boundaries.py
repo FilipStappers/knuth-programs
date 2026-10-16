@@ -109,6 +109,18 @@ class HistoricalDanceBoundaries(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr.decode())
                 self.assertNotIn(b'runtime error', result.stderr)
 
+    def test_primary_color_is_rejected_with_or_without_secondary_headers(self):
+        for name in ['gdance', 'xgdance']:
+            for header in [b'A\n', b'A | X\n']:
+                with self.subTest(program=name, header=header):
+                    result = self.run_matrix(name, header+b'A:a\n')
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(b'primary column', result.stderr)
+                    self.assertNotIn(b'runtime error', result.stderr)
+            result = self.run_matrix(name, b'A | X\nA X:a\n')
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            self.assertIn(b'Altogether 1 solutions', result.stdout)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -182,6 +182,7 @@ Brute force is the rule in this part of the program.
 column col_array[max_cols+2]; /* place for column records */
 node node_array[max_nodes]; /* place for nodes */
 char buf[buf_size];
+column *first_nonprim_col; /* boundary between primary and secondary headers */
 
 @ @d panic(m) {@+fprintf(stderr,"%s!\n%s",m,buf);@+exit(-1);@+}
 
@@ -196,6 +197,7 @@ for (p=buf,primary=1;*p;p++) {
     primary=0;
     if (cur_col==col_array+1) panic("No primary columns");
     (cur_col-1)->next=&root, root.prev=cur_col-1;
+    first_nonprim_col=cur_col;
     continue;
   }
   for (q=p+1;!isspace(*q);q++);
@@ -211,6 +213,7 @@ for (p=buf,primary=1;*p;p++) {
 if (primary) {
   if (cur_col==col_array+1) panic("No primary columns");
   (cur_col-1)->next=&root, root.prev=cur_col-1;
+  first_nonprim_col=cur_col;
 }
 
 @ @<Local variables@>=
@@ -429,7 +432,7 @@ register int j,k,x;
 
 @<Read a color restriction@>=
 {
-  if (primary) panic("Color isn't allowed in a primary column");
+  if (ccol<first_nonprim_col) panic("Color isn't allowed in a primary column");
   if (isspace(*(p+1)) || !isspace(*(p+2)))
     panic("Color should be a single character");
   cur_node->color=*(p+1);
