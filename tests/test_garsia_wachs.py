@@ -28,7 +28,7 @@ class AlphabeticTrees(unittest.TestCase):
         subprocess.run(['ctangle', str(ROOT/'programs/programs/garsia-wachs.w'),
                         '-', str(generated)], check=True, capture_output=True)
         cls.program = cls.work/'tree'
-        subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-include', 'stdlib.h',
+        subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-Werror=format',
                         '-O1', '-fsanitize=undefined,bounds', '-fno-sanitize-recover=all',
                         str(generated), '-o', str(cls.program)], check=True, capture_output=True)
 
@@ -40,6 +40,10 @@ class AlphabeticTrees(unittest.TestCase):
         result = subprocess.run([str(self.program), *map(str, weights)],
                                 capture_output=True, timeout=5)
         self.assertEqual(result.returncode, 0, result.stderr.decode())
+        leaves = {int(j): int(w) for j, w in
+                  re.findall(rb'node (\d+)\((-?\d+)\) has depth', result.stdout)
+                  if int(j) < len(weights)}
+        self.assertEqual(leaves, dict(enumerate(weights)))
         text = result.stdout.decode().split('Phase III:\n')[-1]
         nodes = {int(j): (int(l), int(r)) for j, l, r in
                  re.findall(r'node (\d+) = (\d+) \+ (\d+)', text)}
@@ -67,6 +71,23 @@ class AlphabeticTrees(unittest.TestCase):
                 self.check_tree(weights)
         self.check_tree(tuple(range(1, 33)))
         self.check_tree(tuple(range(32, 0, -1)))
+
+    def test_large_weights_do_not_cross_a_numeric_sentinel(self):
+        for weights in [(999999999, 2), (1000000000, 1), (2147483647,)*32,
+                        (2**63-2, 1), (2**62, 1, 2**62-2),
+                        (0, 2**63-1, 0)]:
+            with self.subTest(weights=weights):
+                self.check_tree(weights)
+
+    def test_invalid_or_unrepresentable_weight_totals_are_rejected(self):
+        for args in [('-1',), ('3junk',), ('',), (str(2**63),),
+                     (str(2**63-1), '1')]:
+            with self.subTest(args=args):
+                result = subprocess.run([str(self.program), *args], capture_output=True,
+                                        timeout=5)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'Phase I:', result.stdout)
 
 
 if __name__ == '__main__':
