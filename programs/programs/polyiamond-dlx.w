@@ -469,8 +469,15 @@ base[basecount]=newbox;
 @ We accept any string of characters followed by `\.{\char"7C}' as a multiplicity.
 
 @ @<Read the piece name, and find it in the |names| table at position |k|@>=
-for (p=0;buf[p]!='\n';p++) if (buf[p]=='|') break; else multip[p]=buf[p];
-if (buf[p]=='|') multip[p]='\0',p++;
+for (p=0;buf[p]!='\n' && buf[p]!='|';p++) ;
+if (buf[p]=='|') {
+  if (p>=sizeof(multip)) {
+    fprintf(stderr,"Multiplicity too long: %s",buf);
+    exit(-8);
+  }
+  memcpy(multip,buf,p);
+  multip[p]='\0',p++;
+}
 else p=0,multip[0]='1',multip[1]='\0';
 for (q=p;buf[p]!='\n';p++) {
   if (buf[p]==' ') break;
