@@ -29,9 +29,9 @@ symmetric in all colors (except perhaps the smallest). In other words,
 whenever there's a row specifying color attributes $(\chi_1,\ldots,\chi_k)$
 in columns $(c_1,\ldots,c_k)$, there's also a row that specifies
 attributes $(\pi\chi_1,\ldots,\pi\chi_k)$ for those colors, for every
-permutation $\pi$ that fixes the smallest color. Then if there are
-$t$~colors, there will be $(t-1)!$ equivalent solutions; this program
-speeds things up by finding exactly one of them.
+permutation $\pi$ that fixes the smallest color. This program
+speeds things up by finding exactly one solution in each color orbit.
+Orbit sizes can vary when some interchangeable colors are unused.
 The smallest color is assumed to be |'a'|,
 and the others are assumed to be |'b'|, |'c'|, etc.
 This program is identical to {\mc GDANCE} except for places where
@@ -226,7 +226,7 @@ int primary;
 cur_node=node_array;
 while (fgets(buf,buf_size,stdin)) {
   register column *ccol;
-  register node *row_start, *x;
+  register node *row_start, *x, *y;
   if (!buf[0] || buf[strlen(buf)-1]!='\n') panic("Input line too long or empty");
   row_start=NULL;
   for (p=buf;*p;p++) {
@@ -251,7 +251,25 @@ while (fgets(buf,buf_size,stdin)) {
     cur_node++;
   }
   if (!row_start) panic("Empty row");
-  row_start->left=cur_node-1, (cur_node-1)->right=row_start;
+  @<Link this row in column order@>;
+}
+
+@ Color introduction must be independent of the order in which a row's
+tokens happened to be written. We link its nodes in header order. Since
+all primary headers precede all secondary headers, traversal from any
+chosen primary sees the colored entries in the same order.
+
+@<Link this row in column order@>=
+row_start->left=row_start->right=row_start;
+for (x=row_start+1;x<cur_node;x++) {
+  y=row_start;
+  do {
+    if (x->col<y->col) break;
+    y=y->right;
+  } while (y!=row_start);
+  x->left=y->left, x->right=y;
+  y->left->right=x, y->left=x;
+  if (x->col<row_start->col) row_start=x;
 }
 
 @*Backtracking.
@@ -273,7 +291,7 @@ a node in this column's list.
 
 @<Backtrack through all solutions@>=
 level=0;
-cthresh='a';
+cthresh='b'; /* |'a'| is fixed; |'b'| is the first interchangeable color */
 forward: @<Set |best_col| to the best column for branching@>;
 cover(best_col);
 cur_node=choice[level]=best_col->head.down;
@@ -303,7 +321,7 @@ register node *pp; /* traverses a row */
 
 @ @<Glob...@>=
 int level; /* number of choices in current partial solution */
-int cthresh; /* smallest color allowable when extending a solution */
+int cthresh; /* next interchangeable color that can be introduced */
 int conflict; /* set nonzero if a conflict arises while covering */
 node *choice[max_level]; /* the row and column chosen on each level */
 

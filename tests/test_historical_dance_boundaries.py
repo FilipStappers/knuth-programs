@@ -3,11 +3,67 @@ import itertools
 import os
 from pathlib import Path
 import re
+import random
 import subprocess
 import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def covers(rows, primary):
+    answer = set()
+    def visit(chosen, used, colors):
+        missing = sorted(set(primary)-used)
+        if not missing:
+            answer.add(tuple(sorted(chosen)))
+            return
+        for row in rows:
+            if missing[0] not in row:
+                continue
+            ps = set(row) & set(primary)
+            if ps & used:
+                continue
+            cs = dict(colors)
+            for token in row:
+                name, _, color = token.partition(':')
+                if name in primary:
+                    continue
+                if name in cs and (not color or not cs[name] or cs[name] != color):
+                    break
+                cs[name] = color
+            else:
+                visit(chosen+[row], used | ps, cs)
+    visit([], set(), {})
+    return answer
+
+
+def color_orbit(solution):
+    forms = []
+    for permutation in itertools.permutations('bcd'):
+        mapping = dict(zip('bcd', permutation))
+        def renamed(token):
+            name, colon, color = token.partition(':')
+            return name+colon+mapping.get(color, color)
+        forms.append(tuple(sorted(tuple(sorted(map(renamed, row))) for row in solution)))
+    return min(forms)
+
+
+def printed_covers(output):
+    answer, current = [], None
+    for line in output.decode().splitlines():
+        if re.fullmatch(r'\d+:', line):
+            if current is not None:
+                answer.append(tuple(sorted(current)))
+            current = []
+        elif current is not None and line.startswith(' ') and '(' in line:
+            current.append(tuple(sorted(line[:line.rfind('(')].split())))
+        elif current is not None:
+            answer.append(tuple(sorted(current)))
+            current = None
+    if current is not None:
+        answer.append(tuple(sorted(current)))
+    return answer
 
 
 class HistoricalDanceBoundaries(unittest.TestCase):
@@ -120,6 +176,43 @@ class HistoricalDanceBoundaries(unittest.TestCase):
             result = self.run_matrix(name, b'A | X\nA X:a\n')
             self.assertEqual(result.returncode, 0, result.stderr.decode())
             self.assertIn(b'Altogether 1 solutions', result.stdout)
+
+    def test_symmetric_color_families_have_exactly_one_cover_per_orbit(self):
+        families = [(('A', 'X:b'), ('A', 'X:c')),
+                    (('A', 'X:a'), ('A', 'X:b'), ('A', 'X:c')),
+                    (('A', 'X:b', 'Y:c'), ('A', 'X:c', 'Y:b')),
+                    (('A', 'X:a', 'Y:a'), ('A', 'X:b', 'Y:b'), ('A', 'X:c', 'Y:c'))]
+        rng = random.Random(48042)
+        for case in range(40):
+            rows = set()
+            for _ in range(7):
+                primary = rng.choice([('A',), ('B',), ('A', 'B')])
+                template = primary+tuple(name+color for name in ['X', 'Y']
+                                          if (color := rng.choice([None, '', ':a', ':b', ':c'])) is not None)
+                for permutation in itertools.permutations('bcd'):
+                    mapping = dict(zip('bcd', permutation))
+                    rows.add(tuple(sorted(token[:-1]+mapping.get(token[-1], token[-1])
+                                          if ':' in token else token for token in template)))
+            families.append(tuple(sorted(rows)))
+        for case, rows in enumerate(families):
+            with self.subTest(case=case):
+                primary = ['A'] if case < 4 else ['A', 'B']
+                expected_covers = covers(rows, primary)
+                expected = {color_orbit(c) for c in expected_covers}
+                # Vary the input token order within symmetric option orbits.
+                lines = []
+                for row in rows:
+                    tokens = list(row)
+                    rng.shuffle(tokens)
+                    lines.append(' '.join(tokens)+'\n')
+                matrix = (' '.join(primary)+' | X Y\n'+''.join(lines)).encode()
+                result = self.run_matrix('xgdance', matrix, ['1'])
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                actual = printed_covers(result.stdout)
+                self.assertTrue(set(actual) <= expected_covers)
+                orbits = [color_orbit(c) for c in actual]
+                self.assertEqual(len(orbits), len(set(orbits)))
+                self.assertEqual(set(orbits), expected)
 
 
 if __name__ == '__main__':
