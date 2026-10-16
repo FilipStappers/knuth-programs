@@ -33,6 +33,20 @@ class LegacyShapeNames(unittest.TestCase):
         return subprocess.run([str(self.programs[name])], input=data, capture_output=True, timeout=5,
                               env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
 
+    def test_initial_eof_and_empty_c_string_records_reject_cleanly(self):
+        for name in self.programs:
+            records = [b'']
+            if name == 'polysticks':
+                records += [b'\x00\n', b'P\n\x00\n', b'P\nH00\n\x00\n']
+            else:
+                records += [b'\x00\n', b'00\n\x00\n', b'00\nP\n\x00\n']
+            for data in records:
+                with self.subTest(name=name, data=data):
+                    result = self.solve(name, data)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertNotIn(b'AddressSanitizer', result.stderr)
+
     def test_piece_names_survive_header_to_every_placement(self):
         for name in self.programs:
             for piece in ['P', 'AB', '%%']:

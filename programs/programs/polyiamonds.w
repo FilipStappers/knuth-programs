@@ -46,8 +46,8 @@ main()
 @ @d panic(m) {@+fprintf(stderr,"%s!\n%s",m,buf);@+exit(-1);@+}
 
 @<Read and output the board@>=
-fgets(buf,buf_size,stdin);
-if (buf[strlen(buf)-1]!='\n') panic("Input line too long");
+if (!fgets(buf,buf_size,stdin)) panic("No board");
+if (!buf[0] || buf[strlen(buf)-1]!='\n') panic("Input line too long");
 bxmin=bymin=35;@+ bxmax=bymax=0;
 for (p=buf;*p;p+=3) {
   while (isspace(*p)) p++;
@@ -87,11 +87,12 @@ int bxmin,bxmax,bymin,bymax; /* used portion of the board */
 
 @ @<Read and output the piece names@>=
 if (!fgets(buf,buf_size,stdin)) panic("No piece names");
+if (!buf[0] || buf[strlen(buf)-1]!='\n') panic("Input line too long");
 printf(" %s",buf); /* just pass the piece names through */
 
 @ @<Read and output the pieces@>=
 while (fgets(buf,buf_size,stdin)) {
-  if (buf[strlen(buf)-1]!='\n') panic("Input line too long");
+  if (!buf[0] || buf[strlen(buf)-1]!='\n') panic("Input line too long");
   for (p=buf;isspace(*p);p++);
   if (!*p) panic("Empty line");
   for (q=p+1;!isspace(*q);q++);
