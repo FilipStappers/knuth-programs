@@ -132,6 +132,44 @@ static void *dirty_malloc(size_t n) {
                 rows.append(tuple(row))  # duplicate rows are distinct option identities
             self.check_family(rows, ['A', 'B', 'C'], case+1)
 
+    def test_signature_capacity_counts_entries_before_writing(self):
+        source = self.work/'small-inx.w'
+        text = (self.work/'memo.w').read_text()
+        self.assertEqual(text.count('@d max_inx 2048'), 1)
+        source.write_text(text.replace('@d max_inx 2048', '@d max_inx 8'))
+        sgb = os.environ['GRAPHBASE']
+        for mode in ['base', 'noMRV']:
+            generated = self.work/'small-inx.c'
+            change = '-' if mode == 'base' else str(ROOT/'programs/programs/dlx6-noMRV.ch')
+            subprocess.run(['ctangle', str(source), change, str(generated)],
+                           check=True, capture_output=True)
+            program = self.work/('small-inx-'+mode)
+            subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-O1', '-I'+sgb,
+                            '-fsanitize=address,undefined,bounds', '-fno-sanitize-recover=all',
+                            str(generated), str(Path(sgb)/'gb_flip.c'), '-o', str(program)],
+                           check=True, capture_output=True)
+            for colors in [8, 7, 6]:
+                with self.subTest(mode=mode, colors=colors):
+                    rows = [('A', 'X:'+chr(ord('a')+i)) for i in range(colors)]
+                    data = ('A | X\n'+''.join(' '.join(row)+'\n' for row in rows)).encode()
+                    result = subprocess.run([str(program), 'm1', 'v1'], input=data,
+                                            capture_output=True, timeout=5,
+                                            env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
+                    if colors >= 7:  # cc colors+one no-color entry, plus the primary
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertIn(b'max_inx', result.stderr)
+                        self.assertNotIn(b'runtime error', result.stderr)
+                        self.assertNotIn(b'AddressSanitizer', result.stderr)
+                    else:
+                        self.assertEqual(result.returncode, 0, result.stderr.decode())
+                        self.assertEqual(expanded_zdd(result.stdout), {(i+1,) for i in range(colors)})
+            data = b'A B C D E F G H\nA\nB\nC\nD\nE\nF\nG\nH\n'
+            result = subprocess.run([str(program), 'm1', 'v1'], input=data,
+                                    capture_output=True, timeout=5,
+                                    env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            self.assertEqual(expanded_zdd(result.stdout), {tuple(range(1, 9))})
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -635,11 +635,11 @@ sigsiz=q+1;
 
 @ @<Prepare for a primary item signature@>=
 {
+  if (sigptr>=max_inx) overflow(max_inx,"max_inx");
   if (r==63) q++,r=0; /* the sign bit is used for continuations */
   o,siginx[sigptr].shift=r,siginx[sigptr].code=1;
   mems+=4,siginx[sigptr].hash=gb_next_rand();
   o,cl[k].sig=sigptr++,cl[k].offset=q;
-  if (sigptr>=max_inx) overflow(max_inx,"max_inx");
   r++;
 }
 
@@ -663,7 +663,7 @@ sigsiz=q+1;
   }
   for (t=1;cc>=(1<<t);t++) ;
     /* $t=\lfloor\lg|cc|\rfloor+1$ slots in the signature */
-  if (sigptr+t>=max_inx) overflow(max_inx,"max_inx");
+  if (cc>max_inx-sigptr) overflow(max_inx,"max_inx");
   if (r+t>=63) q++,r=0;
   for (i=0;i<cc;i++) {
     o,siginx[sigptr+i].shift=r,siginx[sigptr+i].code=1+i;
