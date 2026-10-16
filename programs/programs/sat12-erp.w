@@ -455,7 +455,7 @@ for (c=vars; c; c--) {
     i=hack_out(*cur_cell);
     p=hack_clean(*cur_cell)->serial;
     p+=p+(i&1)+2;
-    printf(" "O"s"O"s",litname(p));
+    printf(" "O"s"O".8s",litname(p));
     lmem[p]=true,lmem[bar(p)]=false;
   }
 }
@@ -475,7 +475,7 @@ for (c=clauses-1;c;c--) {
     p+=p+(i&1)+2;
     if (i>=4) break;
     if (lmem[p]==unknown) {
-      printf(" "O"s"O"s",litname(p)); /* assign an arbitrary value */
+      printf(" "O"s"O".8s",litname(p)); /* assign an arbitrary value */
       lmem[p]=true,lmem[bar(p)]=false;
     }      
     if (lmem[p]==true) vv=true; /* |vv| is {\mc OR} of literals in clause */
@@ -484,8 +484,8 @@ for (c=clauses-1;c;c--) {
     if (vv==false) v=false; /* |v| is {\mc AND} of clauses in group */
   }@+else { /* defining an eliminated variable */
     lmem[p]=v, lmem[bar(p)]=-v;
-    if (v==true) printf(" "O"s"O"s",litname(p));
-    else printf(" "O"s"O"s",litname(bar(p)));
+    if (v==true) printf(" "O"s"O".8s",litname(p));
+    else printf(" "O"s"O".8s",litname(bar(p)));
     v=true;
   }
 }
