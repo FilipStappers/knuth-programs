@@ -35,7 +35,7 @@ class MutexExclusion(unittest.TestCase):
     def tearDownClass(cls):
         cls.temp.cleanup()
 
-    def encode(self, name, n):
+    def encode(self, name, n, raw=False):
         data = ''.join(f'{p}{k} {"critical" if k else "maybe"} goto {p}{(k+1)%n}\n'
                        for p in 'AB' for k in range(n))
         lemmas = self.work/'states.lemmas'
@@ -52,7 +52,11 @@ class MutexExclusion(unittest.TestCase):
                                 capture_output=True, timeout=5)
         self.assertEqual(result.returncode, 0, result.stderr.decode())
         self.assertNotIn(b'runtime error', result.stderr)
-        return native_clauses(result.stdout.decode())
+        return result.stdout.decode() if raw else native_clauses(result.stdout.decode())
+
+    def test_distinct_lemma_header_uses_the_supplied_path(self):
+        output = self.encode('sat-mutex-distinct-lemmas', 3, raw=True)
+        self.assertIn(str(self.work/'states.lemmas'), output.splitlines()[0])
 
     def test_two_states_all_variants(self):
         for name in VARIANTS:

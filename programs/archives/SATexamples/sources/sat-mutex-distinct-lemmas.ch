@@ -63,7 +63,7 @@ if (!lemma_file) {
   fprintf(stderr,"I can't open file `%s' for reading!\n",argv[2]);
   exit(-3);
 }                                       
-printf("~ sat-mutex-distinct-lemmas %d %s\n",r,argv[3]);
+printf("~ sat-mutex-distinct-lemmas %d %s\n",r,argv[2]);
 @z
 @x
     if (state[astep[k]].crit==0) /* a \.{maybe} step */
