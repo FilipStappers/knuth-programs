@@ -57,6 +57,11 @@ if (argc!=4 || sscanf(argv[1],"%d",&mm)!=1 ||
   fprintf(stderr,"Usage: %s m n r\n",argv[0]);
   exit(-1);
 }
+if (mm<1 || mm>maxx || nn<1 || nn>maxy) {
+  fprintf(stderr,"Grid dimensions must be between 1 and %d by 1 and %d!\n",
+                 maxx,maxy);
+  exit(-6);
+}
 printf("~ sat-life-grid-cycle %d %d %d\n",mm,nn,r);
 @z
 @x

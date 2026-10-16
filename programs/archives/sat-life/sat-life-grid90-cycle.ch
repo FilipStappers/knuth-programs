@@ -63,6 +63,11 @@ if (mm!=nn) {
   fprintf(stderr,"This version requires m=n!\n");
   exit(-2);
 }
+if (mm<1 || mm>maxx || nn<1 || nn>maxy) {
+  fprintf(stderr,"Grid dimensions must be between 1 and %d by 1 and %d!\n",
+                 maxx,maxy);
+  exit(-6);
+}
 printf("~ sat-life-grid90-cycle %d %d %d\n",mm,nn,r);
 @z
 @x
