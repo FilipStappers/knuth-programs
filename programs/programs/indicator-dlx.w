@@ -29,6 +29,7 @@ main(int argc,char*argv[]) {
   @<Echo the command line@>;
   @<Print the item-name line@>;
   for (i=0;i<r;i++) @<Print the options for relation |i|@>;
+  @<Print the options that assign every function value@>;
 }
 
 @ @<Process the command line@>=
@@ -115,6 +116,12 @@ that relation. (Relation $r$ is identified by its code letter |'a'+r|.)
 There are $d^k$ secondary items $x_1\ldots x_k$, one for each combination
 of arguments. The color of $x_1\dots x_k$ is the value of the polymorphism
 at those arguments.
+There also is a primary item \c{F}$x_1\ldots x_k$ for each argument
+vector. Its $d$ options choose that function value explicitly, including
+vectors that occur in no relation coordinate. Thus covers specify total
+operations, rather than partial operations with implicit arbitrary completions.
+With distinct tuples in each relation, a total operation determines exactly
+one cover. Repeated input tuples retain their distinct option identities.
 
 @<Print the item-name line@>=
 for (i=0;i<r;i++) {
@@ -129,6 +136,15 @@ for (i=0;i<r;i++) {
     if (j<0) break;
     a[j]++;
   }
+}
+for (j=0;j<k;j++) a[j]=0;
+while (1) {
+  printf("F");
+  for (j=0;j<k;j++) printf("%x",a[j]);
+  printf(" ");
+  for (j=k-1;j>=0 && a[j]==d-1;j--) a[j]=0;
+  if (j<0) break;
+  a[j]++;
 }
 printf("|");
 for (j=0;j<k;j++) a[j]=0;
@@ -170,6 +186,21 @@ next_t:@+continue;
     if (j<0) break;
     a[j]++;
   }
+}
+
+@ @<Print the options that assign every function value@>=
+for (j=0;j<k;j++) a[j]=0;
+while (1) {
+  for (v=0;v<d;v++) {
+    printf("F");
+    for (j=0;j<k;j++) printf("%x",a[j]);
+    printf(" ");
+    for (j=0;j<k;j++) printf("%x",a[j]);
+    printf(":%x\n",v);
+  }
+  for (j=k-1;j>=0 && a[j]==d-1;j--) a[j]=0;
+  if (j<0) break;
+  a[j]++;
 }
 
 @*Index.

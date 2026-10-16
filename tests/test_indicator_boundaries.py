@@ -57,6 +57,38 @@ class IndicatorBoundaries(unittest.TestCase):
             self.assertEqual(len(set(args)), d**k)
             self.assertTrue(all(len(arg) == k for arg in args))
 
+    def test_covers_enumerate_total_operations_including_unseen_arguments(self):
+        for arity in [1, 2]:
+            universe = [''.join(t) for t in itertools.product('01', repeat=arity)]
+            for mask in range(1, 1 << len(universe)):
+                relation = [t for i, t in enumerate(universe) if mask >> i & 1]
+                for k in [1, 2]:
+                    args = [''.join(t) for t in itertools.product('01', repeat=k)]
+                    expected = Counter()
+                    for values in itertools.product([0, 1], repeat=len(args)):
+                        operation = dict(zip(args, values))
+                        if all(''.join(str(operation[''.join(t[j] for t in inputs)]) for j in range(arity))
+                               in relation for inputs in itertools.product(relation, repeat=k)):
+                            expected[values] += 1
+                    with self.subTest(relation=relation, k=k):
+                        result = self.solve(2, k, relation)
+                        self.assertEqual(result.returncode, 0, result.stderr.decode())
+                        lines = [line.split() for line in result.stdout.decode().splitlines()
+                                 if not line.startswith('|')]
+                        primary = sorted(lines[0][:lines[0].index('|')])
+                        choices = {item: [row for row in lines[1:] if item in row] for item in primary}
+                        actual = Counter()
+                        def visit(index, colors):
+                            if index == len(primary):
+                                actual[tuple(int(colors.get(arg, '-1')) for arg in args)] += 1
+                                return
+                            for row in choices[primary[index]]:
+                                additions = dict(token.split(':') for token in row if ':' in token)
+                                if all(name not in colors or colors[name] == value for name, value in additions.items()):
+                                    visit(index+1, colors | additions)
+                        visit(0, {})
+                        self.assertEqual(actual, expected)
+
     def test_all_supported_relation_arities_match_independent_matrices(self):
         for arity in range(1, 11):
             tuples = [''.join(str((i+j) % 2) for j in range(arity)) for i in range(2)]
@@ -75,6 +107,11 @@ class IndicatorBoundaries(unittest.TestCase):
                             if all(len(values) == 1 for values in mapping.values()):
                                 expected[tuple(sorted([item]+[args+':'+next(iter(values))
                                                                for args, values in mapping.items()]))] += 1
+                    for vector in itertools.product('01', repeat=k):
+                        arg = ''.join(vector)
+                        primary.add('F'+arg)
+                        for value in '01':
+                            expected[tuple(sorted(['F'+arg, arg+':'+value]))] += 1
                     result = self.solve(2, k, tuples)
                     self.assertEqual(result.returncode, 0, result.stderr.decode())
                     lines = [line.split() for line in result.stdout.decode().splitlines()
