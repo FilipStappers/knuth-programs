@@ -70,6 +70,23 @@ class EmptyClauseConversion(unittest.TestCase):
                         self.assertEqual(native_has_extension(output, a),
                                          models(clauses, a))
 
+    def test_large_indices_use_injective_native_names(self):
+        for index in [99999999, 100000000, 100000001, 134217728,
+                      268435455, 268435456, 1073741824, 2147483647]:
+            data = f'p cnf {index} 2\n{index} -1 0\n-{index} 1 0\n'
+            clauses = native_clauses(self.convert(data))
+            names = {lit.lstrip('~') for clause in clauses for lit in clause}
+            self.assertTrue(all(len(name) <= 8 for name in names), names)
+            decoded = {name: int(name[1:], 36) if name.startswith('v') else int(name)
+                       for name in names}
+            self.assertEqual(set(decoded.values()), {1, index})
+            self.assertEqual(len(names), 2)
+            for low, high in itertools.product([False, True], repeat=2):
+                assigned = {name: high if variable == index else low
+                            for name, variable in decoded.items()}
+                with self.subTest(index=index, low=low, high=high):
+                    self.assertEqual(native_has_extension(clauses, assigned), low == high)
+
     def test_ordinary_translation_is_unchanged(self):
         self.assertEqual(self.convert('c example\np cnf 2 2\n1 -2 0\n2 0\n'),
                          '~  example\n 1 ~2\n 2\n')
@@ -89,6 +106,15 @@ class EmptyClauseConversion(unittest.TestCase):
         result = subprocess.run([str(solver), 'v0'], input=output.encode(),
                                 capture_output=True, timeout=5)
         self.assertEqual(result.stdout.strip(), b'~', result.stderr.decode())
+        for index in [100000000, 2147483647]:
+            output = self.convert(f'p cnf {index} 2\n{index} 0\n1 -{index} 0\n')
+            clauses = native_clauses(output)
+            result = subprocess.run([str(solver), 'v0'], input=output.encode(),
+                                    capture_output=True, timeout=5)
+            model = set(result.stdout.decode().split())
+            self.assertTrue(all(any(lit in model for lit in clause) for clause in clauses),
+                            result.stderr.decode())
+
 
 
 if __name__ == '__main__':

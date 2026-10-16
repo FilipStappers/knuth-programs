@@ -11,6 +11,10 @@ A literal for the $k$th variable is represented by $k$; its complement
 is represented by $-k$.
 
 SAT format is explained in the programs cited above.
+Variable numbers below 100000000 retain their decimal names. Larger
+numbers use a leading \.v followed by base-36 digits, so every positive
+32-bit index fits the native eight-character limit. These names are
+distinct from the decimal names and from the special variable \.0.
 An empty DIMACS clause is represented by two contradictory unit clauses on
 the SAT variable named \.0. This name cannot clash with an input variable,
 because DIMACS literals have nonzero variable numbers. A blank SAT line
@@ -23,6 +27,7 @@ would instead be ignored, losing the contradiction.
 #include <stdlib.h>
 char buf[buf_size];
 int m,n,v;
+@<Subroutines@>@;
 main() {
   register int j,k,l,p;
   @<Read the preamble@>;
@@ -71,7 +76,7 @@ while (fscanf(stdin,"%i",&v)==1) {
       fprintf(stderr,"Too many variables (%d > %d)!\n",v,n);
       exit(-4);
     }
-    printf(" %d",v);
+    printf(" "),print_var(v);
     if (v>p) p=v;
     j++,l++;
   }@+else {
@@ -79,7 +84,7 @@ while (fscanf(stdin,"%i",&v)==1) {
       fprintf(stderr,"Too many variables (%d < -%d)!\n",v,n);
       exit(-5);
     }
-    printf(" ~%d",-v);
+    printf(" ~"),print_var(-v);
     if (-v>p) p=-v;
     j++,l++;
   }
@@ -93,6 +98,24 @@ if (k<m) fprintf(stderr,"Too few clauses (%d < %d)!\n",k,m);
 fprintf(stderr,"OK, I translated %d input literals in %d input clauses"
                " (largest input variable %d).\n",
            l,k,p);
+
+@ A compact name must still identify each large DIMACS variable uniquely.
+
+@<Subroutines@>=
+void print_var(int value) {
+  char digits[]="0123456789abcdefghijklmnopqrstuvwxyz";
+  char name[sizeof(int)*8];
+  int k=0;
+  if (value<100000000) printf("%d",value);
+  else {
+    do {
+      name[k++]=digits[value%36];
+      value/=36;
+    } while (value);
+    putchar('v');
+    while (k) putchar(name[--k]);
+  }
+}
 
 @*Index.
 
