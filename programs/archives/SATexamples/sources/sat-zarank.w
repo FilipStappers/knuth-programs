@@ -127,10 +127,14 @@ for (i=1;i<n;i++) {
 As usual, I copy stuff from {\mc SAT-THRESHOLD-BB}.
 
 @<Generate the clauses for the cardinality constraints@>=
-@<Build the complete binary tree with |mn| leaves@>;
-r=mn-r; /* convert to asking for at most $mn-r$ zeroes */
-for (i=mn-2;i;i--) @<Generate the clauses for node $i$@>;
-@<Generate the clauses at the root@>;
+if (r==mn) {
+  for (i=0;i<m;i++) for (j=0;j<n;j++) printf("%d.%d\n",i,j);
+}@+else if (r>0) {
+  @<Build the complete binary tree with |mn| leaves@>;
+  r=mn-r; /* convert to asking for at most $mn-r$ zeroes */
+  for (i=mn-2;i>0;i--) @<Generate the clauses for node $i$@>;
+  @<Generate the clauses at the root@>;
+}
 
 @ The tree has $2mn-1$ nodes, with 0 as the root; the leaves start
 at node~$mn-1$. Nonleaf node $k$ has left child $2k+1$ and right child $2k+2$.
