@@ -166,8 +166,8 @@ column *last_nonprim_col; /* the first unused column */
 
 @<Read the column names@>=
 cur_col=col_array+1;
-fgets(buf,buf_size,stdin);
-if (buf[strlen(buf)-1]!='\n') panic("Input line too long");
+if (!fgets(buf,buf_size,stdin)) panic("Missing column names");
+if (!buf[0] || buf[strlen(buf)-1]!='\n') panic("Input line too long or empty");
 for (p=buf,primary=1;*p;p++) {
   while (isspace(*p)) p++;
   if (!*p) break;
@@ -206,7 +206,7 @@ cur_node=node_array;
 while (fgets(buf,buf_size,stdin)) {
   register column *ccol;
   register node *row_start, *x;
-  if (buf[strlen(buf)-1]!='\n') panic("Input line too long");
+  if (!buf[0] || buf[strlen(buf)-1]!='\n') panic("Input line too long or empty");
   row_start=NULL;
   for (p=buf;*p;p++) {
     while (isspace(*p)) p++;
