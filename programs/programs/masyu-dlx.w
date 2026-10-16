@@ -52,7 +52,7 @@ for (i=0;i<maxn;i++) {
                buf);
   for (j=0;j<maxn && buf[j]!='\n';j++) {
     k=buf[j];
-    if (k!='.' && (k<'0' || k>'4')) panic("illegal clue");
+    if (k!='.' && (k<'0' || k>'1')) panic("illegal clue");
     board[i][j]=k;
   }
   if (i==0) n=j;
