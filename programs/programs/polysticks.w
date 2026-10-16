@@ -181,19 +181,32 @@ for (j=0;j<n;j++) {
 
 @ Interior points don't have to be on the board; they might, for example,
 lie on the boundary after translation.
+Only required edges determine the translation bounds. Optional points outside
+the coordinate table are omitted when printing.
 
 @<Output translates of the current piece@>=
+{
+xmin=ymin=1000;@+ xmax=ymax=-1000;
+for (j=0;j<n;j++) if (zz[j]!=1) {
+  if (xx[j]<xmin) xmin=xx[j];
+  if (xx[j]>xmax) xmax=xx[j];
+  if (yy[j]<ymin) ymin=yy[j];
+  if (yy[j]>ymax) ymax=yy[j];
+}
+if (xmin>xmax) panic("Piece has no required edges");
 for (x=bxmin-xmin;x<=bxmax-xmax;x++)
   for (y=bymin-ymin;y<=bymax-ymax;y++) {
     for (j=0;j<n;j++)
       if (zz[j]!=1 && !board[x+xx[j]][y+yy[j]][zz[j]]) goto nope;
     printf("%s",name);
-    for (j=0;j<n;j++) if (board[x+xx[j]][y+yy[j]][zz[j]]) {
+    for (j=0;j<n;j++) if (x+xx[j]>=0 && x+xx[j]<36 &&
+        y+yy[j]>=0 && y+yy[j]<36 && board[x+xx[j]][y+yy[j]][zz[j]]) {
       printf(" %c%c%c",codeletter[zz[j]],encode(x+xx[j]),encode(y+yy[j]));
     }
     printf("\n");
  nope:;
   }  
+}
 
 @ @<Sub...@>=
 char codeletter[3]={'H','I','V'};

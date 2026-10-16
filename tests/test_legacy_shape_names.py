@@ -2,6 +2,7 @@
 from collections import Counter
 import os
 from pathlib import Path
+import random
 import subprocess
 import tempfile
 import unittest
@@ -46,6 +47,73 @@ class LegacyShapeNames(unittest.TestCase):
                     self.assertNotEqual(result.returncode, 0)
                     self.assertNotIn(b'runtime error', result.stderr)
                     self.assertNotIn(b'AddressSanitizer', result.stderr)
+
+    def test_optional_stick_points_do_not_remove_edge_placements(self):
+        for board, shape, expected in [
+            ('H00', 'H00 I10', ['P', 'H00']),
+            ('H00', 'H10 I00', ['P', 'H00']),
+            ('Hz0', 'H00 I10', ['P', 'Hz0']),
+            ('H00 H10 | I10', 'H00 I10', ['P', 'H00', 'I10']),
+        ]:
+            with self.subTest(board=board, shape=shape):
+                result = self.solve('polysticks', f'P\n{board}\nP 1 1 {shape}\n'.encode())
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                rows = [tuple(sorted(line.split())) for line in result.stdout.decode().splitlines()[1:]]
+                self.assertIn(tuple(sorted(expected)), rows)
+        result = self.solve('polysticks', b'P\nH00\nP 1 1 I00\n')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b'no required edges', result.stderr)
+        self.assertNotIn(b'runtime error', result.stderr)
+
+    def test_endpoint_geometry_with_optional_points_and_all_orientations(self):
+        rng = random.Random(60002)
+        shapes = [['H00'], ['H00', 'V00'], ['H00', 'I10'], ['V00', 'I01'], ['H10', 'I00'],
+                  ['H00', 'V10', 'I10'], ['H00', 'H10', 'V20', 'I10', 'I20']]
+        universe = [(x, y, direction) for x in range(3) for y in range(3) for direction in ['H', 'V']]
+        for case in range(10):
+            edges = {edge for edge in universe if rng.randrange(3)}
+            if not edges:
+                edges.add((0, 0, 'H'))
+            junctions = {(x, y) for x in range(3) for y in range(3) if rng.randrange(2)}
+            board = ' '.join(f'{direction}{x}{y}' for x, y, direction in sorted(edges))
+            if junctions:
+                board += ' | '+' '.join(f'I{x}{y}' for x, y in sorted(junctions))
+            for shape in shapes:
+                expected = Counter()
+                for reflected in [False, True]:
+                    for rotation in range(4):
+                        def transform(p):
+                            x, y = p
+                            if reflected:
+                                x, y = y, x
+                            for _ in range(rotation):
+                                x, y = -y, x
+                            return x, y
+                        required, optional = [], []
+                        for token in shape:
+                            kind, x, y = token[0], int(token[1]), int(token[2])
+                            if kind == 'I':
+                                optional.append(transform((x, y)))
+                            else:
+                                p = transform((x, y))
+                                q = transform((x+(kind == 'H'), y+(kind == 'V')))
+                                required.append((min(p[0], q[0]), min(p[1], q[1]), 'H' if p[1] == q[1] else 'V'))
+                        anchor_x, anchor_y, anchor_kind = required[0]
+                        for bx, by, kind in edges:
+                            if kind != anchor_kind:
+                                continue
+                            dx, dy = bx-anchor_x, by-anchor_y
+                            placed = {(x+dx, y+dy, direction) for x, y, direction in required}
+                            if not placed <= edges:
+                                continue
+                            row = ['P']+[f'{direction}{x}{y}' for x, y, direction in placed]
+                            row += [f'I{x+dx}{y+dy}' for x, y in optional if (x+dx, y+dy) in junctions]
+                            expected[tuple(sorted(row))] += 1
+                with self.subTest(case=case, shape=shape):
+                    result = self.solve('polysticks', ('P\n'+board+'\nP 4 2 '+' '.join(shape)+'\n').encode())
+                    self.assertEqual(result.returncode, 0, result.stderr.decode())
+                    actual = Counter(tuple(sorted(line.split())) for line in result.stdout.decode().splitlines()[1:])
+                    self.assertEqual(actual, expected)
 
     def test_piece_names_survive_header_to_every_placement(self):
         for name in self.programs:
