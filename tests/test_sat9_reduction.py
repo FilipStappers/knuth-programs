@@ -33,7 +33,7 @@ class Sat9Reduction(unittest.TestCase):
             subprocess.run(['ctangle', str(literate), '-', str(generated)],
                            check=True, capture_output=True)
             subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-O1',
-                            '-I'+sgb, '-fsanitize=address,undefined,bounds',
+                            '-I'+sgb, '-fsanitize=address,undefined,bounds,float-divide-by-zero',
                             '-fno-sanitize-recover=all', str(generated),
                             str(Path(sgb)/'gb_flip.c'), '-lm', '-o', str(program)],
                            check=True, capture_output=True)
@@ -54,6 +54,16 @@ class Sat9Reduction(unittest.TestCase):
         self.assertIn(b"I can't open `missing/sat9-123.dat' for writing!", result.stderr)
         self.assertNotIn(b'AddressSanitizer', result.stderr)
         self.assertNotIn(b'runtime error', result.stderr)
+
+    def test_contradictory_fields_are_reported_without_dividing_by_zero(self):
+        data = b'a\n~a\n'
+        quiet = self.run_solver('normal', data, ['v0', 't2', 'l0'])
+        shown = self.run_solver('normal', data, ['v32', 't2', 'l0'])
+        self.assertEqual(shown.returncode, 0, shown.stderr.decode())
+        self.assertEqual(shown.stdout, quiet.stdout)
+        self.assertIn(b'undefined (contradictory fields)', shown.stderr)
+        self.assertNotIn(b'nan', shown.stderr.lower())
+        self.assertNotIn(b'runtime error', shown.stderr)
 
     def check_residual(self, data, confidence, seed, allow_unknown=True):
         residual_path = self.work/f'residual-{seed}.dat'

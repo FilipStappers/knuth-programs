@@ -885,8 +885,9 @@ but also the associated ``fields'' $(p,q,r)$ described above.
     pi1=lmem[k+k+1].pi;
     if (lmem[k+k+1].zf) pi1=0.0;    
     den=pi0+pi1-pi0*pi1;
-    fprintf(stderr,"    %4.2f %4.2f %4.2f\n",
-          pi1*(1-pi0)/den,pi0*(1-pi1)/den,pi0*pi1/den);
+    if (den==0.0) fprintf(stderr,"    undefined (contradictory fields)\n");
+    else fprintf(stderr,"    %4.2f %4.2f %4.2f\n",
+            pi1*(1-pi0)/den,pi0*(1-pi1)/den,pi0*pi1/den);
   }
 }
 
