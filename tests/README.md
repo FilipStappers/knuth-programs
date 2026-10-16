@@ -20,3 +20,9 @@ GRAPHBASE=/path/to/sgb python3 -m unittest discover -s tests -v
 
 Without GRAPHBASE, that optional integration check is reported as skipped.
 The exhaustive converter projection checks have no GraphBase dependency.
+
+ACHAIN3 cache tests change only `nmax` to 8 in a temporary literate-source
+copy, leaving the committed default unchanged. They compare all output bytes
+with independent shortest-chain enumeration through n=7 under both char modes.
+The separate known general search defect (for example n=15) is not repaired or
+claimed covered by this cache fix.

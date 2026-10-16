@@ -99,10 +99,13 @@ if (!infile[kk]) {
   if (!infile[kk]) infile[kk]=(FILE*)1;
 }
 if (infile[kk]!=(FILE*)1) {
-  l[kk][n]=fgetc(infile[kk])-' ';
-  if (l[kk][n]<=0) infile[kk]=(FILE*)1;
-      /* shut down input when something fails */
-  goto done; /* accept the input value unquestioningly */
+  j=fgetc(infile[kk]); /* retain EOF until it has been checked */
+  if (j!=EOF && j>' ') {
+    l[kk][n]=j-' ';
+    if (l[kk][n]>0) goto done; /* accept a positive input value */
+  }
+  fclose(infile[kk]);
+  infile[kk]=(FILE*)1; /* compute this entry and stop using this input */
 }
 
 @ @<Determine $\lfloor\lg n\rfloor$ and the binary upper bound@>=
