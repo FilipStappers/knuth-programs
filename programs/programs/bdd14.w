@@ -1005,7 +1005,7 @@ if (cachepages<maxcachepages) {
 done:@;
 
 @ @<Recache the items in the bottom half@>=
-for (k=cachepages>>1;k<cachepages;k++) {
+for (k=0;k<(cachepages>>1);k++) {
   for (o,m=memo_(cachepage[k]);m<memo_(cachepage[k])+cacheslotsperpage;m++)
     if (o,m->r) {
       if (m->h) oo;@+else o; /* mems for computing |cachehash| */

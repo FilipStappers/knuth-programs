@@ -17,8 +17,10 @@ class Bdd14Operations(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory()
         cls.work = Path(cls.temp.name)
         cls.programs = {}
+        cls.cache_programs = {}
         for name, relative in [('archive', 'archives/bdd-zdd-utils/bdd14.w'),
-                               ('program', 'programs/bdd14.w')]:
+                               ('program', 'programs/bdd14.w'),
+                               ('zdd', 'archives/bdd-zdd-utils/bdd15.w')]:
             work = cls.work/name
             work.mkdir()
             generated = work/'bdd14.c'
@@ -28,7 +30,8 @@ class Bdd14Operations(unittest.TestCase):
             assert text.count('exit(0);') == 1
             (work/'bdd-under-test.c').write_text(text.replace('exit(0);', 'return 0;'))
             harness = work/'reference.c'
-            harness.write_text((ROOT/'tests/bdd14_reference.c').read_text())
+            harness.write_text(('#define ZDD\n' if name == 'zdd' else '')+
+                               (ROOT/'tests/bdd14_reference.c').read_text())
             program = work/'reference'
             # Original representation requires low 32-bit static addresses and
             # deliberate overlaid storage; preserve those documented assumptions.
@@ -36,7 +39,9 @@ class Bdd14Operations(unittest.TestCase):
                             '-fno-strict-aliasing', '-no-pie', '-I'+sgb,
                             str(harness), str(Path(sgb)/'gb_flip.c'), '-o', str(program)],
                            check=True, capture_output=True)
-            cls.programs[name] = program
+            cls.cache_programs[name] = program
+            if name != 'zdd':
+                cls.programs[name] = program
         cls.commands = cls.work/'quit.bddl'
         cls.commands.write_text('v0\nq\n')
 
@@ -60,6 +65,15 @@ class Bdd14Operations(unittest.TestCase):
             with self.subTest(revision=name):
                 self.assertEqual(result.returncode, 0, result.stdout.decode()+result.stderr.decode())
                 self.assertIn(b'COMPOSE failures=0', result.stdout)
+                self.assertNotIn(b'\n! ', result.stdout)
+
+    def test_cache_doubling_retains_relocated_memo(self):
+        for name, program in self.cache_programs.items():
+            result = subprocess.run([str(program), str(self.commands), 'cache'],
+                                    capture_output=True, timeout=10)
+            with self.subTest(revision=name):
+                self.assertEqual(result.returncode, 0, result.stdout.decode()+result.stderr.decode())
+                self.assertIn(b'CACHE before=1 after=1 pages=2', result.stdout)
                 self.assertNotIn(b'\n! ', result.stdout)
 
 
