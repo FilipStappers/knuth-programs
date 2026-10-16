@@ -60,6 +60,10 @@ if (mm<1 || mm>maxx || nn<1 || nn>maxy) {
                  maxx,maxy);
   exit(-6);
 }
+if (r<1 || r>(int)sizeof(timecode)-1) { /* cycle endpoints reuse time zero */
+  fprintf(stderr,"The number of rounds must be between 1 and %d!\n",(int)sizeof(timecode)-1);
+  exit(-7);
+}
 printf("~ sat-life-torus-cycle %d %d %d\n",mm,nn,r);
 @z
 @x

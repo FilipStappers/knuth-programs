@@ -51,6 +51,26 @@ class LifeArguments(unittest.TestCase):
                     self.assertNotIn(b'runtime error', result.stderr)
                     self.assertEqual(result.stdout, b'')
 
+    def test_rounds_must_fit_time_codes(self):
+        for name in self.programs:
+            limit = 84 if '-cycle' in name else 83
+            for rounds in [0, -1, limit+1, -2147483648, 2147483647]:
+                result = self.encode(name, 2, 2, rounds)
+                with self.subTest(variant=name, rounds=rounds):
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertEqual(result.stdout, b'')
+
+    def test_last_supported_time_code_has_no_nul(self):
+        for name in self.programs:
+            limit = 84 if '-cycle' in name else 83
+            result = self.encode(name, 2, 2, limit)
+            with self.subTest(variant=name):
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'\x00', result.stdout)
+                self.assertTrue(result.stdout)
+
     def test_largest_grid_dimensions_fit_storage(self):
         self.assertEqual(len(self.programs), 12)
         for name in self.programs:
