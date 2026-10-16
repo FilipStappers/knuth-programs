@@ -408,7 +408,7 @@ And of course I also compute and store all of the base placements that
 correspond to the typical cells that are specified.
 
 @<Glob...@>=
-char names[maxpieces][8]; /* the piece names seen so far */
+char names[maxpieces+1][8]; /* piece names, plus one candidate scratch slot */
 int piececount; /* how many of them are there? */
 char mult[maxpieces][8]; /* what is the multiplicity? */
 char multip[8]; /* current multiplicity */
@@ -487,6 +487,7 @@ if (p==q || p>q+8) {
                                              buf);
   exit(-7);
 }
+memset(names[piececount],0,8);
 for (j=q;j<p;j++) names[piececount][j-q]=buf[j];
 if (p==q+2) {
   x=decode(names[piececount][0]);
