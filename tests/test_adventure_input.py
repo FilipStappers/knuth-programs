@@ -49,6 +49,30 @@ class AdventureInput(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr.decode())
                 self.assertNotIn(f'Okay, "{word}".'.encode(), result.stdout)
 
+    def test_initial_question_command_and_confirmation_eof_terminate(self):
+        for text in [b'', b'n\n', b'n\nlook\n', b'n\nquit\n', b'n\nsay xyzzy\n']:
+            with self.subTest(text=text):
+                try:
+                    result = self.run_game(text, discard=True)
+                except subprocess.TimeoutExpired:
+                    self.fail('Input exhaustion repeated an old command or question')
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+
+    def test_input_stream_error_exits_with_failure(self):
+        descriptor = os.open(self.work, os.O_RDONLY)
+        try:
+            result = subprocess.run([str(self.program)], stdin=descriptor,
+                                    stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                                    timeout=0.3, cwd=self.work, env=ENV)
+        except subprocess.TimeoutExpired:
+            self.fail('Read failure was retried as an answer')
+        finally:
+            os.close(descriptor)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b'input', result.stderr.lower())
+
 
 if __name__ == '__main__':
     unittest.main()

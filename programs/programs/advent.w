@@ -2421,14 +2421,29 @@ the answer is either yes or no. The subroutine |yes(q,y,n)| prints~|q|,
 waits for you to answer, and then prints |y| or |n| depending on your
 answer. It returns a nonzero value if your answer was affirmative.
 
+Input exhaustion ends the game without reusing the previous answer or command.
+An input error reports failure instead of being treated as a clean end of file.
+
 @<Sub...@>=
+void read_input_line @,@,@[ARGS((void))@];
+void read_input_line()@+{
+  if (fgets(buffer,buf_size,stdin)==NULL) {
+    if (ferror(stdin)) {
+      fprintf(stderr,"I couldn't read standard input!\n");
+      exit(1);
+    }
+    exit(0);
+  }
+}
+
+@ @<Sub...@>=
 boolean yes @,@,@[ARGS((char*,char*,char*))@];
 boolean yes(q,y,n)
   char *q,*y,*n;
 {
   while(1) {
     printf("%s\n** ",q);@+fflush(stdout);
-    fgets(buffer,buf_size,stdin);
+    read_input_line();
     if (tolower(*buffer)=='y') {
       if (y) printf("%s\n",y);@+ return true;
     } else if (tolower(*buffer)=='n') {
@@ -2449,7 +2464,7 @@ void listen()@+{
   register char *p,*q;
   while (1) {
     printf("* ");@+fflush(stdout);
-    fgets(buffer,buf_size,stdin);
+    read_input_line();
     for (p=buffer; isspace(*p); p++) ;
     if (*p==0) {
       printf(" Tell me to do something.\n");@+ continue;
