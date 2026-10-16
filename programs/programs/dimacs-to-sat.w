@@ -49,8 +49,11 @@ int main(void) {
 
 @ @<Read the preamble@>=
 while (1) {
+  int first=fgetc(stdin);
+  if (first==EOF) break;
+  if (first=='c') @<Process a comment line and |continue|@>;
+  ungetc(first,stdin);
   if (!fgets(buf,buf_size,stdin)) break;
-  if (buf[0]=='c') @<Process a comment line and |continue|@>;
   if (buf[0]!='p' || buf[1]!=' ' ||
           buf[2]!='c' || buf[3]!='n' || buf[4]!='f' ||
           !isspace((unsigned char)buf[5]) || !strchr(buf,'\n')) {
@@ -70,9 +73,15 @@ while (1) {
   break;
 }
 
-@ @<Process a comment line and |continue|@>=
+@ Comments are streamed through their physical newline, regardless of length.
+A comment continuation must never be mistaken for a problem header.
+
+@<Process a comment line and |continue|@>=
 {
-  printf("~ %s",buf+1);
+  int c;
+  printf("~ ");
+  while ((c=fgetc(stdin))!=EOF && c!='\n') putchar(c);
+  putchar('\n');
   continue;
 }
 

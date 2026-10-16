@@ -65,6 +65,26 @@ class ConverterStatus(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr.decode())
                 self.assertEqual(result.stdout, b' 8\n')
 
+    def test_long_opening_comments_keep_their_physical_line(self):
+        for program in self.programs:
+            for size in [1021, 1022, 1023, 1024, 2048, 10000]:
+                comment = b'c' + b'x'*size + b'p cnf 99 99'
+                data = comment + b'\nc second\np cnf 1 1\n1 0\n'
+                result = subprocess.run([str(program)], input=data,
+                                        capture_output=True, timeout=3)
+                with self.subTest(dialect=program.name, size=size):
+                    self.assertEqual(result.returncode, 0, result.stderr.decode())
+                    self.assertEqual(result.stdout,
+                                     b'~ '+comment[1:]+b'\n~  second\n 1\n')
+
+    def test_comment_at_eof_cannot_replace_a_header(self):
+        for program in self.programs:
+            for data in [b'c', b'c'+b'x'*10000]:
+                result = subprocess.run([str(program)], input=data,
+                                        capture_output=True, timeout=3)
+                with self.subTest(dialect=program.name, size=len(data)):
+                    self.assertNotEqual(result.returncode, 0)
+
     def test_malformed_or_truncated_clause_streams_fail(self):
         cases = ['p cnf 1 2\n1 0\n', 'p cnf 1 1\n1\n',
                  'p cnf 1 1\n1 0 junk\n', 'p cnf 1 2\n1 0\nc comment\n-1 0\n',
