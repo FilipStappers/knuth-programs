@@ -65,6 +65,21 @@ class ProgressionLengths(unittest.TestCase):
                 self.assertIn(b'progression', result.stderr.lower())
                 self.assertNotIn(b'runtime error', result.stderr)
 
+    def test_arithprog_parameter_bounds_and_large_progression_filename(self):
+        for n, r in [(-1, 0), (-2147483648, 0), (0, 1), (3, -1), (3, 4), (100, 101)]:
+            with self.subTest(n=n, r=r):
+                result = self.encode('arithprog', [3, n, r])
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertEqual(result.stdout, b'')
+        result = self.encode('arithprog', [2147483647, 1, 1])
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        formula = [line.split() for line in result.stdout.decode().splitlines()
+                   if line.strip() and not line.startswith('~ ')]
+        self.assertTrue(satisfiable(formula+[['x1']]))
+        self.assertFalse(satisfiable(formula+[['~x1']]))
+
     def test_every_small_two_color_progression_projection(self):
         for n in range(9):
             for k, l in itertools.product(range(2, 5), repeat=2):

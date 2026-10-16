@@ -86,7 +86,7 @@ $$\pmatrix{
 FILE *infile;
 int table[maxr+1];
 int t,n,r; /* command-line parameters */
-char buf[16];
+char buf[32];
 main(int argc,char*argv[]) {
   register int b,d,i,j,k,p,q;
   @<Process the command line@>;
@@ -109,6 +109,10 @@ if (t<2) {
   fprintf(stderr,"Progression length must be at least two!\n");
   exit(-2);
 }
+if (n<0 || r<0 || r>n) {
+  fprintf(stderr,"Require a nonnegative n and 0<=r<=n!\n");
+  exit(-2);
+}
 if (r>maxr) {
   fprintf(stderr,"Sorry, r (%d) should not exceed %d!\n",r,maxr);
   exit(-2);
@@ -119,7 +123,10 @@ if (n>=256) {
 }
 
 @ @<Input the file \.{free$t$}@>=
-sprintf(buf,"free%d.dat",t);
+if (snprintf(buf,sizeof(buf),"free%d.dat",t)>=sizeof(buf)) {
+  fprintf(stderr,"Progression table filename is too long!\n");
+  exit(-5);
+}
 infile=fopen(buf,"r");
 if (!infile) {
   fprintf(stderr,"I can't open file `%s' for reading!\n",buf);
