@@ -44,6 +44,7 @@ char istrans[128][2];
 main (int argc,char*argv[]) {
   register int a,j,k,q;
   @<Process the command line@>;
+  @<Select an initial and a final state@>;
   for (k=1;k<=n;k++) {
     @<Generate the clauses of type (i)@>;
     @<Generate the clauses of type (ii)@>;
@@ -61,6 +62,10 @@ if (argc<4 || sscanf(argv[1],"%d",
                                argv[0]);
   exit(-1);
 }
+if (!argv[2][0] || !argv[3][0]) {
+  fprintf(stderr,"Input and output state sets must be nonempty!\n");
+  exit(-2);
+}
 for (j=0;argv[2][j];j++) {
   k=argv[2][j];
   if (badstate(k)) {
@@ -68,7 +73,7 @@ for (j=0;argv[2][j];j++) {
                                               k);
     exit(-2);
   }
-  isinput[k]=1;
+  isinput[k]=isstate[k]=1;
 }
 for (j=0;argv[3][j];j++) {
   k=argv[3][j];
@@ -77,7 +82,7 @@ for (j=0;argv[3][j];j++) {
                                               k);
     exit(-3);
   }
-  isoutput[k]=1;
+  isoutput[k]=isstate[k]=1;
 }
 for (j=4;j<argc;j++) {
   if (badstate(argv[j][0]) || badstate(argv[j][2]) ||
@@ -94,6 +99,16 @@ printf("~");
 for (k=0;k<argc;k++) printf(" %s",
                                argv[k]);
 printf("\n"); /* mirror the command line as the first line of output */
+
+@ Positive endpoint clauses require a state even when $n=0$ and no
+transition clauses exist. Together with type (vi), they allow an empty
+word precisely when the input and output sets intersect.
+
+@<Select an initial and a final state@>=
+for (q='!';q<'~';q++) if (isinput[q]) printf(" S%02x0",q);
+printf("\n");
+for (q='!';q<'~';q++) if (isoutput[q]) printf(" S%02x%d",q,n);
+printf("\n");
 
 @ @<Generate the clauses of type (i)@>=
 for (q='!';q<'~';q++) if (isstate[q]) {

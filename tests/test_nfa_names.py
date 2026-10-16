@@ -54,6 +54,23 @@ class NfaNames(unittest.TestCase):
                 fixed = [[('~' if bit == '0' else '')+str(i)] for i, bit in enumerate(word, 1)]
                 self.assertTrue(satisfiable(formula+fixed))
 
+    def test_empty_word_checks_initial_final_state_intersection(self):
+        for initial, final in itertools.product(['a', 'b', 'ab'], repeat=2):
+            for transitions in [[], ['a0a', 'b1b']]:
+                with self.subTest(initial=initial, final=final, transitions=transitions):
+                    result = self.encode(0, initial, final, transitions)
+                    self.assertEqual(result.returncode, 0, result.stderr.decode())
+                    self.assertEqual(satisfiable(clauses(result.stdout)),
+                                     accepts(initial, final, transitions, ''))
+
+    def test_state_sets_must_be_nonempty(self):
+        for initial, final in [('', 'a'), ('a', ''), ('', '')]:
+            with self.subTest(initial=initial, final=final):
+                result = self.encode(0, initial, final, [])
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b'nonempty', result.stderr)
+                self.assertEqual(result.stdout, b'')
+
     def test_complete_small_language_projections(self):
         automata = [('a', 'a', ['a0a', 'a1a']),
                     ('a', 'c', ['a0a', 'a1b', 'b1c', 'c0c']),
