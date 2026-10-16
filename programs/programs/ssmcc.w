@@ -37,6 +37,7 @@ input or to format the output.)
 @d max_level 32000 /* at most this many levels in the search tree */
 @d max_cols 100000 /* at most this many items */
 @d max_nodes 10000000 /* at most this many nonzero elements in the matrix */
+@d max_force (max_nodes>max_cols?max_nodes:max_cols)
 @d savesize 10000000 /* at most this many entries on |savestack| */
 @d bufsize (9*max_cols+3) /* a buffer big enough to hold all item names */
 @#
@@ -354,8 +355,22 @@ int active; /* current number of active items */
 int oactive; /* value of active before swapping out current-choice items */
 int baditem; /* an item with no options, plus 1 */
 int osecond; /* setting of |second| just after initial input */
-int force[max_cols]; /* stack of items known to have |size=bound-slack| */
+int force[max_force]; /* one entry per forced incidence, or optionless item */
 int forced; /* the number of items on that stack */
+
+@ A forced item is queued once for each remaining required incidence,
+so the stack can contain more entries than there are items. During input,
+optionless items are queued once each. These two phases use an empty stack
+and are bounded by |max_nodes| and |max_cols| respectively.
+
+@<Sub...@>=
+void push_force(int itm) {
+  if (forced>=max_force) {
+    fprintf(stderr,"Forced stack overflow!\n");
+    exit(-8);
+  }
+  o,force[forced++]=itm;
+}
 
 @ We're going to store string data (an item's name) in the midst of
 the integer array |set|. So we've got to do some type coercion using
@@ -665,8 +680,8 @@ for (;k;k--) {
   if (k<=osecond) {
     o,wt(j)=w0;
     if (size(j)<bound(j)-slack(j)) baditem=k;
-    else if (size(j)==0) force[forced++]=j;
-  }@+else if (size(j)==0) force[forced++]=j;
+    else if (size(j)==0) push_force(j);
+  }@+else if (size(j)==0) push_force(j);
 }
 
 @ @<Adjust |nd|@>=
@@ -1175,7 +1190,7 @@ a chosen option).
       }@+else fprintf(stderr,"("O"d)",t);
     }
     if (t==1)
-      for (i=bound(item[k])-slack(item[k]);i>0;i--) o,force[forced++]=item[k];
+      for (i=bound(item[k])-slack(item[k]);i>0;i--) push_force(item[k]);
     else if (t<=score && (t<score ||
                (s<=best_s && (s<best_s ||
                (size(item[k])>=best_l && (size(item[k])>best_l ||

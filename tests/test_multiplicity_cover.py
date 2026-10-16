@@ -60,6 +60,50 @@ class MultiplicityCover(unittest.TestCase):
                     self.assertIn(b'Primary item must be uncolored', result.stderr)
                     self.assertNotIn(b'runtime error', result.stderr)
 
+    def test_forced_demand_exceeds_item_capacity(self):
+        names = [f'P{i}' for i in range(9)]
+        row = ' '.join(names)
+        data = (' '.join('16|'+name for name in names)+'\n'+(row+'\n')*16).encode()
+        expected = Counter({(tuple(names),)*16: 1})
+        for mode in self.programs:
+            with self.subTest(mode=mode):
+                result = self.solve(mode, data)
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                self.assertEqual(Counter(sparse_covers(result.stdout)), expected)
+
+    def test_forced_stack_guard_before_write(self):
+        source = self.work/'small-force.w'
+        text = (self.work/'multiplicity.w').read_text()
+        text, count = re.subn(r'(?m)^@d max_force [^\n]+', '@d max_force 8', text)
+        self.assertEqual(count, 1)
+        source.write_text(text)
+        for mode in self.programs:
+            generated = self.work/'small-force.c'
+            change = '-' if mode == 'base' else str(ROOT/'programs/programs'/('ssmcc-'+mode+'.ch'))
+            subprocess.run(['ctangle', str(source), change, str(generated)],
+                           check=True, capture_output=True)
+            program = self.work/'small-force'
+            sgb = os.environ['GRAPHBASE']
+            subprocess.run(['gcc', '-std=gnu99', '-fgnu89-inline', '-O1', '-I'+sgb,
+                            '-fsanitize=address,undefined,bounds', '-fno-sanitize-recover=all',
+                            str(generated), str(Path(sgb)/'gb_flip.c'), '-lm', '-o', str(program)],
+                           check=True, capture_output=True)
+            for demand in [8, 9]:
+                data = (str(demand)+'|A\n'+'A\n'*demand).encode()
+                with self.subTest(mode=mode, demand=demand):
+                    result = subprocess.run([str(program), 'm1', 'v1'], input=data,
+                                            capture_output=True, timeout=5,
+                                            env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertNotIn(b'AddressSanitizer', result.stderr)
+                    if demand == 8:
+                        self.assertEqual(result.returncode, 0, result.stderr.decode())
+                        self.assertEqual(len(sparse_covers(result.stdout)), 1)
+                    else:
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertIn(b'Forced stack overflow', result.stderr)
+                        self.assertEqual(result.stdout, b'')
+
     def test_independent_multiplicity_families(self):
         rng = random.Random(51002)
         for case in range(60):

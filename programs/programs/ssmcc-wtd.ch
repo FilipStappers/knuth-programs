@@ -53,7 +53,7 @@ abort:@+@<Increase the weight of |tough_itm|@>;
       }@+else fprintf(stderr,"("O"d)",t);
     }
     if (t==1)
-      for (i=bound(item[k])-slack(item[k]);i>0;i--) o,force[forced++]=item[k];
+      for (i=bound(item[k])-slack(item[k]);i>0;i--) push_force(item[k]);
     else if (t<=score && (t<score ||
                (s<=best_s && (s<best_s ||
                (size(item[k])>=best_l && (size(item[k])>best_l ||
@@ -66,7 +66,7 @@ abort:@+@<Increase the weight of |tough_itm|@>;
     if (o,s>bound(item[k])) s=bound(item[k]);
     o,t=size(item[k])+s-bound(item[k])+1;
     if (t==1)
-      for (i=bound(item[k])-slack(item[k]);i>0;i--) o,force[forced++]=item[k];
+      for (i=bound(item[k])-slack(item[k]);i>0;i--) push_force(item[k]);
     else {
       o,w=wt(item[k]);
       tscore=t/w;

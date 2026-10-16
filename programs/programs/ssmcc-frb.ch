@@ -232,7 +232,7 @@ void print_item_stats(void) {
       }@+else fprintf(stderr,"("O"d)",t);
     }
     if (t==1)
-      for (i=bound(item[k])-slack(item[k]);i>0;i--) o,force[forced++]=item[k];
+      for (i=bound(item[k])-slack(item[k]);i>0;i--) push_force(item[k]);
     else if (t<=score && (t<score ||
                (s<=best_s && (s<best_s ||
                (size(item[k])>=best_l && (size(item[k])>best_l ||
@@ -245,7 +245,7 @@ void print_item_stats(void) {
     if (o,s>bound(item[k])) s=bound(item[k]);
     o,t=size(item[k])+s-bound(item[k])+1;
     if (t==1)
-      for (i=bound(item[k])-slack(item[k]);i>0;i--) o,force[forced++]=item[k];
+      for (i=bound(item[k])-slack(item[k]);i>0;i--) push_force(item[k]);
     else {
       o,w=failrate(item[k]);
       tscore=t/w;
