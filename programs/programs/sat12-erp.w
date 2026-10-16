@@ -433,6 +433,7 @@ if (!vmem) {
 lmem=(char*)malloc((vars+vars+2)*sizeof(char));
 if (!lmem) {
   fprintf(stderr,"Oops, I can't allocate the lmem array!\n");
+  exit(-11);
 }
 
 @ @<Glob...@>=

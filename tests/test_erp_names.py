@@ -16,6 +16,7 @@ class ErpNames(unittest.TestCase):
             raise unittest.SkipTest('Set GRAPHBASE for ERP reconstruction checks')
         cls.temp = tempfile.TemporaryDirectory()
         cls.work = Path(cls.temp.name)
+        cls.sgb = sgb
         cls.programs = {}
         for name in ['sat12', 'sat12-erp']:
             generated = cls.work/(name+'.c')
@@ -70,6 +71,32 @@ class ErpNames(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr.decode())
         self.assertEqual(result.stdout.strip(), b'')
         self.reconstruct(path.read_text(), '\n', ['abcdefgh', 'ijklmnop'])
+
+    def test_literal_array_allocation_failure_exits_before_use(self):
+        source = (ROOT/'programs/programs/sat12-erp.w').read_text()
+        allocation = 'lmem=(char*)malloc((vars+vars+2)*sizeof(char));'
+        self.assertEqual(source.count(allocation), 1)
+        injected = self.work/'erp-no-lmem.w'
+        injected.write_text(source.replace(allocation, 'lmem=(char*)0;'))
+        generated = self.work/'erp-no-lmem.c'
+        program = self.work/'erp-no-lmem'
+        subprocess.run(['ctangle', str(injected), '-', str(generated)],
+                       check=True, capture_output=True)
+        subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-O1',
+                        '-I'+self.sgb, '-fsanitize=address,undefined,bounds',
+                        '-fno-sanitize-recover=all', str(generated),
+                        str(Path(self.sgb)/'gb_flip.c'), '-o', str(program)],
+                       check=True, capture_output=True)
+        path = self.work/'allocation.erp'
+        path.write_text('x <-0\n')
+        result = subprocess.run([str(program), 'e'+str(path)], input=b'\n',
+                                capture_output=True, timeout=5,
+                                env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
+        self.assertGreater(result.returncode, 0)  # a deliberate exit, not a signal
+        self.assertIn(b"can't allocate the lmem array", result.stderr)
+        self.assertNotIn(b'runtime error', result.stderr)
+        self.assertNotIn(b'AddressSanitizer', result.stderr)
+        self.assertEqual(result.stdout, b'')
 
 
 if __name__ == '__main__':
