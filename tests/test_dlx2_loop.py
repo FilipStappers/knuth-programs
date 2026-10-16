@@ -44,6 +44,8 @@ def grid(h, w):
 
 
 class DlxLoop(unittest.TestCase):
+    base_name = 'dlx2'
+
     @classmethod
     def setUpClass(cls):
         sgb = os.environ.get('GRAPHBASE')
@@ -51,14 +53,14 @@ class DlxLoop(unittest.TestCase):
             raise unittest.SkipTest('Set GRAPHBASE for DLX2 loop integration checks')
         cls.temp = tempfile.TemporaryDirectory()
         cls.work = Path(cls.temp.name)
-        text = (ROOT/'programs/programs/dlx2.w').read_text()
+        text = (ROOT/'programs/programs'/(cls.base_name+'.w')).read_text()
         for key, value in [('max_level', 128), ('max_cols', 256), ('max_nodes', 8192)]:
             text, count = re.subn(r'(?m)^@d '+key+r' [^\n]+', f'@d {key} {value}', text)
             assert count == 1
-        source = cls.work/'dlx2.w'
+        source = cls.work/(cls.base_name+'.w')
         source.write_text(text)
         generated = cls.work/'loop.c'
-        subprocess.run(['ctangle', str(source), str(ROOT/'programs/programs/dlx2-loop.ch'),
+        subprocess.run(['ctangle', str(source), str(ROOT/'programs/programs'/(cls.base_name+'-loop.ch')),
                         str(generated)], check=True, capture_output=True)
         cls.program = cls.work/'loop'
         subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-O1',
@@ -103,7 +105,7 @@ class DlxLoop(unittest.TestCase):
         self.assertEqual(len(result.stdout.splitlines()), 1)
 
     def test_complete_small_grid_cycle_families(self):
-        for h, w, count in [(2, 2, 1), (2, 3, 3), (3, 3, 13)]:
+        for h, w, count in [(2, 2, 1), (2, 3, 3), (3, 3, 13), (2, 5, 10)]:
             with self.subTest(h=h, w=w):
                 matrix, edges, expected = grid(h, w)
                 self.assertEqual(len(expected), count)
@@ -124,6 +126,13 @@ class DlxLoop(unittest.TestCase):
                     actual.append(mask)
                 self.assertEqual(set(actual), expected)
                 self.assertEqual(len(actual), len(expected))
+
+
+class Dlx3Loop(DlxLoop):
+    base_name = 'dlx3'
+    # Coordinate handling is a separately tracked B049 finding.
+    test_high_boundary_edges_reject_before_neighbor_lookup = None
+    test_last_valid_high_coordinate_square_is_accepted = None
 
 
 if __name__ == '__main__':

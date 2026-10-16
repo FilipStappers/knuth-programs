@@ -100,6 +100,12 @@ int purify(int p) {
     @<Delete this edge from the current fragments@>;
 @z
 @x \S44
+  count++;
+@y
+  if (!last_edge) goto backdown; /* the empty graph isn't a cycle */
+  count++;
+@z
+@x \S44
   if (spacing && (count mod spacing==0)) {
     printf(""O"lld:\n",count);
     for (k=0;k<level;k++) {
