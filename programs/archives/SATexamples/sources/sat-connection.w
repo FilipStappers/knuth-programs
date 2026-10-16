@@ -168,6 +168,8 @@ for (v=g->vertices;v<g->vertices+g->n;v++) {
 {
   printf("%s%c\n",
                v->name,code[m]); /* the endpoint is present */
+  if (!v->arcs) printf("~%s%c",
+               v->name,code[m]); /* an isolated endpoint is impossible */
   for (a=v->arcs;a;a=a->next)
     printf(" %s%c",
                  a->tip->name,code[m]);

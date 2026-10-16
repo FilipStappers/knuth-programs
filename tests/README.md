@@ -20,7 +20,7 @@ GRAPHBASE=/path/to/sgb python3 -m unittest discover -s tests -v
 
 Without GRAPHBASE, that optional integration check is reported as skipped.
 The exhaustive converter projection checks have no GraphBase dependency.
-The coloring-boundary regressions also use GraphBase to write and restore real
+The coloring and graph-encoder boundary regressions also use GraphBase to write and restore real
 graph fixtures. They use `GRAPHBASE` when set, or a sibling `../../sgb` source
 installation when available, and otherwise report a skip. Encoder code is
 instrumented; the GraphBase dependency objects are compiled separately.
