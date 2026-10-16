@@ -52,7 +52,7 @@ main(int argc,char *argv[]) {
       printf("Sorry, I can't allocate mem[%d]!\n",r);
       exit(-99);
     }
-    for (k=0;k<memsize;k++) mem[r][k].lo=mem[r][k].hi=0;
+    for (k=0;k<memsize;k++) mem[r][k].lo=mem[r][k].hi=mem[r][k].mark=0;
     if (!(infile=fopen(argv[r+1],"r"))) {
       printf("Sorry, I can't open `%s' for reading!\n",argv[r+1]);
       exit(-1);

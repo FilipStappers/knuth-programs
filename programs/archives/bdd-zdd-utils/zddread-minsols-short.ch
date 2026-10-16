@@ -14,7 +14,7 @@ int stackptr;
 int serial;
 @z
 @x
-    for (k=0;k<memsize;k++) mem[r][k].lo=mem[r][k].hi=0;
+    for (k=0;k<memsize;k++) mem[r][k].lo=mem[r][k].hi=mem[r][k].mark=0;
 @y
     for(k=0;k<memsize;k++)mem[r][k].lo=mem[r][k].hi=mem[r][k].mark=0;
 @z
