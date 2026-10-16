@@ -18,7 +18,7 @@ The others are divided into $(m^4-m^2)/4$ equivalence classes,
 where a word is considered equivalent to its cyclic shifts. Our
 problem is to choose as many codewords as possible such that,
 if $x_1x_2x_3x_4$ and $x_5x_6x_7x_8$ are codewords,
-then $x_2x_3x_4x_5$ and $x_3x_4x_5x_5$ and $x_4x_5x_6x_7$ are {\it not\/}
+then $x_2x_3x_4x_5$ and $x_3x_4x_5x_6$ and $x_4x_5x_6x_7$ are {\it not\/}
 codewords. In particular, when $x_1x_2x_3x_4=x_5x_6x_7x_8$ this condition
 tells us that we can choose at most one codeword from each equivalence class.
 
