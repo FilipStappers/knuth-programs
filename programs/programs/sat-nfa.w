@@ -26,8 +26,10 @@ $$\.{$n$ a c a0a a1b b1c c0c}$$
 ought to work.
 
 Variables for the {\mc SAT} clauses are: \.{$k$} for $x_k$;
-\.{q$k$} for $q_k$; and \.{qa$k$} for $t_{kaq}$. (Here $k$ is
-given in decimal.)
+\.{S$h(q)k$} for $q_k$; and \.{T$h(q)a k$} for $t_{kaq}$,
+without the displayed space. Here $h(q)$ is the state's two-digit
+hexadecimal ASCII code and $k$ is decimal. The distinct prefixes and
+fixed-width state and symbol fields keep these three namespaces disjoint.
 
 I apologize for writing this in a huge hurry.
 
@@ -96,35 +98,35 @@ printf("\n"); /* mirror the command line as the first line of output */
 @ @<Generate the clauses of type (i)@>=
 for (q='!';q<'~';q++) if (isstate[q]) {
   if (istrans[q][0]) {
-    printf("~%c0%d ~%d\n",
+    printf("~T%02x0%d ~%d\n",
                   q,k,k);
-    printf("~%c0%d %c%d\n",
+    printf("~T%02x0%d S%02x%d\n",
                   q,k,q,k);
   }
   if (istrans[q][1]) {
-    printf("~%c1%d %d\n",
+    printf("~T%02x1%d %d\n",
                   q,k,k);
-    printf("~%c1%d %c%d\n",
+    printf("~T%02x1%d S%02x%d\n",
                   q,k,q,k);
   }
 }
 
 @ @<Generate the clauses of type (ii)@>=
 for (q='!';q<'~';q++) if (isstate[q]) {
-  printf("~%c%d",
+  printf("~S%02x%d",
                  q,k-1);
   for (j=4;j<argc;j++) if (argv[j][0]==q)
-    printf(" %c%c%d",
+    printf(" T%02x%c%d",
                    argv[j][2],argv[j][1],k);
   printf("\n");
 }
 
 @ @<Generate the clauses of type (iii)@>=
 for (q='!';q<'~';q++) if (isstate[q]) {
-  printf("~%c%d",
+  printf("~S%02x%d",
                  q,k);
   for (j=4;j<argc;j++) if (argv[j][2]==q)
-    printf(" %c%c%d",
+    printf(" T%02x%c%d",
                    argv[j][2],argv[j][1],k);
   printf("\n");
 }
@@ -133,23 +135,23 @@ for (q='!';q<'~';q++) if (isstate[q]) {
 printf("%d",
           k);
 for (j=4;j<argc;j++) if (argv[j][1]=='0')
-  printf(" %c0%d",
+  printf(" T%02x0%d",
                  argv[j][2],k);
 printf("\n");
 printf("~%d",
              k);
 for (j=4;j<argc;j++) if (argv[j][1]=='1')
-  printf(" %c1%d",
+  printf(" T%02x1%d",
                  argv[j][2],k);
 printf("\n");
 
 @ @<Generate the clauses of type (v)@>=
 for (q='!';q<'~';q++) if (isstate[q]) {
   for (a='0';a<'2';a++) if (istrans[q][a-'0']) {
-    printf("~%c%c%d",
+    printf("~T%02x%c%d",
                          q,a,k);
     for (j=4;j<argc;j++) if (argv[j][2]==q && argv[j][1]==a)
-      printf(" %c%d",
+      printf(" S%02x%d",
                      argv[j][0],k-1);
     printf("\n");
   }
@@ -157,9 +159,9 @@ for (q='!';q<'~';q++) if (isstate[q]) {
 
 @ @<Generate the clauses of type (vi)@>=
 for (q='!';q<'~';q++) if (isstate[q]) {
-  if (!isinput[q]) printf("~%c0\n",
+  if (!isinput[q]) printf("~S%02x0\n",
                                     q);
-  if (!isoutput[q]) printf("~%c%d\n",
+  if (!isoutput[q]) printf("~S%02x%d\n",
                                     q,n);
 }
 
