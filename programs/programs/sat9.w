@@ -1076,7 +1076,7 @@ if (unitcount && (verbose&show_basics))
 sprintf(name_buf,"/tmp/sat9-%d.dat",random_seed);
 out_file=fopen(name_buf,"w");
 if (!out_file) {
-  fprintf(stderr,"I can't open `%s' for writing!\n");
+  fprintf(stderr,"I can't open `%s' for writing!\n",name_buf);
   exit(-668);
 }
 for (kk=k=p=c=0;c<clauses;c++) {
