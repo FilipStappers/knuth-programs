@@ -1915,7 +1915,7 @@ if (vf!=vg) {
   if (!r0) return NULL;
   r1=coprod_rec(node_(f->hi),node_(g->hi));
   if (!r1) {
-    deref(r1);@+return NULL;
+    deref(r0);@+return NULL;
   }
   r=unique_find(v,r0,r1);
 }

@@ -18,6 +18,7 @@ class Bdd14Operations(unittest.TestCase):
         cls.work = Path(cls.temp.name)
         cls.programs = {}
         cls.cache_programs = {}
+        cls.fault_programs = {}
         for name, relative in [('archive', 'archives/bdd-zdd-utils/bdd14.w'),
                                ('program', 'programs/bdd14.w'),
                                ('zdd', 'archives/bdd-zdd-utils/bdd15.w')]:
@@ -42,6 +43,29 @@ class Bdd14Operations(unittest.TestCase):
             cls.cache_programs[name] = program
             if name != 'zdd':
                 cls.programs[name] = program
+            else:
+                for mode, statement in [('coprod-failure', 'r1=coprod_rec(node_(f->hi),node_(g->hi));'),
+                                         ('quot-failure', 'f0=ezrem_rec(f,vg);')]:
+                    source = (ROOT/'programs'/relative).read_text()
+                    assert source.count(statement) == 1
+                    fault = cls.work/mode
+                    fault.mkdir()
+                    result = 'r1' if mode.startswith('coprod') else 'f0'
+                    literate = fault/'fault.w'
+                    literate.write_text(source.replace(statement, result+'=NULL;'))
+                    generated_fault = fault/'fault.c'
+                    subprocess.run(['ctangle', str(literate), '-', str(generated_fault)],
+                                   check=True, capture_output=True)
+                    (fault/'bdd-under-test.c').write_text(generated_fault.read_text().replace(
+                        'exit(0);', 'return 0;'))
+                    harness = fault/'reference.c'
+                    harness.write_text('#define ZDD\n'+(ROOT/'tests/bdd14_reference.c').read_text())
+                    program = fault/'reference'
+                    subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-O1',
+                                    '-fno-strict-aliasing', '-no-pie', '-I'+sgb,
+                                    str(harness), str(Path(sgb)/'gb_flip.c'), '-o', str(program)],
+                                   check=True, capture_output=True)
+                    cls.fault_programs[mode] = program
         cls.commands = cls.work/'quit.bddl'
         cls.commands.write_text('v0\nq\n')
 
@@ -75,6 +99,21 @@ class Bdd14Operations(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stdout.decode()+result.stderr.decode())
                 self.assertIn(b'CACHE before=1 after=1 pages=2', result.stdout)
                 self.assertNotIn(b'\n! ', result.stdout)
+
+    def test_zdd_coproduct_releases_low_result_after_high_failure(self):
+        mode = 'coprod-failure'
+        result = subprocess.run([str(self.fault_programs[mode]), str(self.commands), mode],
+                                capture_output=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stdout.decode()+result.stderr.decode())
+        self.assertIn(b'COPROD_FAILURE returned_null=1', result.stdout)
+        self.assertNotIn(b'\n! ', result.stdout)
+
+    def test_all_three_element_zdd_coproduct_families(self):
+        result = subprocess.run([str(self.cache_programs['zdd']), str(self.commands), 'coprod'],
+                                capture_output=True, timeout=30)
+        self.assertEqual(result.returncode, 0, result.stdout.decode()+result.stderr.decode())
+        self.assertIn(b'COPROD cases=65536 failures=0', result.stdout)
+        self.assertNotIn(b'\n! ', result.stdout)
 
 
 if __name__ == '__main__':

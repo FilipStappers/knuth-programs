@@ -29,6 +29,17 @@ static unsigned exists(unsigned t,unsigned mask) {
     }
   return result;
 }
+#ifdef ZDD
+static unsigned family(node *p) {
+  unsigned low,high,result=0,a,bit;
+  if (p==botsink) return 0;
+  if (p==topsink) return 1;
+  low=family(node_(p->lo)); high=family(node_(p->hi));
+  bit=1U<<thevar(p)->name;
+  for (a=0;a<8;a++) if (high&(1U<<a)) result|=1U<<(a|bit);
+  return low|result;
+}
+#endif
 int main(int argc,char **argv) {
   unsigned t,u,q,a,cube[8],failures=0,cases=0;
   bdd_original_main(2,argv); /* only replace its final normal exit by return */
@@ -37,6 +48,34 @@ int main(int argc,char **argv) {
 #endif
   for (a=0;a<3;a++) projection(a);
   for (t=0;t<256;t++) f[t]=construct(t,0,0);
+#ifdef ZDD
+  if (argc>2 && strcmp(argv[2],"coprod")==0) {
+    unsigned b,want;
+    for (t=0;t<256;t++) for (u=0;u<256;u++) {
+      node *r=binary_top(8,f[t],f[u]);
+      want=0;
+      for (a=0;a<8;a++) if (t&(1U<<a))
+        for (b=0;b<8;b++) if (u&(1U<<b)) want|=1U<<(a&b);
+      if (family(r)!=want) failures++;
+      deref(r); cases++;
+    }
+    sanity_check();
+    printf("COPROD cases=%u failures=%u\n",cases,failures);
+    return failures?1:0;
+  }
+  if (argc>2 && strcmp(argv[2],"coprod-failure")==0) {
+    node *r=coprod_rec(f[255],f[255]);
+    sanity_check();
+    printf("COPROD_FAILURE returned_null=%d\n",r==NULL);
+    return r?1:0;
+  }
+  if (argc>2 && strcmp(argv[2],"quot-failure")==0) {
+    node *r=quot_rec(f[255],f[3]);
+    sanity_check();
+    printf("QUOT_FAILURE returned_null=%d\n",r==NULL);
+    return r?1:0;
+  }
+#endif
   if (argc>2 && strcmp(argv[2],"cache")==0) {
     unsigned oldmask,slot,trigger_slot;
     int found=0,before,after;
