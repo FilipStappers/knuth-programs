@@ -19,6 +19,7 @@ class ConverterStatus(unittest.TestCase):
         for dialect in ['gnu89', 'gnu99']:
             program = work/dialect
             subprocess.run(['gcc', '-std='+dialect, '-Wno-implicit-int', '-O1',
+                            '-fsanitize=undefined,bounds', '-fno-sanitize-recover=all',
                             str(generated), '-o', str(program)],
                            check=True, capture_output=True)
             cls.programs.append(program)
@@ -63,6 +64,33 @@ class ConverterStatus(unittest.TestCase):
             with self.subTest(dialect=program.name):
                 self.assertEqual(result.returncode, 0, result.stderr.decode())
                 self.assertEqual(result.stdout, b' 8\n')
+
+    def test_malformed_or_truncated_clause_streams_fail(self):
+        cases = ['p cnf 1 2\n1 0\n', 'p cnf 1 1\n1\n',
+                 'p cnf 1 1\n1 0 junk\n', 'p cnf 1 2\n1 0\nc comment\n-1 0\n',
+                 'p cnf 1 1\n4294967297 0\n',
+                 'p cnf 1 1\n-4294967295 0\n',
+                 'p cnf 1 1\n'+'9'*10000+' 0\n',
+                 'p cnf 1 1\n1x 0\n', 'p cnf 1 1\n- 0\n',
+                 'p cnf 2147483647 1\n-2147483648 0\n',
+                 'p cnf 2147483647 1\n2147483648 0\n',
+                 'p cnf 1 1\n1 0 0\n']
+        for program in self.programs:
+            for data in cases:
+                result = subprocess.run([str(program)], input=data.encode(),
+                                        capture_output=True, timeout=3)
+                with self.subTest(dialect=program.name, data=data[:60]):
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn(b'runtime error', result.stderr)
+
+    def test_decimal_literals_and_flexible_whitespace(self):
+        for program in self.programs:
+            for data, expected in [(b'p cnf 8 1\n08 0\n', b' 8\n'),
+                                   (b'p cnf 2 2\n1\n-2 0 +2 0\n', b' 1 ~2\n 2\n')]:
+                result = subprocess.run([str(program)], input=data, capture_output=True, timeout=3)
+                with self.subTest(dialect=program.name, data=data):
+                    self.assertEqual(result.returncode, 0, result.stderr.decode())
+                    self.assertEqual(result.stdout, expected)
 
     def test_existing_detected_input_errors_remain_failures(self):
         for program in self.programs:

@@ -78,17 +78,17 @@ while (1) {
 
 @ @<Read and translate...@>=
 j=k=l=p=0;
-while (fscanf(stdin,"%i",&v)==1) {
+while (read_literal(&v)) {
+  if (k==m) {
+    fprintf(stderr,"Too many clauses (more than %d)!\n",m);
+    exit(-3);
+  }
   if (v==0) {
     if (j==0) {
       fprintf(stderr,"Clause %d is empty; encoding a contradiction.\n",k+1);
       printf(" 0\n ~0");
     }
     printf("\n");
-    if (k==m) {
-      fprintf(stderr,"Too many clauses (more than %d)!\n",m);
-      exit(-3);
-    }
     k++,j=0;
   }@+else if (v>0) {
     if (v>n) {
@@ -97,6 +97,10 @@ while (fscanf(stdin,"%i",&v)==1) {
     }
     printf(" "),print_var(v);
     if (v>p) p=v;
+    if (j==INT_MAX || l==INT_MAX) {
+      fprintf(stderr,"Too many input literal occurrences!\n");
+      exit(-6);
+    }
     j++,l++;
   }@+else {
     if (v<-n) {
@@ -105,15 +109,21 @@ while (fscanf(stdin,"%i",&v)==1) {
     }
     printf(" ~"),print_var(-v);
     if (-v>p) p=-v;
+    if (j==INT_MAX || l==INT_MAX) {
+      fprintf(stderr,"Too many input literal occurrences!\n");
+      exit(-6);
+    }
     j++,l++;
   }
 }
 if (j) {
   fprintf(stderr,"The last clause didn't end with 0!\n");
-  printf("\n");
-  k++;
+  exit(-6);
 }  
-if (k<m) fprintf(stderr,"Too few clauses (%d < %d)!\n",k,m);
+if (k<m) {
+  fprintf(stderr,"Too few clauses (%d < %d)!\n",k,m);
+  exit(-6);
+}
 fprintf(stderr,"OK, I translated %d input literals in %d input clauses"
                " (largest input variable %d).\n",
            l,k,p);
@@ -151,6 +161,36 @@ int header_count(char **cursor) {
   }
   *cursor=end;
   return (int)value;
+}
+
+@ Read one complete signed decimal token, checking range before arithmetic.
+End of input returns zero; the caller checks the stream error flag. Malformed input is an error.
+
+@<Subroutines@>=
+int read_literal(int *result) {
+  int c,negative=0;
+  unsigned int magnitude=0,limit;
+  do c=fgetc(stdin); while (c!=EOF && isspace((unsigned char)c));
+  if (c==EOF) return 0;
+  if (c=='-' || c=='+') {
+    negative=(c=='-');
+    c=fgetc(stdin);
+  }
+  if (c<'0' || c>'9') goto bad_literal;
+  limit=(unsigned int)INT_MAX+(negative?1U:0U);
+  do {
+    unsigned int digit=(unsigned int)(c-'0');
+    if (magnitude>(limit-digit)/10U) goto bad_literal;
+    magnitude=10U*magnitude+digit;
+    c=fgetc(stdin);
+  } while (c>='0' && c<='9');
+  if (c!=EOF && !isspace((unsigned char)c)) goto bad_literal;
+  if (negative && magnitude==(unsigned int)INT_MAX+1U) *result=INT_MIN;
+  else *result=negative?-(int)magnitude:(int)magnitude;
+  return 1;
+bad_literal:
+  fprintf(stderr,"Invalid or out-of-range decimal DIMACS literal!\n");
+  exit(-6);
 }
 
 @*Index.
