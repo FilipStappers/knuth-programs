@@ -42,6 +42,10 @@ if (i==0) {
   fprintf(stderr,"Null input string!\n");
   exit(-2);
 }
+if (i>maxn) {
+  fprintf(stderr,"Input string length %d must not exceed %d!\n",i,maxn);
+  exit(-1);
+}
 if (buf[i]!=' ') {
   buf[i]='\0';
   fprintf(stderr,"Input string %s not followed by blank space!\n",
