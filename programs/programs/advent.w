@@ -2857,7 +2857,7 @@ boolean gave_up; /* did you quit while you were alive? */
 @<Handle cases of transitive...@>=
 case SAY:@+ if (*word2) strcpy(word1,word2);
  k=lookup(word1);
- switch (hash_table[k].meaning) {
+ if (k>=0) switch (hash_table[k].meaning) {
   case FEEFIE: if (hash_table[k].word_type!=action_type) break;
   case XYZZY: case PLUGH: case PLOVER:
    *word2='\0';@+obj=NOTHING;@+goto branch;
