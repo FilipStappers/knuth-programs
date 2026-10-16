@@ -67,7 +67,10 @@ if (pp(x-1,y-1)+pp(x-1,y)+pp(x-1,y+1)+
 @<If cell $(x,y)$ is obviously dead at time $t+1$, |continue|@>=
 if (pp(x-1,y-1)+pp(x-1,y)+pp(x-1,y+1)+
     pp(x,y-1)+pp(x,y)+pp(x,y+1)+
-    pp(x+1,y-1)+pp(x+1,y)+pp(x+1,y+1)<3) continue;
+    pp(x+1,y-1)+pp(x+1,y)+pp(x+1,y+1)<3) {
+  applit(x,y,1,1),outclause(); /* explicitly force the dead successor */
+  continue;
+}
 @z
 @x
   if (k==0 && (x<xmin || x>xmax || y<ymin || y>ymax || p[x][y]==0))
