@@ -23,6 +23,8 @@ costs is minimized).
 The input format is extended so that entries such as \.{{\char"7C}$n$}
 can be appended to any option, to specify its cost. If several such
 entries appear in the same option, the cost is their sum.
+Each option cost must be less than |infcost|, the reserved infinity value;
+the decimal parser rejects costs or sums that reach that value.
 
 Whenever a solution is found whose cost is less than $k$th best seen so far,
 that solution is output. For example, suppose the given problem has
@@ -588,8 +590,11 @@ while (1) {
   for (j=1,d=0;o,!isspace(buf[p+j]);j++) {
     if (buf[p+j]<'0' || buf[p+j]>'9')
       panic("Illegal digit in option cost");
+    if (d>(infcost-1-(buf[p+j]-'0'))/10)
+      panic("Option cost is too large");
     d=10*d+buf[p+j]-'0';
   }
+  if (d>=infcost-tmpcost) panic("Option cost sum is too large");
   tmpcost+=d;
 }
 
