@@ -89,6 +89,23 @@ class PolyformParsers(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr.decode())
                 self.assertEqual(set(matrix(result.stdout)[0]), {'ABCDEFGH', 'Q', cell})
 
+    def test_square_suffix_capacity_and_reused_tags(self):
+        for size in [1, 9, 10]:
+            tags = {f'00s{i}' for i in range(size)}
+            data = '00 '+' '.join(sorted(tags))+'\nD 00 '+f'00s{size-1}\n'
+            with self.subTest(size=size):
+                result = self.solve('polyomino', data.encode())
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                header, options = matrix(result.stdout)
+                self.assertEqual(set(header), tags | {'00', 'D', '|'})
+                self.assertEqual(options, Counter({tuple(sorted(['00', 'D', f'00s{size-1}'])): 1}))
+        data = '00 '+' '.join(f'00s{i}' for i in range(11))+'\nD 00\n'
+        result = self.solve('polyomino', data.encode())
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b'maxsuffixes', result.stderr)
+        self.assertNotIn(b'runtime error', result.stderr)
+        self.assertNotIn(b'AddressSanitizer', result.stderr)
+
     def test_cube_domino_placements(self):
         cells = {f'{x}{y}{z}' for x in range(2) for y in range(2) for z in range(2)}
         expected = Counter(tuple(sorted(['D', f'{x}{y}{z}', f'{x+dx}{y+dy}{z+dz}']))

@@ -362,13 +362,13 @@ for (q=0;buf[p+q]!=' ' && buf[p+q]!='\n';q++) {
                                 p,buf);
     exit(-11);
   }
-  suffix[scount+1][q]=buf[p+q];
+  suffix[scount][q]=buf[p+q];
 }
 if (q) {
-  suffix[scount+1][q]=0;
+  suffix[scount][q]=0;
   p+=q;
-  for (i=0;;i++) if (strcmp(suffix[i],suffix[scount+1])==0) break;
-  if (i>scount) {
+  for (i=0;;i++) if (strcmp(suffix[i],suffix[scount])==0) break;
+  if (i==scount) {
     scount++;
     if (scount>maxsuffixes) {
       fprintf(stderr,"Overflow! Recompile me by making maxsuffixes>%d.\n",
