@@ -858,7 +858,7 @@ while (1) {
           panic("Item name too long");
     @<Create a node for the item named in |buf[p]|@>;
     if (buf[p+j]==':') {
-      if (k>=second) {
+      if ((k>>2)>=second) {
         if ((o,isspace(buf[p+j+1])) || (o,!isspace(buf[p+j+2])))
           panic("Color must be a single character");
         o,nd[last_node+(pp?0:1)].clr=(unsigned char)buf[p+j+1];

@@ -56,6 +56,15 @@ class DomainCover(unittest.TestCase):
                               cwd=self.work, capture_output=True, timeout=5,
                               env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
 
+    def test_primary_colors_reject(self):
+        for mode in self.programs:
+            for data in [b'A B | X\nA:a\nB\n', b'A B C D | X\nD:a\n']:
+                with self.subTest(mode=mode, data=data):
+                    result = self.solve(mode, data)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(b'Primary item must be uncolored', result.stderr)
+                    self.assertNotIn(b'runtime error', result.stderr)
+
     def test_initial_consistency_purge(self):
         data = b'P0 P1 | S0 S1\nP0 S1:1\nP0 P1 S0 S1\n'
         expected = Counter({(('P0', 'P1', 'S0', 'S1'),): 1})
