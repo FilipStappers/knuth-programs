@@ -2089,7 +2089,7 @@ rmems++; /* track recursion overhead */
 r0=and_exist_rec((vf==v? o,node_(f->lo):f),(vg==v? o,node_(g->lo): g),
                                            (vh==v? o,node_(h->hi): h));
 if (!r0) return NULL; /* oops, trouble */
-if (r0==topsink && vg==v) {
+if (r0==topsink && vh==v) {
   r=r0;
   goto gotr;
 }
