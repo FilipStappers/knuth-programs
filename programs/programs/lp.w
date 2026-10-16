@@ -58,7 +58,7 @@ overflow, and the floating-point method may suffer from rounding errors.
 #include <stdio.h>
 #include <ctype.h>
 @<Include tricky code for zapping@>@;
-typedef long intword; /* will be |long| |long| on my other computer */
+typedef long intword; /* keep integer output formats consistent with this type */
 char buf[buf_size];
 intword a[maxm+1][maxm+maxn+1]; /* integer work area */
 intword denom[maxm+maxn+1]; /* scale factors */
@@ -131,17 +131,17 @@ for (i=n=0;;i++) {
   if (i==0) {
     n=j-1;
     if (n>maxn) {
-      fprintf(stderr,"Sorry, I'm set up only for n<=%d, not n=%d!\n",
+      fprintf(stderr,"Sorry, I'm set up only for n<=%d, not n=%ld!\n",
          maxn,n);
       exit(-2);
     }
   }@+else {
     if (n!=j-1) {
-      fprintf(stderr,"Row %d should have %d numbers!\n>%s",i,n+1,buf);
+      fprintf(stderr,"Row %ld should have %ld numbers!\n>%s",i,n+1,buf);
       exit(-3);
     }
     if (a[i][j]<0) {
-      fprintf(stderr,"Row %d's constant term shouldn't be negative!\n>%s",
+      fprintf(stderr,"Row %ld's constant term shouldn't be negative!\n>%s",
         i,buf);
       exit(-4);
     }
@@ -502,7 +502,7 @@ it uses the |aa| tableau instead of |a|.
   }
 mismatch:
   printf("The floating-point and fixed-point implementations disagree!\n");
-  printf("(Floating-point pivoting at (%d,%d), not (%d,%d).)\n",ll,jj,l,j);
+  printf("(Floating-point pivoting at (%d,%d), not (%ld,%ld).)\n",ll,jj,l,j);
   @<Print out...@>;
   exit(-99);
 }
@@ -528,7 +528,7 @@ numerators and denominators will stay small, at least in the simple cases that
 are greatest interest to me at the moment.
 
 @<Do integer pivoting@>=
-if (verbose) printf("Pivoting on (%d,%d).\n",l,j);
+if (verbose) printf("Pivoting on (%ld,%ld).\n",l,j);
 for (k=0; k<=m+n; k++) if (a[l][k] && k!=j) {
   register intword t, u=a[l][k], v=a[l][j];
   if (u<0) u=-u;
@@ -554,11 +554,11 @@ if (denom[j]!=1) {
 {
   printf("Step %d:\n",count);
   for (i=0;i<=m;i++) {
-    for (j=0;j<=m+n;j++) printf(" %d",a[i][j]);
+    for (j=0;j<=m+n;j++) printf(" %ld",a[i][j]);
     printf("\n");
   }
   printf("denom");
-  for (j=0;j<=m+n;j++) printf(" %d",denom[j]);
+  for (j=0;j<=m+n;j++) printf(" %ld",denom[j]);
   printf("\n");
   for (i=0;i<=m;i++) {
     for (j=0;j<=m+n;j++) printf(" %.15g",aa[i][j]);
@@ -567,14 +567,14 @@ if (denom[j]!=1) {
 }
 
 @ @<Report the answers@>=
-printf("Optimal value %.15g=%d/%d found after %d pivots.\n",
+printf("Optimal value %.15g=%ld/%ld found after %d pivots.\n",
   aa[0][0],a[0][0],denom[0],count);
 printf(" Optimal v's:");
 for (j=m+1;j<=m+n;j++)
-  if (q[j]) printf(" %.15g=%d/%d",aa[q[j]][0],a[q[j]][0],denom[0]);
+  if (q[j]) printf(" %.15g=%ld/%ld",aa[q[j]][0],a[q[j]][0],denom[0]);
   else printf(" 0");
 printf("\n Optimal u's:");
-for (j=1;j<=m;j++) printf(" %.15g=%d/%d",aa[0][j],a[0][j],denom[j]);
+for (j=1;j<=m;j++) printf(" %.15g=%ld/%ld",aa[0][j],a[0][j],denom[j]);
 printf("\n");
 
 @ Well, our little program is done. But an attentive reader may well have

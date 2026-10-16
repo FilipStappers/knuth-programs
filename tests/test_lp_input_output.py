@@ -1,0 +1,64 @@
+"""B031: exact one-variable LP certificates and format/input boundaries."""
+from fractions import Fraction
+import os
+from pathlib import Path
+import re
+import subprocess
+import tempfile
+import unittest
+
+ROOT = Path(__file__).resolve().parents[1]
+SOURCE = ROOT/'programs/programs/lp.w'
+ENV = dict(os.environ, ASAN_OPTIONS='detect_leaks=0')
+
+
+class LpInputOutput(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.temp = tempfile.TemporaryDirectory()
+        cls.work = Path(cls.temp.name)
+        cls.generated = cls.work/'lp.c'
+        cls.program = cls.work/'lp'
+        subprocess.run(['ctangle', str(SOURCE), '-', str(cls.generated)],
+                       check=True, capture_output=True)
+        cls.flags = ['-std=gnu99', '-Wno-implicit-int', '-Wno-implicit-function-declaration',
+                     '-O1', '-fsanitize=address,undefined,bounds', '-fno-sanitize-recover=all']
+        subprocess.run(['gcc', *cls.flags, str(cls.generated), '-o', str(cls.program)],
+                       check=True, capture_output=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.temp.cleanup()
+
+    def solve(self, text):
+        return subprocess.run([str(self.program)], input=text.encode(), capture_output=True,
+                              timeout=5, env=ENV)
+
+    def test_exact_long_integer_certificate_fields(self):
+        cases = [(b, c, a) for b in [1, 3] for c in [1, 2, 4294967296] for a in [1, 2, 3]]
+        cases += [(4294967296, 1, 1), (4294967296, 2, 3)]
+        for b, c, a in cases:
+            with self.subTest(b=b, c=c, a=a):
+                result = self.solve(f'{b}\n{c} {a}\n')
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                text = result.stdout.decode()
+                lines = text.splitlines()
+                value = next(line for line in lines if line.startswith('Optimal value '))
+                primal = next(line for line in lines if line.startswith(" Optimal v's:"))
+                dual = next(line for line in lines if line.startswith(" Optimal u's:"))
+                def exact(line):
+                    match = re.search(r'=(-?\d+)/(\d+)', line)
+                    self.assertIsNotNone(match, line)
+                    return Fraction(int(match[1]), int(match[2]))
+                self.assertEqual(exact(value), Fraction(b*c, a))
+                self.assertEqual(exact(primal), Fraction(c, a))
+                self.assertEqual(exact(dual), Fraction(b, a))
+
+    def test_variadic_formats_match_declared_types(self):
+        result = subprocess.run(['gcc', *self.flags, '-Wformat=2', '-Werror=format',
+                                 '-fsyntax-only', str(self.generated)], capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+
+
+if __name__ == '__main__':
+    unittest.main()
