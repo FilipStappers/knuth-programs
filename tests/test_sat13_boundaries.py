@@ -42,7 +42,8 @@ class Sat13Boundaries(unittest.TestCase):
         cls.temp.cleanup()
 
     def run_solver(self, data, options=(), build='normal'):
-        return subprocess.run([str(self.programs[build]), 'v0', 'm18', *options],
+        # This parser resolves repeated options to the leftmost occurrence.
+        return subprocess.run([str(self.programs[build]), *options, 'v0', 'm18'],
                               input=data, capture_output=True, timeout=5,
                               env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
 
@@ -229,6 +230,9 @@ for (k=1;k<=vars;k++) if (vmem[k].activity<0.0) {
         # An unknown eight-byte name must also fit when the clause buffer is tiny.
         path.write_bytes(b'abcdefgh')
         self.check_formula(b'x\n', ['b3', 'z'+str(path)])
+
+    def test_largest_memory_exponent_uses_unsigned_shift(self):
+        self.check_formula(b'x\n', ['m31'])
 
 
 if __name__ == '__main__':

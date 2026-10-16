@@ -1358,7 +1358,7 @@ utilized; this at least gives the user some clue about how big \.m should be.
   }
   max_cells_used=proto_memsize-learned_supplement+2;
   first_learned=max_learned=min_learned+learned_supplement;
-  memsize=1<<memk_max;
+  memsize=1U<<memk_max;
   if (max_cells_used>memsize) {
     fprintf(stderr,
        "Immediate memory overflow (memsize="O"u<"O"u), please increase m!\n",
