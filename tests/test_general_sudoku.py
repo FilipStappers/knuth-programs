@@ -69,6 +69,18 @@ class GeneralSudoku(unittest.TestCase):
                         actual.add(tuple(sorted(filling.items())))
                     self.assertEqual(actual, expected)
 
+    def test_clue_values_must_fit_the_board(self):
+        for data in [b'2\n', b'9\n', b'w\n', b'3.\n..\n', b'..\n.w\n']:
+            with self.subTest(data=data):
+                result = self.solve(data)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b'Clue', result.stderr)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertEqual(result.stdout, b'')
+        for data in [b'1\n', b'2.\n.1\n']:
+            result = self.solve(data)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+
     def test_unsigned_box_bits_for_all_supported_sizes(self):
         for n in [1, 2, 9, 32]:
             with self.subTest(n=n):

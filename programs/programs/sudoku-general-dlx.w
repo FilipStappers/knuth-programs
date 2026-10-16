@@ -135,6 +135,10 @@ for (j=0;j<n;j++) {
   else if (buf[j]=='#') pos[k][j]=-1,cells--,rowcount[k]--,colcount[j]--;
   else pos[k][j]=0; /* it already is zero, but let's waste time for clarity */
   if (pos[k][j]>0) {
+    if (d>n) {
+      fprintf(stderr,"Clue %c exceeds the board size %d!\n",encode(d),n);
+      exit(-10);
+    }
     if (row[k][d-1]) {
       fprintf(stderr,"digit %c appears in columns %c and %c of row %c!\n",
                        encode(d),encode(row[k][d-1]-1),encode(j),encode(k));
