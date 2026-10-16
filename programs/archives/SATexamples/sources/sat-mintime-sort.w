@@ -44,6 +44,10 @@ if (n<3 || n>15) {
   fprintf(stderr,"Sorry, n must be between 3 and 15!\n");
   exit(-2);
 }
+if (tt<1 || tt>9) {
+  fprintf(stderr,"Sorry, t must be between 1 and 9!\n");
+  exit(-4);
+}
 printf("~ sat-mintime-sort %d %d",
                      n,tt);
 for (j=3;argv[j];j++) printf(" %s",
