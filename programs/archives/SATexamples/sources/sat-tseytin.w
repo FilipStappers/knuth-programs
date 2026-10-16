@@ -36,6 +36,7 @@ the degree of~$v$; each of those clauses involves the $d$ variables
 adjacent to~$v$. There's one clause for each way to complement
 an {\it odd\/} number of literals, except that we complement an {\it even\/}
 number when $v$ is the very first vertex.
+The degree must not exceed the number of entries in |bit|.
 
 @<Generate the clauses@>=
 for (v=g->vertices;v<g->vertices+g->n;v++) {
@@ -43,6 +44,11 @@ for (v=g->vertices;v<g->vertices+g->n;v++) {
   if (d<0) {
     if (v==g->vertices) printf("empty\n~empty\n");
     continue;
+  }
+  if (d>=(int)sizeof(bit)) {
+    fprintf(stderr,"Sorry, vertex %s has degree %d; I can handle at most %d!\n",
+                      v->name,d+1,(int)sizeof(bit));
+    return -3;
   }
   while (1) {
     @<Generate a clause for the current |bit| setting@>;

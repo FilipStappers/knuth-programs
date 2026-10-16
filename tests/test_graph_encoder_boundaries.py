@@ -58,20 +58,26 @@ class GraphEncoderBoundaries(unittest.TestCase):
                  '-fsanitize=address,undefined,bounds', '-fno-sanitize-recover=all',
                  '-I', str(GRAPHBASE)]
         cls.programs = {}
-        for name in ['connection', 'tseytin', 'tseytin-local']:
+        for name in ['connection', 'tseytin', 'tseytin-local',
+                     'tseytin-small', 'tseytin-small-local']:
             generated = cls.work/(name+'.c')
             source = SOURCES/f'sat-{name}.w'
-            if name == 'tseytin-local':
+            if name.startswith('tseytin-'):
                 # Isolate one vertex's original clauses to test its parity truth
                 # table: the complete odd-charge formula is always UNSAT, so its
                 # decision alone cannot verify individual vertex constraints.
-                source = cls.work/'tseytin-local.w'
+                source = cls.work/(name+'.w')
                 text = (SOURCES/'sat-tseytin.w').read_text()
-                loop = 'for (v=g->vertices;v<g->vertices+g->n;v++) {'
-                assert text.count(loop) == 1
-                text = text.replace('@c\n', '@c\n#include <stdlib.h>\n', 1)
-                source.write_text(text.replace(loop, loop+
-                    '\n  if (v-g->vertices!=atoi(getenv("TEST_VERTEX"))) continue;', 1))
+                if 'small' in name:
+                    assert text.count('char bit[1000];') == 1
+                    text = text.replace('char bit[1000];', 'char bit[2];')
+                if name.endswith('-local'):
+                    loop = 'for (v=g->vertices;v<g->vertices+g->n;v++) {'
+                    assert text.count(loop) == 1
+                    text = text.replace('@c\n', '@c\n#include <stdlib.h>\n', 1)
+                    text = text.replace(loop, loop+
+                        '\n  if (v-g->vertices!=atoi(getenv("TEST_VERTEX"))) continue;', 1)
+                source.write_text(text)
             subprocess.run(['ctangle', str(source), '-', str(generated)],
                            cwd=GRAPHBASE, check=True, capture_output=True)
             program = cls.work/name
@@ -175,6 +181,36 @@ int main(int argc, char **argv) {
             for vertex in range(n):
                 incident = [edge for edge in edges if vertex in edge]
                 formula = self.encode('tseytin-local', n, mask, vertex=vertex)
+                for bits in itertools.product([0, 1], repeat=len(incident)):
+                    fixed = [[('' if bit else '~')+chr(ord('a')+u)+'.'+chr(ord('a')+v)]
+                             for (u, v), bit in zip(incident, bits)]
+                    self.assertEqual(satisfiable(formula+fixed), sum(bits) % 2 == (vertex == 0),
+                                     (n, mask, vertex, bits))
+
+    def test_parity_capacity_rejects_before_bit_enumeration(self):
+        # Shrink only bit storage so a three-edge star reaches the same boundary
+        # after a few clauses, rather than requiring 2**1000 original clauses.
+        for mask, vertex in [(7, 0), (52, 3)]:
+            with self.subTest(mask=mask, vertex=vertex):
+                result = subprocess.run([str(self.programs['tseytin-small-local']),
+                                         str(self.work/f'4-{mask}.gb')],
+                                        capture_output=True, timeout=5,
+                                        env=dict(ENV, TEST_VERTEX=str(vertex)))
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b'degree', result.stderr)
+                self.assertIn(b'at most 2', result.stderr)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertFalse(any(line and not line.startswith(b'~ ')
+                                     for line in result.stdout.splitlines()))
+
+    def test_parity_capacity_preserves_supported_vertex_truth_tables(self):
+        for n, mask, edges in graphs():
+            for vertex in range(n):
+                incident = [edge for edge in edges if vertex in edge]
+                if len(incident) > 2:
+                    continue
+                formula = self.encode('tseytin-small-local', n, mask, vertex=vertex)
                 for bits in itertools.product([0, 1], repeat=len(incident)):
                     fixed = [[('' if bit else '~')+chr(ord('a')+u)+'.'+chr(ord('a')+v)]
                              for (u, v), bit in zip(incident, bits)]
