@@ -2,6 +2,7 @@
 Boolean function of $N$ variables, this program generates clauses that are
 satisfiable if and only if the function has a disjunctive normal form
 with at most $K$~terms. Parameters $N$ and $K$ are given on the command line.
+We require $1\le N\le100$ and $K\ge0$.
 
 The main variables are \.{$i$+$j$} (meaning that term~$i$ contains $x_j$)
 and \.{$i$-$j$} (meaning that term~$i$ contains $\bar x_j$), for
@@ -71,6 +72,10 @@ if (argc!=3 || sscanf(argv[1],""O"d",&N)!=1 ||
                sscanf(argv[2],""O"d",&K)!=1) {
   fprintf(stderr,"Usage: "O"s N K\n",argv[0]);
   exit(-1);
+}
+if (N<1 || K<0) {
+  fprintf(stderr,"N must be positive and K must be nonnegative!\n");
+  exit(-2);
 }
 if (N>maxn) {
   fprintf(stderr,

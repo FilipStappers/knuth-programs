@@ -59,6 +59,24 @@ class SynthZeroTerms(unittest.TestCase):
                                if line.strip() and not line.startswith('~ ')]
                     self.assertEqual(satisfiable(formula), expected)
 
+    def test_parameter_lower_bounds_reject_before_input_indexing(self):
+        for n, k, data in [(-1, 1, b'0:0\n'), (-2147483648, 1, b''),
+                            (0, 1, b''), (2, -1, b'00:1\n'), (2, -2147483648, b'')]:
+            with self.subTest(n=n, k=k):
+                result = self.encode(n, k, data)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertEqual(result.stdout, b'')
+
+    def test_specialized_change_requires_its_example_dimensions(self):
+        for n, k, cutoff in [(19, 4, '0'), (20, 3, '0'), (20, 5, '0'), (20, 4, '-1')]:
+            with self.subTest(n=n, k=k, cutoff=cutoff):
+                result = self.encode(n, k, b'', 'trunc-kluj', [cutoff])
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b'requires', result.stderr)
+                self.assertEqual(result.stdout, b'')
+
     def test_distributed_specialized_change_still_composes(self):
         result = self.encode(20, 4, b'', 'trunc-kluj', ['0'])
         self.assertEqual(result.returncode, 0, result.stderr.decode())
@@ -66,6 +84,17 @@ class SynthZeroTerms(unittest.TestCase):
                    if line.strip() and not line.startswith('~ ')]
         self.assertEqual(len(formula), 24)
         self.assertTrue(all(len(row) == 160 for row in formula))
+        terms = [{2: -1, 3: -1, 10: -1}, {6: -1, 10: -1, 12: -1},
+                 {8: 1, 13: -1, 15: -1}, {10: 1, 8: -1, 12: -1}]
+        for permutation in itertools.permutations(terms):
+            values = {f'{i}{sign}{j}': term.get(j) == wanted
+                      for i, term in enumerate(permutation, 1) for j in range(1, 21)
+                      for sign, wanted in [('+', 1), ('-', -1)]}
+            for changed in [False, True]:
+                with self.subTest(permutation=permutation, changed=changed):
+                    assignment = values | ({'1+1': True} if changed else {})
+                    fixed = [[('' if value else '~')+name] for name, value in assignment.items()]
+                    self.assertEqual(satisfiable(formula+fixed), changed)
 
 
 if __name__ == '__main__':

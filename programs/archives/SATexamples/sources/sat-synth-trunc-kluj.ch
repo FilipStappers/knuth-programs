@@ -14,6 +14,10 @@ int dat[4][21];
 @x
   printf("~ sat-synth %d %d\n",N,K);
 @y
+  if (N!=20 || K!=4 || cutoff<0) {
+    fprintf(stderr,"This change requires N=20, K=4 and a nonnegative cutoff!\n");
+    exit(-2);
+  }
   printf("~ sat-synth-trunc-kluj %d %d %d\n",N,K,cutoff);
   @<Print 24 solution-excluding lines@>;
 @z
