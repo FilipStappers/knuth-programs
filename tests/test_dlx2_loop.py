@@ -81,6 +81,27 @@ class DlxLoop(unittest.TestCase):
         self.assertRegex(result.stderr, rb'Altogether 0 solutions?')
         self.assertEqual(result.stdout, b'')
 
+    def test_high_boundary_edges_reject_before_neighbor_lookup(self):
+        for matrix in [b'Y0 | Z0\nY0 Z0:0\n', b'0Y | 0Z\n0Y 0Z:0\n']:
+            with self.subTest(matrix=matrix):
+                result = self.run_matrix(matrix)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b'nonexistent vertex', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertNotIn(b'runtime error', result.stderr)
+
+    def test_last_valid_high_coordinate_square_is_accepted(self):
+        matrix, _, _ = grid(2, 2)
+        # Shift the 0/1/2 coordinate square to W/X/Y = 58/59/60.
+        translation = bytes.maketrans(b'012', b'WXY')
+        shifted = b'\n'.join(b' '.join(token[:2].translate(translation)+token[2:]
+                                     for token in line.split())
+                             for line in matrix.splitlines())+b'\n'
+        result = self.run_matrix(shifted)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        self.assertRegex(result.stderr, rb'Altogether 1 solution')
+        self.assertEqual(len(result.stdout.splitlines()), 1)
+
     def test_complete_small_grid_cycle_families(self):
         for h, w, count in [(2, 2, 1), (2, 3, 3), (3, 3, 13)]:
             with self.subTest(h=h, w=w):
