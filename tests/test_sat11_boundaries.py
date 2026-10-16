@@ -65,6 +65,21 @@ class Sat11Boundaries(unittest.TestCase):
     def test_distributed_sat11k_change_matches_and_compiles(self):
         self.compile_variant('k')
 
+    def test_base_unary_input_does_not_read_missing_clause_literals(self):
+        for data in [b'x\n', b'~x\n', b'x\n~x\n', b'x\nx y\n']:
+            with self.subTest(data=data):
+                self.check_formula(data)
+
+    def test_base_all_two_variable_clause_families(self):
+        pool = [[('~' if sign < 0 else '')+f'x{i}'
+                 for i, sign in enumerate(signs) if sign]
+                for signs in itertools.product([0, 1, -1], repeat=2) if any(signs)]
+        for mask in range(1, 1 << len(pool)):
+            data = ''.join(' '.join(c)+'\n' for i, c in enumerate(pool)
+                           if mask & (1 << i)).encode()
+            with self.subTest(mask=mask):
+                self.check_formula(data)
+
 
 if __name__ == '__main__':
     unittest.main()

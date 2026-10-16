@@ -1071,7 +1071,7 @@ for (i=j=0;i<2;) {
   rstack[j++]=p+2; /* the clause is first assembled in |rstack| */
     /* but no mems are charged, because three registers could be used */
 }
-u=rstack[0],v=rstack[1],w=rstack[2]; /* see? */
+u=rstack[0],v=(j>1?rstack[1]:0),w=(j>2?rstack[2]:0); /* see? */
 if (out_file) {
   for (jj=0;jj<j;jj++) fprintf(out_file," "O"s"O".8s",litname(rstack[jj]));
   fprintf(out_file,"\n");
