@@ -35,10 +35,10 @@ class LifeArguments(unittest.TestCase):
     def tearDownClass(cls):
         cls.temp.cleanup()
 
-    def encode(self, name, m, n, rounds):
+    def encode(self, name, m, n, rounds, shift=1):
         args = [str(m), str(n), str(rounds)]
         if 'spaceships' in name:
-            args.append('1')
+            args.append(str(shift))
         return subprocess.run([str(self.programs[name]), *args],
                               capture_output=True, timeout=5)
 
@@ -70,6 +70,22 @@ class LifeArguments(unittest.TestCase):
                 self.assertNotIn(b'runtime error', result.stderr)
                 self.assertNotIn(b'\x00', result.stdout)
                 self.assertTrue(result.stdout)
+
+    def test_spaceship_shift_fits_the_board(self):
+        for name in self.programs:
+            if 'spaceships' not in name:
+                continue
+            for shift in [0, -1, 4, -2147483648, 2147483647]:
+                result = self.encode(name, 3, 3, 1, shift)
+                with self.subTest(variant=name, shift=shift):
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertEqual(result.stdout, b'')
+            for shift in [1, 2, 3]:
+                result = self.encode(name, 3, 3, 1, shift)
+                with self.subTest(variant=name, shift=shift):
+                    self.assertEqual(result.returncode, 0, result.stderr.decode())
+                    self.assertNotIn(b'runtime error', result.stderr)
 
     def test_largest_grid_dimensions_fit_storage(self):
         self.assertEqual(len(self.programs), 12)

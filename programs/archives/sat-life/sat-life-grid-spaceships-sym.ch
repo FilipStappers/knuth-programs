@@ -12,7 +12,7 @@ are constrained to remain in this grid, except perhaps at time~$r$.
 
 This version also adds spaceship constraints: The final state should
 be the original state shifted up $s$ places (except perhaps for some
-debris at the very bottom).
+debris at the very bottom). The upward shift must satisfy $1\le s\le m$.
 
 Furthermore the spaceship is supposed to have left-right symmetry.
 @z
@@ -68,6 +68,10 @@ if (mm<1 || mm>maxx || nn<1 || nn>maxy) {
 if (r<1 || r>(int)sizeof(timecode)-2) { /* the final generation needs its own code */
   fprintf(stderr,"The number of rounds must be between 1 and %d!\n",(int)sizeof(timecode)-2);
   exit(-7);
+}
+if (s<1 || s>mm) {
+  fprintf(stderr,"The upward shift must be between 1 and m!\n");
+  exit(-8);
 }
 printf("~ sat-life-grid-spaceships-sym %d %d %d %d\n",mm,nn,r,s);
 @z
