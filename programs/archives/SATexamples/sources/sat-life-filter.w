@@ -41,17 +41,21 @@ else {
   bit=0;
   c=nextchar();
 }
-for (i=0;c>='0' && c<='9';c=nextchar()) i=10*i+c-'0';
-if (i>=100) {
-  fprintf(stderr,"Eh? I found a number of more than two digits!\n");
-  exit(-2);
+for (i=0;c>='0' && c<='9';c=nextchar()) {
+  i=10*i+c-'0';
+  if (i>=100) {
+    fprintf(stderr,"Eh? I found a number of more than two digits!\n");
+    exit(-2);
+  }
 }
 if (c!='a') goto litdone;
 c=nextchar();
-for (j=0;c>='0' && c<='9';c=nextchar()) j=10*j+c-'0';
-if (j>=100) {
-  fprintf(stderr,"Eh? I found a number of more than two digits!\n");
-  exit(-2);
+for (j=0;c>='0' && c<='9';c=nextchar()) {
+  j=10*j+c-'0';
+  if (j>=100) {
+    fprintf(stderr,"Eh? I found a number of more than two digits!\n");
+    exit(-2);
+  }
 }
 if (c!=' ' && c!='\n') goto litdone;
 @<Record the pixel value $(i,j)$@>;
