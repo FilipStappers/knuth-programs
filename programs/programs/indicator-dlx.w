@@ -22,7 +22,7 @@ char tup[maxr][maxt][maxm]; /* tuples of the relations */
 char siz[maxr]; /* the number of tuples in each relation */
 char arity[maxr]; /* the arity of each relation */
 char a[maxk]; /* controlling digits */
-int nam[maxk]; /* hexadecimal names of arguments */
+int nam[maxm]; /* hexadecimal argument name for each relation coordinate */
 main(int argc,char*argv[]) {
   register i,j,l,m,p,r,s,t,v;
   @<Process the command line@>;
