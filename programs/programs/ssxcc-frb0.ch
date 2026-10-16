@@ -158,19 +158,19 @@ in their paper cited above.
 @^Li, Zhanshan@>
 
 @<Take account of a nonfailure for |best_itm|@>=
-oo,assigns(best_itm)++;
-if (assigns(best_itm)<=0) {
+if (assigns(best_itm)>=infty) {
   fprintf(stderr,"Too many assignments (2^{31})!\n");
   exit(-6);
 }
+oo,assigns(best_itm)++;
 cmems+=2;
 
 @ @<Take account of a failure for |best_itm|@>=
-oo,assigns(best_itm)++;
-if (assigns(best_itm)<=0) {
+if (assigns(best_itm)>=infty) {
   fprintf(stderr,"Too many assignments (2^{31})!\n");
   exit(-66);
 }
+oo,assigns(best_itm)++;
 oo,fails(best_itm)++;
 cmems+=4;
 

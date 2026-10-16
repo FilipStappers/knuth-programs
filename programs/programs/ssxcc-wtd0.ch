@@ -140,11 +140,11 @@ if (shape_file) {
   if (t==max_nodes) fprintf(shape_file,"sol\n");
 @y
 @ @<Increase the weight of |tough_itm|@>=
-cmems+=2,oo,wt(tough_itm)++;
-if (wt(tough_itm)<=0) {
+if (wt(tough_itm)>=infty) {
   fprintf(stderr,"Weight overflow (2^31)!\n");
   exit(-6);
 }
+cmems+=2,oo,wt(tough_itm)++;
 if (vbose&show_weight_bumps) {
   print_item_name(tough_itm,stderr);
   fprintf(stderr," wt "O"d\n",wt(tough_itm));
