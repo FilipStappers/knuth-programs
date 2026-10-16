@@ -2,7 +2,7 @@
 of given relations. I've tried to make it fairly general, so that I can
 use it for experiments. But I haven't tried to make it especially efficient.
 
-The first command-line parameter is $d$, the domain size.
+The first command-line parameter is $d$, the domain size (1 through 16).
 It is followed by $k$, the arity of the polymorphism.
 Then come the tuples of a relation. And the next parameter
 might then be `\.{/}', in which case another relation (or sequence
@@ -38,6 +38,10 @@ if (argc<3 || sscanf(argv[1],"%d",
   fprintf(stderr,"Usage: %s d k <tuples> [/ <tuples>]*\n",
                argv[0]);
   exit(-1);
+}
+if (d<=0 || d>16) {
+  fprintf(stderr,"Sorry, d must be positive and at most 16!\n");
+  exit(-2);
 }
 if (k<=0 || k>maxk) {
   fprintf(stderr,"Sorry, k must be positive and at most %d!\n",

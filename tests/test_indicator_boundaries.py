@@ -41,6 +41,22 @@ class IndicatorBoundaries(unittest.TestCase):
                 self.assertNotIn(b'AddressSanitizer', result.stderr)
                 self.assertEqual(result.stdout, b'')
 
+    def test_domain_must_fit_injective_hexadecimal_argument_names(self):
+        for d in [-1, 0, 17, 33, 2147483647]:
+            with self.subTest(d=d):
+                result = self.solve(d, 1, ['0'])
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b'd must', result.stderr)
+                self.assertEqual(result.stdout, b'')
+        for d, k in [(1, 1), (1, 7), (16, 1), (16, 2)]:
+            result = self.solve(d, k, ['0'])
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            header = result.stdout.decode().splitlines()[1].split()
+            args = header[header.index('|')+1:]
+            self.assertEqual(len(args), d**k)
+            self.assertEqual(len(set(args)), d**k)
+            self.assertTrue(all(len(arg) == k for arg in args))
+
     def test_all_supported_relation_arities_match_independent_matrices(self):
         for arity in range(1, 11):
             tuples = [''.join(str((i+j) % 2) for j in range(arity)) for i in range(2)]
