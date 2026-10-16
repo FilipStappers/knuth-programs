@@ -57,10 +57,13 @@ void main(void) {
 @*Input.
 Let's get the boring stuff out of the way. Our first task is to
 input the permutation, and check that it makes sense.
+There can be at most |maxn| elements; this limit must be checked before
+storing another entry, not after reading the complete permutation.
 
 @<Input the permutation@>=
 for (m=n=0;fscanf(stdin,"%d",
                           &inx)==1;n++) {
+  if (n==maxn) panic("too many elements",n+1);
   if (inx<=0 || inx>maxn) panic("element out of range",inx);
   if (inx>m) m=inx;
   p[n+1]=inx;
