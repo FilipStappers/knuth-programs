@@ -2425,15 +2425,25 @@ Input exhaustion ends the game without reusing the previous answer or command.
 An input error reports failure instead of being treated as a clean end of file.
 
 @<Sub...@>=
-void read_input_line @,@,@[ARGS((void))@];
-void read_input_line()@+{
-  if (fgets(buffer,buf_size,stdin)==NULL) {
-    if (ferror(stdin)) {
-      fprintf(stderr,"I couldn't read standard input!\n");
-      exit(1);
-    }
-    exit(0);
+boolean read_input_line @,@,@[ARGS((void))@];
+boolean read_input_line()@+{
+  int ch,len=0;
+  boolean too_long=false;
+  while ((ch=getchar())!=EOF && ch!='\n') {
+    if (len<buf_size-1) buffer[len++]=ch;
+    else too_long=true;
   }
+  if (ferror(stdin)) {
+    fprintf(stderr,"I couldn't read standard input!\n");
+    exit(1);
+  }
+  if (ch==EOF && len==0 && !too_long) exit(0);
+  buffer[len]='\0';
+  if (too_long) {
+    printf("Please keep input lines to %d characters.\n",buf_size-1);
+    return false;
+  }
+  return true;
 }
 
 @ @<Sub...@>=
@@ -2443,10 +2453,10 @@ boolean yes(q,y,n)
 {
   while(1) {
     printf("%s\n** ",q);@+fflush(stdout);
-    read_input_line();
-    if (tolower(*buffer)=='y') {
+    if (!read_input_line()) continue;
+    if (tolower((unsigned char)*buffer)=='y') {
       if (y) printf("%s\n",y);@+ return true;
-    } else if (tolower(*buffer)=='n') {
+    } else if (tolower((unsigned char)*buffer)=='n') {
       if (n) printf("%s\n",n);@+ return false;
     } else printf(" Please answer Yes or No.\n");
   }
@@ -2464,24 +2474,24 @@ void listen()@+{
   register char *p,*q;
   while (1) {
     printf("* ");@+fflush(stdout);
-    read_input_line();
-    for (p=buffer; isspace(*p); p++) ;
+    if (!read_input_line()) continue;
+    for (p=buffer; isspace((unsigned char)*p); p++) ;
     if (*p==0) {
       printf(" Tell me to do something.\n");@+ continue;
     }
     for (q=word1;*p;p++,q++) {
-      if (isspace(*p)) break; *q=tolower(*p);
+      if (isspace((unsigned char)*p)) break; *q=tolower((unsigned char)*p);
     }
     *q='\0'; /* end of |word1| */
-    for (; isspace(*p); p++) ;
+    for (; isspace((unsigned char)*p); p++) ;
     if (*p==0) {
       *word2='\0';@+ return;
     }
     for (q=word2;*p;p++,q++) {
-      if (isspace(*p)) break; *q=tolower(*p);
+      if (isspace((unsigned char)*p)) break; *q=tolower((unsigned char)*p);
     }
     *q='\0'; /* end of |word2| */
-    for (; isspace(*p); p++) ;
+    for (; isspace((unsigned char)*p); p++) ;
     if (*p==0) return;
     printf(" Please stick to 1- and 2-word commands.\n");
   }
@@ -2651,7 +2661,7 @@ transitive: k=0;
 speakit: report(message[hash_table[k].meaning]);
 report_default:@+ if (default_msg[verb]) report(default_msg[verb])@;
   @+else continue;
-get_object: word1[0]=toupper(word1[0]);@+printf("%s what?\n",word1);
+get_object: word1[0]=toupper((unsigned char)word1[0]);@+printf("%s what?\n",word1);
   goto cycle;
 cant_see_it:@+if ((verb==FIND || verb==INVENTORY) && *word2=='\0')
     goto transitive;

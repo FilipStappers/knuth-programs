@@ -22,6 +22,30 @@ class AdventureInput(unittest.TestCase):
         subprocess.run(['gcc', '-std=gnu99', '-O1', '-fsanitize=address,undefined,bounds',
                         '-fno-sanitize-recover=all', str(generated), '-o', str(cls.program)],
                        check=True, capture_output=True)
+        observed = cls.work/'observed.c'
+        observed.write_text(r'''
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <limits.h>
+static int checked_character(int value) {
+  if (value != EOF && (value < 0 || value > UCHAR_MAX)) {
+    fprintf(stderr,"ctype argument outside its declared domain: %d\n",value);
+    exit(88);
+  }
+  return value;
+}
+#undef isspace
+#undef tolower
+#undef toupper
+#define isspace(c) (isspace)(checked_character(c))
+#define tolower(c) (tolower)(checked_character(c))
+#define toupper(c) (toupper)(checked_character(c))
+'''+generated.read_text())
+        cls.observer = cls.work/'observed'
+        subprocess.run(['gcc', '-std=gnu99', '-O1', '-fsanitize=address,undefined,bounds',
+                        '-fno-sanitize-recover=all', str(observed), '-o', str(cls.observer)],
+                       check=True, capture_output=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -72,6 +96,27 @@ class AdventureInput(unittest.TestCase):
             os.close(descriptor)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn(b'input', result.stderr.lower())
+
+    def test_overlong_records_are_discarded_as_a_whole(self):
+        for padding in [71, 72, 1000]:
+            result = self.run_game(b'n\n'+b' '*padding+b'say zzzzz\nquit\ny\n')
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            self.assertNotIn(b'Okay, "zzzzz".', result.stdout)
+            self.assertIn(b'71 characters', result.stdout)
+
+    def test_exact_input_capacity_preserves_final_command(self):
+        word = b'x'*67
+        for ending in [b'\n', b'']:
+            result = self.run_game(b'n\nsay '+word+ending)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            self.assertIn(b'Okay, "'+word+b'".', result.stdout)
+
+    def test_high_bytes_stay_within_the_ctype_argument_domain(self):
+        for text in [b'\x80\nn\nquit\ny\n', b'n\nsay \x80\nquit\ny\n',
+                     b'n\n\x80\nquit\ny\n']:
+            result = subprocess.run([str(self.observer)], input=text, capture_output=True,
+                                    timeout=5, cwd=self.work, env=ENV)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
 
 
 if __name__ == '__main__':
