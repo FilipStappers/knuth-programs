@@ -297,7 +297,7 @@ int newedge(int s,int t) {
   e[eptr].reg=e[eptr+1].reg=0;
   eptr+=2;
   if (eptr>=2*maxp*maxp) {
-    fprint(stderr,"Memory overflow!\n");
+    fprintf(stderr,"Memory overflow!\n");
     exit(-2);
   }
   return eptr-2;
