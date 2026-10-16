@@ -95,6 +95,12 @@ int purify(int p) {
   if (x=='1' && (o,cl[cc].left))
     @<Delete this edge from the current fragments@>;
 @z
+@x \S31
+  nodes++; /* a solution is a special node, see 7.2.2--(4) */
+@y
+  if (!last_edge) goto recover; /* the empty graph isn't a cycle */
+  nodes++; /* a solution is a special node, see 7.2.2--(4) */
+@z
 @x \S32
   count++;
   if (spacing && (count mod spacing==0)) {
