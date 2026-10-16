@@ -139,10 +139,11 @@ for (i=0;i<m;i++) for (j=0;j<n;j++) {
     if (i<m-1 && board[i+1][j]==k) edge[i+i+2][j+j+1]=0;
     if (clue[k]==0) {
       edge[i+i][j+j+1]=edge[i+i+1][j+j]=edge[i+i+1][j+j+2]=edge[i+i+2][j+j+1]=0;
-      super[k]=0;
     }
   }
 }
+
+for (k=0;k<128;k++) if (super[k] && clue[k]==0) super[k]=0;
 
 @ Each tile `$2i$\.,$2j$' controls the destiny of up to four edges that
 touch its central point $(i,j)$. It has up to six subtiles, called
