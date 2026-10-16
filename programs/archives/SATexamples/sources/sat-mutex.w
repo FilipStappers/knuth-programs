@@ -232,12 +232,20 @@ for (k=t=0;k<m;k++) {
     if (j==m) {
       fprintf(stderr,"Missing step %.4s!\n",state[k].lab);
       t++;
+    } else if (state[j].name[0]!=state[k].name[0]) {
+      fprintf(stderr,"Cross-process target %.4s from %.4s!\n",
+              state[k].lab,state[k].name);
+      t++;
     }
   }
   if (state[k].elab[0]) {
     for (j=0;j<m;j++) if (strncmp(state[j].name,state[k].elab,4)==0) break;
     if (j==m) {
       fprintf(stderr,"Missing step %.4s!\n",state[k].elab);
+      t++;
+    } else if (state[j].name[0]!=state[k].name[0]) {
+      fprintf(stderr,"Cross-process target %.4s from %.4s!\n",
+              state[k].elab,state[k].name);
       t++;
     }
   }

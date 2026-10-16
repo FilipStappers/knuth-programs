@@ -42,17 +42,45 @@ class MutexExclusion(unittest.TestCase):
         lemmas.write_text(''.join(' '.join(f'{p}{k}' for k in range(n))+'\n'
                                  for p in 'AB'))
         # The starvation variant folds its final time back to p and deliberately
-        # emits no exclusion at that final time. Use a nonfinal time-one layer.
-        args = ['2' if name == 'sat-mutex-starve' else '1']
+        # emits no exclusion at that final time. Use time one before cycle start
+        # two, so starvation goal units cannot contaminate the AMO projection.
+        args = ['3' if name == 'sat-mutex-starve' else '1']
         if name.endswith('-lemmas'):
             args.append(str(lemmas))
         elif name == 'sat-mutex-starve':
-            args.append('0')
+            args.append('2')
         result = subprocess.run([str(self.programs[name]), *args], input=data.encode(),
                                 capture_output=True, timeout=5)
         self.assertEqual(result.returncode, 0, result.stderr.decode())
         self.assertNotIn(b'runtime error', result.stderr)
         return result.stdout.decode() if raw else native_clauses(result.stdout.decode())
+
+    def test_cross_process_targets_are_rejected(self):
+        lemmas = self.work/'target.lemmas'
+        lemmas.write_text('A0 A1\nB0 B1\n')
+        for name in VARIANTS:
+            args = ['2']
+            if name.endswith('-lemmas'):
+                args.append(str(lemmas))
+            elif name == 'sat-mutex-starve':
+                args.append('0')
+            for process, field in itertools.product('AB', ['lab', 'elab']):
+                other = 'B' if process == 'A' else 'A'
+                lines = []
+                for p in 'AB':
+                    target = other+'1' if p == process else p+'1'
+                    if field == 'lab':
+                        lines.append(f'{p}0 maybe goto {target}\n')
+                    else:
+                        lines.append(f'{p}0 if a=0 goto {p}1 else {target}\n')
+                    lines.append(f'{p}1 critical goto {p}0\n')
+                result = subprocess.run([str(self.programs[name]), *args],
+                                        input=''.join(lines).encode(),
+                                        capture_output=True, timeout=5)
+                with self.subTest(variant=name, process=process, field=field):
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(b'Cross-process', result.stderr)
+                    self.assertEqual(native_clauses(result.stdout.decode()), [])
 
     def test_distinct_lemma_header_uses_the_supplied_path(self):
         output = self.encode('sat-mutex-distinct-lemmas', 3, raw=True)
