@@ -309,6 +309,8 @@ considered later, after algorithms pass this simpler criterion.]
 
 @ I introduce auxiliary variables here, using Heule's exclusion
 clauses, so that we don't have quadratic blowup when the programs are large.
+The two-state case needs only its single binary exclusion clause; the
+general case below requires at least three state entries.
 
 @d printprevA() if (j) printf("%03d_A%d",t+1,i-1);
     else printf("~%03d%.4s",t+1,state[astep[k-1]].name);
@@ -319,6 +321,7 @@ if (k>1) {
   i=j=0;
   if (k==2) printf("~%03d%.4s ~%03d%.4s\n",
                        t+1,state[astep[0]].name,t+1,state[astep[1]].name);
+  else {
   while (k>4) {
     printprevA();  printf(" ~%03d%.4s\n",
                 t+1,state[astep[k-2]].name);
@@ -348,6 +351,7 @@ if (k>1) {
     printf("~%03d%.4s ~%03d%.4s\n",
                   t+1,state[astep[k-3]].name,t+1,state[astep[k-4]].name);
   }
+  }
 }
 
 @ @d printprevB() if (j) printf("%03d_B%d",t+1,i-1);
@@ -359,6 +363,7 @@ if (k>1) {
   i=j=0;
   if (k==2) printf("~%03d%.4s ~%03d%.4s\n",
                        t+1,state[bstep[0]].name,t+1,state[bstep[1]].name);
+  else {
   while (k>4) {
     printprevB(); printf(" ~%03d%.4s\n",
                 t+1,state[bstep[k-2]].name);
@@ -387,6 +392,7 @@ if (k>1) {
                   t+1,state[bstep[k-2]].name,t+1,state[bstep[k-4]].name);
     printf("~%03d%.4s ~%03d%.4s\n",
                   t+1,state[bstep[k-3]].name,t+1,state[bstep[k-4]].name);
+  }
   }
 }
 
