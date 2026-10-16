@@ -384,16 +384,16 @@ else {
 
 @ The undoing mechanism is very simple: When changing |a[j]|, we
 put |(j<<24)+x| on the |undo| stack, where |x| was the former value.
-Similarly, when changing |b[j]|, we stack the value |(1<<31)+(j<<24)+x|.
+Similarly, when changing |b[j]|, we stack the value |(1U<<31)+(j<<24)+x|.
 
-@d newa(j,y) undo[ptr++]=(j<<24)+a[j], a[j]=y
-@d newb(j,y) undo[ptr++]=(1<<31)+(j<<24)+b[j], b[j]=y
+@d newa(j,y) undo[ptr++]=((unsigned int)(j)<<24)+(unsigned int)a[j], a[j]=y
+@d newb(j,y) undo[ptr++]=(1U<<31)+((unsigned int)(j)<<24)+(unsigned int)b[j], b[j]=y
 
 @<Undo a change@>=
 {
-  i=undo[--ptr];
-  if (i>=0) a[i>>24]=i&0xffffff;
-  else b[(i&0x3fffffff)>>24]=i&0xffffff;
+  unsigned int entry=undo[--ptr];
+  if ((entry&(1U<<31))==0) a[entry>>24]=entry&0xffffffU;
+  else b[(entry>>24)&0x7fU]=entry&0xffffffU;
 }
 
 @ At this point we know that $a[ubp]\le p\le b[ubp]$.
