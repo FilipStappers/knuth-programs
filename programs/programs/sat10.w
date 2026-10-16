@@ -579,7 +579,7 @@ typedef struct {
 uint *mem; /* the master array of cells */
 clause *cmem; /* the master array of clauses */
 variable *vmem; /* the master array of variables */
-char *val; /* the master array of variable values */
+signed char *val; /* the master array; |unknown| must remain negative */
 state *smem; /* the stack of choices made so far */
 uint active; /* an item in the active ring, or zero if that ring is empty */
 
@@ -727,7 +727,7 @@ if (!smem) {
   exit(-13);
 }
 bytes+=(vars+1)*sizeof(state);
-val=(char*)malloc((vars+1)*sizeof(char));
+val=(signed char*)malloc((vars+1)*sizeof(*val));
 if (!val) {
   fprintf(stderr,"Oops, I can't allocate the val array!\n");
   exit(-14);
