@@ -2,6 +2,8 @@
 @* Data for dancing. This program creates data suitable for the {\mc DANCE}
 routine, solving the famous ``$n$ queens problem.'' The value of~$n$
 is a command-line parameter.
+It must be between 1 and 21 so that all labels, including diagonals,
+remain printable ASCII characters in this version's encoding.
 
 @c
 #include <stdio.h>
@@ -23,6 +25,10 @@ main(argc,argv)
 if (argc!=2 || sscanf(argv[1],"%d",&param)!=1) {
   fprintf(stderr,"Usage: %s n\n",argv[0]);
   exit(-1);
+}
+if (param<1 || param>21) {
+  fprintf(stderr,"Sorry, n must be between 1 and 21 for printable labels!\n");
+  exit(-2);
 }
 n=param;
 nn=n+n-2;

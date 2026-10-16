@@ -22,11 +22,11 @@ if (argc!=2 || sscanf(argv[1],"%d",&pn)!=1) {
   fprintf(stderr,"Usage: %s n\n",argv[0]);
   exit(-1);
 }
-n=pn,nn=n+n-2;
-if (nn>62) {
-  fprintf(stderr,"Sorry, I can't currently handle n>32!\n");
+if (pn<1 || pn>32) {
+  fprintf(stderr,"Sorry, n must be between 1 and 32!\n");
   exit(-2);
 }
+n=pn,nn=n+n-2;
 printf("| This data produced by %s %d\n",
                        argv[0],n);
 
