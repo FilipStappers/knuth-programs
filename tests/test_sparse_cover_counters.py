@@ -18,13 +18,15 @@ class SparseCoverCounters(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory()
         cls.work = Path(cls.temp.name)
         cls.programs = {}
-        base = (ROOT/'programs/programs/ssxcc.w').read_text()
-        for key, value in [('max_level', 64), ('max_cols', 128), ('max_nodes', 8192), ('savesize', 8192)]:
-            base, count = re.subn(r'(?m)^@d '+key+r' [^\n]+', f'@d {key} {value}', base)
-            assert count == 1
-        for change in ['ssxcc-frb0', 'ssxcc-wtd0']:
+        for base_name, change in [('ssxcc', 'ssxcc-frb0'), ('ssxcc', 'ssxcc-wtd0'),
+                                  ('xccdc', 'xccdc-frb'), ('xccdc', 'xccdc-wtd')]:
+            base = (ROOT/'programs/programs'/(base_name+'.w')).read_text()
+            for key, value in [('max_level', 64), ('max_stage', 32), ('max_cols', 128),
+                               ('max_nodes', 8192), ('savesize', 8192), ('poolsize', 65536)]:
+                base, count = re.subn(r'(?m)^@d '+key+r' [^\n]+', f'@d {key} {value}', base)
+                assert count <= 1
             text = base
-            if change.endswith('frb0'):
+            if '-frb' in change:
                 text += '''
 @c
 int regression_step(int initial,int failed) {
@@ -77,7 +79,7 @@ int main(int argc,char **argv) {
 
     def test_last_representable_increment_and_both_assignment_paths(self):
         for name, program in self.programs.items():
-            for failed in ([0, 1] if name.endswith('frb0') else [0]):
+            for failed in ([0, 1] if '-frb' in name else [0]):
                 with self.subTest(change=name, failed=failed):
                     result = subprocess.run([str(program), '2147483646', str(failed)],
                                             capture_output=True, timeout=5)

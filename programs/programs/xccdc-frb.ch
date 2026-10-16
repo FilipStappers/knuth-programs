@@ -159,19 +159,19 @@ Checkpoint replay specifies an option without selecting a branching item.
 Only choices made at or beyond |groundstage| contribute to failure statistics.
 
 @<Take account of a nonfailure for |best_itm|@>=
-oo,assigns(best_itm)++;
-if (assigns(best_itm)<=0) {
+if (assigns(best_itm)>=infty) {
   fprintf(stderr,"Too many assignments (2^{31})!\n");
   exit(-6);
 }
+oo,assigns(best_itm)++;
 bmems+=2;
 
 @ @<Take account of a failure for |best_itm|@>=
-oo,assigns(best_itm)++;
-if (assigns(best_itm)<=0) {
+if (assigns(best_itm)>=infty) {
   fprintf(stderr,"Too many assignments (2^{31})!\n");
   exit(-66);
 }
+oo,assigns(best_itm)++;
 oo,fails(best_itm)++;
 bmems+=4;
 
