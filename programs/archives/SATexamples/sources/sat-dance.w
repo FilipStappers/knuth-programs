@@ -184,6 +184,10 @@ them both.
 
 @ @<Output the column clauses@>=
 for (cur_col=root.next; cur_col!=&root; cur_col=cur_col->next) {
+  if (cur_col->len==0) {
+    printf("empty\n~empty\n"); /* a blank line would be ignored by SAT readers */
+    continue;
+  }
   for (cur_node=cur_col->head.down; cur_node!=&cur_col->head; 
            cur_node=cur_node->down)
    printf(" %d",cur_node->num+1);

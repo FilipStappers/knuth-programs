@@ -29,7 +29,7 @@ clash: printf("~%d ~%d\n",j+1,k+1);
 for (cur_col=root.next;cur_col<last_col;cur_col++) {
   for (k=0,cur_node=cur_col->head.down;
         cur_node!=&cur_col->head;cur_node=cur_node->down) k++;
-  if (k==1) continue;
+  if (k<=1) continue;
   j=0, cur_node=cur_col->head.down;
   if (k==2) {
     printf("~%d ~%d\n",cur_node->num+1,cur_node->down->num+1);
