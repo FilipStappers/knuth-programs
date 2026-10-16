@@ -76,6 +76,15 @@ class OfflineTreeCapacity(unittest.TestCase):
         self.assert_tree(list(range(1, 1025)))
         self.assert_tree(list(range(1024, 0, -1)))
 
+    def test_length_diagnostics(self):
+        for values, expected in [([1, 1], b'too many elements! (1)'),
+                                 ([2], b'too few elements! (1)'),
+                                 ([1, 1, 3], b'missing element! (2)')]:
+            with self.subTest(values=values):
+                result = self.run_input(values)
+                self.assertIn(expected, result.stderr)
+                self.assertNotIn(b'runtime error', result.stderr)
+
 
 if __name__ == '__main__':
     unittest.main()
