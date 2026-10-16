@@ -5,8 +5,9 @@ into internal arrays, by brute force.
 With change files I can adapt it to other uses.
 
 The output from an {\mc o} command in {\mc BDD15}
-can be read in an identical fashion,
-so {\mc zddread.w} is identical to {\mc bddread.w}.
+can be read in a similar fashion. Unlike {\mc bddread.w}, this reader
+finds the root from child links: Variable names need not remain in rank
+order after ZDD reordering.
 However, the interpretations are different
 and the correct program must be applied to each output.
 
@@ -85,11 +86,30 @@ main(int argc,char *argv[]) {
         }@+else if (mem[r][i1].lo || mem[r][i1].hi)
           printf("! clobbered node in the line %s",buf);
         else {
-          if (i2<minv) minv=i2,root[r]=i1;
           k++,mem[r][i1].v=i2, mem[r][i1].lo=i3, mem[r][i1].hi=i4;
+          mem[r][i1].mark=1; /* this address has a branch record */
           present[i2]=1;
         }
       }
+    }
+    if (!terminal && k) {
+      for (j=2;j<=memmax;j++) if (mem[r][j].mark&1) {
+        int low=mem[r][j].lo,high=mem[r][j].hi;
+        if ((low>1 && !(mem[r][low].mark&1)) ||
+            (high>1 && !(mem[r][high].mark&1))) {
+          fprintf(stderr,"A child address has no branch record!\n");
+          exit(-69);
+        }
+        if (low>1) mem[r][low].mark|=2;
+        if (high>1) mem[r][high].mark|=2;
+      }
+      for (j=2,minv=0;j<=memmax;j++)
+        if (mem[r][j].mark==1) root[r]=j,minv++;
+      if (minv!=1) {
+        fprintf(stderr,"Expected exactly one ZDD root!\n");
+        exit(-69);
+      }
+      for (j=0;j<=memmax;j++) mem[r][j].mark=0;
     }
     fprintf(stderr,"%d nodes input into mem%d\n",k,r);
     fprintf(stderr,"(memmax=%d)\n",memmax);

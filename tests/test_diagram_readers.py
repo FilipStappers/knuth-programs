@@ -1,6 +1,7 @@
 """B034: diagram arithmetic and reader-state regressions."""
 import functools
 import os
+import re
 from collections import Counter
 from pathlib import Path
 import subprocess
@@ -269,6 +270,65 @@ static void *dirty_malloc(size_t n) {
                 with self.subTest(data=data, reader=name):
                     self.assertNotEqual(result.returncode, 0)
                     self.assertNotIn(b'runtime error', result.stderr)
+
+    def test_reordered_zdd_names_do_not_choose_a_child_as_root(self):
+        path = self.work/'reordered.zdd'
+        records = ['6: (~1?0:5)', '5: (~0?0:1)']
+        for order in [records, list(reversed(records))]:
+            path.write_text('\n'.join(order)+'\n')
+            for name in ['zddread-count', 'zddread-gf', 'zddread-sols-all', 'zddread-minsols-short']:
+                result = subprocess.run([str(self.terminal_programs[name]), str(path)],
+                                        capture_output=True, timeout=5)
+                with self.subTest(order=order, reader=name):
+                    self.assertEqual(result.returncode, 0, result.stderr.decode())
+                    if name.endswith('count'):
+                        self.assertEqual(result.stdout.strip(), b'1 solutions.')
+                    elif name.endswith('gf'):
+                        self.assertIn(b'coefficients are 1 (* z^2..z^2)', result.stdout)
+                    elif name.endswith('sols-all'):
+                        self.assertEqual(set(result.stdout.decode().split()[1:]), {'0', '1'})
+                    else:
+                        self.assertIn(b' (length 2)', result.stdout)
+
+    def test_actual_reordered_bdd15_export_round_trip(self):
+        sgb = os.environ.get('GRAPHBASE')
+        if not sgb:
+            self.skipTest('Set GRAPHBASE for the real BDD15 export pipeline')
+        generated = self.work/'bdd15.c'
+        program = self.work/'bdd15'
+        subprocess.run(['ctangle', str(SOURCES/'bdd15.w'), '-', str(generated)],
+                       check=True, capture_output=True)
+        subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-O1',
+                        '-fno-strict-aliasing', '-no-pie', '-I'+sgb, str(generated),
+                        str(Path(sgb)/'gb_flip.c'), '-o', str(program)],
+                       check=True, capture_output=True)
+        commands = self.work/'reorder.zddl'
+        commands.write_text('v0\nx1\nf0=e0*e1\ns1\np0\nq\n')
+        result = subprocess.run([str(program), str(commands)], capture_output=True, timeout=5)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        records = []
+        for line in result.stdout.decode().splitlines():
+            line = line.removeprefix('f0=')
+            if re.fullmatch(r'[0-9a-f]+: \(~\d+\?[0-9a-f]+:[0-9a-f]+\)', line):
+                records.append(line)
+        self.assertEqual(len(records), 2, result.stdout.decode())
+        path = self.work/'actual-reordered.zdd'
+        path.write_text('\n'.join(records)+'\n')
+        output = subprocess.run([str(self.terminal_programs['zddread-sols-all']), str(path)],
+                                capture_output=True, timeout=5)
+        self.assertEqual(output.returncode, 0, output.stderr.decode())
+        self.assertEqual(set(output.stdout.decode().split()[1:]), {'0', '1'})
+
+    def test_zdd_requires_one_defined_structural_root(self):
+        path = self.work/'invalid-root.zdd'
+        for data in ['2: (~0?0:5)\n', '2: (~0?0:1)\n3: (~1?0:1)\n',
+                     '2: (~0?0:3)\n3: (~1?0:2)\n']:
+            path.write_text(data)
+            result = subprocess.run([str(self.programs['zddread-count']), str(path)],
+                                    capture_output=True, timeout=5)
+            with self.subTest(data=data):
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn(b'runtime error', result.stderr)
 
 
 if __name__ == '__main__':

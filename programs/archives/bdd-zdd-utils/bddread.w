@@ -5,8 +5,9 @@ into internal arrays, by brute force.
 With change files I can adapt it to other uses.
 
 The output from an {\mc o} command in {\mc BDD15}
-can be read in an identical fashion,
-so {\mc zddread.w} is identical to {\mc bddread.w}.
+can be read in a similar fashion by {\mc zddread.w}, which identifies
+the root by child links to allow names that differ from rank order.
+This BDD reader expects the unmapped variable ranks produced by {\mc o}.
 However, the interpretations are different
 and the correct program must be applied to each output.
 
