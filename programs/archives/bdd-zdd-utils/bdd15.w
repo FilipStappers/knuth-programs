@@ -2101,7 +2101,9 @@ if (!r) return NULL;
 if (r!=botsink && node_(g->lo)!=botsink) {
   r1=r;
   f0=ezrem_rec(f,vg);
-  if (!f0) return NULL;
+  if (!f0) {
+    deref(r1);@+return NULL;
+  }
   r0=quot_rec(f0,node_(g->lo));
   deref(f0);
   if (!r0) {

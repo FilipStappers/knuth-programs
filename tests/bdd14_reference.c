@@ -49,6 +49,24 @@ int main(int argc,char **argv) {
   for (a=0;a<3;a++) projection(a);
   for (t=0;t<256;t++) f[t]=construct(t,0,0);
 #ifdef ZDD
+  if (argc>2 && strcmp(argv[2],"quot")==0) {
+    unsigned b,want,ok;
+    for (t=0;t<256;t++) for (u=0;u<256;u++) {
+      node *r=binary_top(9,f[t],f[u]);
+      want=0;
+      for (a=0;a<8;a++) {
+        ok=1;
+        for (b=0;b<8;b++) if (u&(1U<<b))
+          if ((a&b) || !(t&(1U<<(a|b)))) { ok=0; break; }
+        if (ok) want|=1U<<a;
+      }
+      if (family(r)!=want) failures++;
+      deref(r); cases++;
+    }
+    sanity_check();
+    printf("QUOT cases=%u failures=%u\n",cases,failures);
+    return failures?1:0;
+  }
   if (argc>2 && strcmp(argv[2],"coprod")==0) {
     unsigned b,want;
     for (t=0;t<256;t++) for (u=0;u<256;u++) {

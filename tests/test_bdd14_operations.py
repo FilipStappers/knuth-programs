@@ -115,6 +115,21 @@ class Bdd14Operations(unittest.TestCase):
         self.assertIn(b'COPROD cases=65536 failures=0', result.stdout)
         self.assertNotIn(b'\n! ', result.stdout)
 
+    def test_zdd_quotient_releases_acquired_result_after_remainder_failure(self):
+        mode = 'quot-failure'
+        result = subprocess.run([str(self.fault_programs[mode]), str(self.commands), mode],
+                                capture_output=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stdout.decode()+result.stderr.decode())
+        self.assertIn(b'QUOT_FAILURE returned_null=1', result.stdout)
+        self.assertNotIn(b'\n! ', result.stdout)
+
+    def test_all_three_element_zdd_quotient_families(self):
+        result = subprocess.run([str(self.cache_programs['zdd']), str(self.commands), 'quot'],
+                                capture_output=True, timeout=30)
+        self.assertEqual(result.returncode, 0, result.stdout.decode()+result.stderr.decode())
+        self.assertIn(b'QUOT cases=65536 failures=0', result.stdout)
+        self.assertNotIn(b'\n! ', result.stdout)
+
 
 if __name__ == '__main__':
     unittest.main()
