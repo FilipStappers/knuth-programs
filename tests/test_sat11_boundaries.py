@@ -80,6 +80,21 @@ class Sat11Boundaries(unittest.TestCase):
             with self.subTest(mask=mask):
                 self.check_formula(data)
 
+    def test_k_short_clause_temporary_tail_after_big_clauses(self):
+        for data in [b'x\nx y z\n', b'x y\nx y z\n', b'~x\nx y z\n']:
+            with self.subTest(data=data):
+                self.check_formula(data, 'k')
+
+    def test_k_two_variable_families_with_one_big_clause(self):
+        pool = [[('~' if sign < 0 else '')+f'x{i}'
+                 for i, sign in enumerate(signs) if sign]
+                for signs in itertools.product([0, 1, -1], repeat=2) if any(signs)]
+        for mask in range(1, 1 << len(pool)):
+            data = (''.join(' '.join(c)+'\n' for i, c in enumerate(pool)
+                            if mask & (1 << i))+'x0 x1 z\n').encode()
+            with self.subTest(mask=mask):
+                self.check_formula(data, 'k')
+
 
 if __name__ == '__main__':
     unittest.main()

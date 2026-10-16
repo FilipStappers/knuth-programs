@@ -354,11 +354,13 @@ if (!cinx) {
   exit(-10);
 }
 bytes+=(bclauses+1)*sizeof(tdata);
-cmem=(uint*)malloc(bcells*sizeof(uint));
+/* Two scratch cells hold a short clause beyond the retained big clauses. */
+cmem=(uint*)malloc((bcells+2)*sizeof(uint));
 if (!cmem) {
   fprintf(stderr,"Oops, I can't allocate the cmem array!\n");
   exit(-10);
 }
+bytes+=(bcells+2)*sizeof(uint);
 kinx=(tdata*)malloc(badlit*sizeof(tdata));
 if (!kinx) {
   fprintf(stderr,"Oops, I can't allocate the cmem array!\n");
