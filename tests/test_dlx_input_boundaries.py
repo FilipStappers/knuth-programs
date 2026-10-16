@@ -79,9 +79,9 @@ class DlxInputBoundaries(unittest.TestCase):
                 self.assertEqual(int(re.search(rb'Altogether (\d+) solutions?', result.stderr)[1]), expected)
 
     def test_compatible_distributed_changes_still_tangle(self):
-        # The two historical cutoff mismatches are tracked separately in B048.
         for base, changes in [('dlx1', ['sudoku']),
-                              ('dlx2', ['sharp', 'kludge', 'loop', 'polyom', 'wordsearch'])]:
+                              ('dlx2', ['sharp', 'kludge', 'loop', 'polyom', 'wordsearch',
+                                        'cutoff', 'cutoff-kludge'])]:
             for change in changes:
                 name = base+'-'+change
                 with self.subTest(change=name):

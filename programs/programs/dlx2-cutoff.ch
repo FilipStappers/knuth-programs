@@ -95,9 +95,10 @@ void uncover(int c) {
 void unpurify(int p) {
   register int cc,rr,nn,uu,dd,t,x;
   o,cc=nd[p].itm,x=nd[p].color; /* there's no need to clear |nd[cc].color| */
-  for (o,rr=nd[cc].up;rr>=last_itm;o,rr=nd[rr].up) {  
+  for (o,rr=nd[cc].up;rr>=last_itm;o,rr=nd[rr].up) {
+    if (rr==p) fprintf(stderr,"confusion!\n");
     if (o,nd[rr].color<0) o,nd[rr].color=x;
-    else if (rr!=p) {
+    else {
       for (nn=rr-1;nn!=rr;) {
         if (o,nd[nn].color>=0) {
           o,uu=nd[nn].up,dd=nd[nn].down;
