@@ -75,6 +75,7 @@ for (i=j=0;j<ma;j++) if (state[astep[j]].crit) {
     i++;
   }
 }
+if (i==0) printf("C0\n~C0\n"); /* no critical pair: impossible goal */
 for (j=0;j<i;j++)
   printf(" C%d",
              j);

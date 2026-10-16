@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 import unittest
 from test_dimacs_empty_clause import native_clauses, native_has_extension
+from cnf_reference import satisfiable
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES = ROOT/'programs/archives/SATexamples/sources'
@@ -54,6 +55,24 @@ class MutexExclusion(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr.decode())
         self.assertNotIn(b'runtime error', result.stderr)
         return result.stdout.decode() if raw else native_clauses(result.stdout.decode())
+
+    def test_absent_critical_goal_is_unsatisfiable(self):
+        for critical in ['', 'A', 'B']:
+            data = ''.join(f'{p}0 maybe goto {p}1\n{p}1 '+
+                           ('critical' if p in critical else 'maybe')+
+                           f' goto {p}0\n' for p in 'AB')
+            result = subprocess.run([str(self.programs['sat-mutex']), '2'],
+                                    input=data.encode(), capture_output=True, timeout=5)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            with self.subTest(critical=critical):
+                self.assertFalse(satisfiable(native_clauses(result.stdout.decode())))
+
+    def test_reachable_joint_critical_goal_remains_satisfiable(self):
+        data = 'A0 maybe goto A1\nA1 critical goto A0\nB0 maybe goto B1\nB1 critical goto B0\n'
+        result = subprocess.run([str(self.programs['sat-mutex']), '2'],
+                                input=data.encode(), capture_output=True, timeout=5)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        self.assertTrue(satisfiable(native_clauses(result.stdout.decode())))
 
     def test_cross_process_targets_are_rejected(self):
         lemmas = self.work/'target.lemmas'
