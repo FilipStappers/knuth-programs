@@ -12,6 +12,8 @@ in the cycle. (2)~At least one of the players has executed neither a
 \.{maybe} command nor a \.{critical} command within the cycle.
 
 The ``starved'' player is A, if $p<0$; otherwise it's B.
+We require $r>0$ and $|p|<r$, so that the cycle starts at an earlier
+nonnegative time. These bounds are checked before taking the absolute value.
 @z
 @x
 int r; /* command-line parameter, the number of time steps to emulate */
@@ -34,6 +36,10 @@ if (argc!=2 || sscanf(argv[1],"%d",&r)!=1) {
 if (argc!=3 || sscanf(argv[1],"%d",&r)!=1 || sscanf(argv[2],"%d",&p)!=1) {
   fprintf(stderr,"Usage: %s r {+|-}p < foo.dat\n",argv[0]);
   exit(-1);
+}
+if (r<=0 || p<=-r || p>=r) {
+  fprintf(stderr,"Parameters must satisfy r>0 and -r<p<r!\n");
+  exit(-2);
 }
 pp=p>0? p: -p;
 @z

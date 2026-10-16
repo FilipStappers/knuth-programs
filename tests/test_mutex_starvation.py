@@ -54,6 +54,17 @@ class MutexStarvation(unittest.TestCase):
         self.assert_cycle(data, 3, 1, False)
         self.assert_cycle(data, 2, 0, False)
 
+    def test_cycle_start_is_checked_before_absolute_value(self):
+        data = 'A0 a=0 goto A0\nB0 b=0 goto B0\n'
+        for r, p in [(3, 3), (3, -3), (3, 4), (3, -4),
+                     (3, -2147483648), (2147483647, -2147483648),
+                     (0, -2147483648), (-2147483648, -2147483648)]:
+            with self.subTest(r=r, p=p):
+                result = self.encode(data, r, p)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertEqual(result.stdout, b'')
+
 
 if __name__ == '__main__':
     unittest.main()
