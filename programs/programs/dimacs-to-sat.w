@@ -11,6 +11,10 @@ A literal for the $k$th variable is represented by $k$; its complement
 is represented by $-k$.
 
 SAT format is explained in the programs cited above.
+An empty DIMACS clause is represented by two contradictory unit clauses on
+the SAT variable named \.0. This name cannot clash with an input variable,
+because DIMACS literals have nonzero variable numbers. A blank SAT line
+would instead be ignored, losing the contradiction.
 
 @d buf_size 1024
 
@@ -52,8 +56,10 @@ while (1) {
 j=k=l=p=0;
 while (fscanf(stdin,"%i",&v)==1) {
   if (v==0) {
-    if (j==0)
-      fprintf(stderr,"Warning: Clause %d is empty!\n",k+1);
+    if (j==0) {
+      fprintf(stderr,"Clause %d is empty; encoding a contradiction.\n",k+1);
+      printf(" 0\n ~0");
+    }
     printf("\n");
     if (k==m) {
       fprintf(stderr,"Too many clauses (more than %d)!\n",m);
@@ -84,7 +90,8 @@ if (j) {
   k++;
 }  
 if (k<m) fprintf(stderr,"Too few clauses (%d < %d)!\n",k,m);
-fprintf(stderr,"OK, I wrote out %d literals in %d clauses on %d variables.\n",
+fprintf(stderr,"OK, I translated %d input literals in %d input clauses"
+               " (largest input variable %d).\n",
            l,k,p);
 
 @*Index.

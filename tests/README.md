@@ -1,0 +1,22 @@
+# Regression tests for fixes
+
+Run from the repository root on a system with Python 3, CWEB `ctangle` and GCC:
+
+```sh
+python3 -m unittest discover -s tests -v
+```
+
+Generated C and executables are built in temporary directories. Tests compile
+the current literate source rather than retaining generated C as a second source.
+Some legacy entry points rely on permissive implicit-int support; individual
+test builds specify that compatibility explicitly.
+
+For the converter's additional real SAT0 pipeline check, supply the Stanford
+GraphBase source directory (containing `gb_flip.c` and `gb_flip.h`):
+
+```sh
+GRAPHBASE=/path/to/sgb python3 -m unittest discover -s tests -v
+```
+
+Without GRAPHBASE, that optional integration check is reported as skipped.
+The exhaustive converter projection checks have no GraphBase dependency.
