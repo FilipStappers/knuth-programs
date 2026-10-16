@@ -188,6 +188,8 @@ if (cl[last_itm].name[1]!=0 && cl[last_itm].name[2]==0) {
     o,itmloc[x][y]=last_itm;
     if ((x+y)&1) { /* edge item */
       if (second==max_cols) panic("Edge item isn't secondary");
+      if ((x&1)? x+1>=62: y+1>=62)
+        panic("Edge item for nonexistent vertex");
       if (x&1) u=itmloc[x-1][y],v=itmloc[x+1][y];
       else u=itmloc[x][y-1],v=itmloc[x][y+1];
       if (u==0 || v==0) panic("Edge item for nonexistent vertex");

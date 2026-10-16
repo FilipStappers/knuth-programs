@@ -130,9 +130,6 @@ class DlxLoop(unittest.TestCase):
 
 class Dlx3Loop(DlxLoop):
     base_name = 'dlx3'
-    # Coordinate handling is a separately tracked B049 finding.
-    test_high_boundary_edges_reject_before_neighbor_lookup = None
-    test_last_valid_high_coordinate_square_is_accepted = None
 
 
 if __name__ == '__main__':
