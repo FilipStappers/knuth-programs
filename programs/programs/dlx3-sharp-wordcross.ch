@@ -30,6 +30,7 @@ if ((vbose&show_details) &&
   if (spacing && (count mod spacing==0)) {
     register cc,d,l=0,s,t,x,y,xy;
     for (k=0;k<level;k++) {
+      if (choice[k]<last_itm) continue; /* a null choice has no option nodes */
       for (r=choice[k]+1;;) {
         cc=nd[r].itm;
         if (cc<=0) {
@@ -55,6 +56,7 @@ nextr:@+  if (r==choice[k]) break;
         r++;
       }
     }
+    if (l==0) goto cleanup; /* no nonempty occupied component to render */
     @<If the solution is disconnected, |goto cleanup|@>;
     for (x=0;x<=xmax;x++) {
       if (x) printf("|");
