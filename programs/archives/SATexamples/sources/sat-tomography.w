@@ -18,6 +18,7 @@ subscripts that appear, and it makes fairly careful syntax checks.
 #include <stdio.h>
 #include <stdlib.h>
 int r[mmax+1],c[mmax+1],a[mmax+nmax],b[mmax+nmax]; /* the given data */
+char given[4][mmax+nmax]; /* presence is independent of the given value */
 int count[mmax+mmax+nmax+nmax]; /* leaf counts for the BB method */
 char buf[80];
 char name[mmax+nmax][9];
@@ -66,11 +67,12 @@ case 'r': if (d<1 || d>mmax) {
     exit(-5);
   }
   if (d>m) m=d;
-  if (r[d]) {
+  if (given[0][d]) {
     fprintf(stderr,"The value of r%d has already been given!\nBad line %s",
                          d,buf);
     exit(-6);
   }
+  given[0][d]=1;
   r[d]=l;
   break;
 
@@ -86,11 +88,12 @@ case 'c': if (d<1 || d>nmax) {
     exit(-15);
   }
   if (d>n) n=d;
-  if (c[d]) {
+  if (given[1][d]) {
     fprintf(stderr,"The value of c%d has already been given!\nBad line %s",
                          d,buf);
     exit(-16);
   }
+  given[1][d]=1;
   c[d]=l;
   break;
 
@@ -105,11 +108,12 @@ case 'a': if (d<1 || d>=mmax+nmax) {
                          buf);
     exit(-25);
   }
-  if (a[d]) {
+  if (given[2][d]) {
     fprintf(stderr,"The value of a%d has already been given!\nBad line %s",
                          d,buf);
     exit(-26);
   }
+  given[2][d]=1;
   a[d]=l;
   break;
 
@@ -124,11 +128,12 @@ case 'b': if (d<1 || d>=mmax+nmax) {
                          buf);
     exit(-35);
   }
-  if (b[d]) {
+  if (given[3][d]) {
     fprintf(stderr,"The value of b%d has already been given!\nBad line %s",
                          d,buf);
     exit(-36);
   }
+  given[3][d]=1;
   b[d]=l;
   break;
 
