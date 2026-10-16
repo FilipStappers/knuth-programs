@@ -24,7 +24,7 @@ typedef unsigned int uint; /* a convenient abbreviation */
 typedef unsigned long long ullng; /* ditto */
 @<Type definitions@>;
 @<Global variables@>;
-main (int argc, char *argv[]) {
+int main (int argc, char *argv[]) {
   register uint c,h,i,j,k,l,p,q,r,level,kk,pp,qq,ll;
   @<Process the command line@>;
   @<Initialize everything@>;
@@ -34,6 +34,11 @@ main (int argc, char *argv[]) {
   myclock=time(0);
   printf("c file created by SAT-TO-DIMACS %s",ctime(&myclock));
   @<Output the clauses@>;
+  if (fflush(stdout)==EOF || ferror(stdout)) {
+    fprintf(stderr,"Output error during conversion!\n");
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
 }
 
 @ @<Glob...@>=
@@ -177,6 +182,10 @@ while (1) {
     exit(-4);
   }
   @<Input the clause in |buf|@>;
+}
+if (ferror(stdin)) {
+  fprintf(stderr,"Input error during conversion!\n");
+  exit(EXIT_FAILURE);
 }
 if ((vars>>hbits)>=10) {
   fprintf(stderr,"There are %lld variables but only %d hash tables;\n",
