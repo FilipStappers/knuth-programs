@@ -44,14 +44,14 @@ int a[128],b[128];
 unsigned int undo[128*128];
 int ptr; /* this many items of the |undo| stack are in use */
 struct {
- int lbp,lbq,ubq,r,ptrp,ptrq;
+ int lbp,ubp,lbq,ubq,r,ptrp,ptrq;
 } stack[128];
 int tail[128],outdeg[128],outsum[128],limit[128];
 FILE *infile[64], *outfile[64];
 char buf[100];
 int main(int argc, char* argv[])
 {
-  register int i,j,n,p,q,r,s,ubq,lbp,lbq,ptrp,ptrq;
+  register int i,j,n,p,q,r,s,ubp,ubq,lbp,lbq,ptrp,ptrq;
   int lg2n,kk,lb,ub,timer=0;
   @<Process the command line@>;
   a[0]=b[0]=1, a[1]=b[1]=2; /* an addition chain always begins like this */
@@ -171,15 +171,15 @@ for (r=s=lb;s>kk;s--) {
       p=a[r], q=a[s]-p, r++; 
     }
     if (q<limit[s]) goto backup;
-    @<Find bounds $(|lbp|,|ubq|)$ and $(|lbq|,|ubq|)$ on where |p| and |q|
+    @<Find bounds $(|lbp|,|ubp|)$ and $(|lbq|,|ubq|)$ on where |p| and |q|
        can be inserted; but go to |failpq| if they can't both
        be accommodated@>;
     ptrp=ptr;
-    for (; ubq>=lbp; ubq--) {
-      @<Put |p| into the chain at location |ubq|;
+    for (; ubp>=lbp; ubp--) {
+      @<Put |p| into the chain at location |ubp|;
          |goto failp| if there's a problem@>;
       if (p==q) goto happiness;
-      if (ubq>=ubq) ubq=ubq-1;
+      if (ubq>=ubp) ubq=ubp-1;
       ptrq=ptr;
       for (; ubq>=lbq; ubq--) {
         @<Put |q| into the chain at location |ubq|;
@@ -208,37 +208,37 @@ possible:
   
 @ @<Put local variables on the stack and update outdegrees@>=
 tail[s]=q, stack[s].r=r;
+outdeg[ubp]++, outsum[ubp]+=s;
 outdeg[ubq]++, outsum[ubq]+=s;
-outdeg[ubq]++, outsum[ubq]+=s;
-stack[s].lbp=lbp,stack[s].ubq=ubq;
+stack[s].lbp=lbp,stack[s].ubp=ubp;
 stack[s].lbq=lbq,stack[s].ubq=ubq;
 stack[s].ptrp=ptrp,stack[s].ptrq=ptrq;
 
 @ @<Restore local variables from the stack and downdate outdegrees@>=
 ptrq=stack[s].ptrq,ptrp=stack[s].ptrp;
 lbq=stack[s].lbq,ubq=stack[s].ubq;
-lbp=stack[s].lbp,ubq=stack[s].ubq;
+lbp=stack[s].lbp,ubp=stack[s].ubp;
 outdeg[ubq]--, outsum[ubq]-=s;
-outdeg[ubq]--, outsum[ubq]-=s;
+outdeg[ubp]--, outsum[ubp]-=s;
 q=tail[s], p=a[s]-q, r=stack[s].r;
 
-@ After the test in this step is passed, we'll have |ubq>ubq| and |lbp>lbq|.
+@ After the test in this step is passed, we'll have |ubp>ubq| and |lbp>lbq|.
 
 @<Find bounds...@>=
 lbp=l[kk][p];
 if (lbp>=lb) goto failpq;
 while (b[lbp]<p) lbp++;
 if (a[lbp]>p) goto failpq;
-for (ubq=lbp;a[ubq+1]<=p;ubq++);
-if (ubq==s-1) lbp=ubq;
-if (p==q) lbq=lbp,ubq=ubq;
+for (ubp=lbp;a[ubp+1]<=p;ubp++);
+if (ubp==s-1) lbp=ubp;
+if (p==q) lbq=lbp,ubq=ubp;
 else {
   lbq=l[kk][q];
-  if (lbq>=ubq) goto failpq;
+  if (lbq>=ubp) goto failpq;
   while (b[lbq]<q) lbq++;
-  if (lbq>=ubq) goto failpq;
+  if (lbq>=ubp) goto failpq;
   if (a[lbq]>q) goto failpq;
-  for (ubq=lbq;a[ubq+1]<=q && ubq+1<ubq;ubq++);
+  for (ubq=lbq;a[ubq+1]<=q && ubq+1<ubp;ubq++);
   if (lbp==lbq) lbp++;
 }
 
@@ -256,30 +256,30 @@ Similarly, when changing |b[j]|, we stack the value |(1<<31)+(j<<24)+x|.
   else b[(i&0x3fffffff)>>24]=i&0xffffff;
 }
 
-@ At this point we know that $a[ubq]\le p\le b[ubq]$.
+@ At this point we know that $a[ubp]\le p\le b[ubp]$.
 
-@<Put |p| into the chain at location |ubq|...@>=
-if (a[ubq]!=p) {
-  newa(ubq,p);
-  for (j=ubq-1;(a[j]<<1)<a[j+1];j--) {
+@<Put |p| into the chain at location |ubp|...@>=
+if (a[ubp]!=p) {
+  newa(ubp,p);
+  for (j=ubp-1;(a[j]<<1)<a[j+1];j--) {
     i=(a[j+1]+1)>>1;
     if (i>b[j]) goto failp;
     newa(j,i);
   }
-  for (j=ubq+1;a[j]<=a[j-1];j++) {
+  for (j=ubp+1;a[j]<=a[j-1];j++) {
     i=a[j-1]+1;
     if (i>b[j]) goto failp;
     newa(j,i);
   }
 }
-if (b[ubq]!=p) {
-  newb(ubq,p);
-  for (j=ubq-1;b[j]>=b[j+1];j--) {
+if (b[ubp]!=p) {
+  newb(ubp,p);
+  for (j=ubp-1;b[j]>=b[j+1];j--) {
     i=b[j+1]-1;
     if (i<a[j]) goto failp;
     newb(j,i);
   }
-  for (j=ubq+1;b[j]>b[j-1]<<1;j++) {
+  for (j=ubp+1;b[j]>b[j-1]<<1;j++) {
     i=b[j-1]<<1;
     if (i<a[j]) goto failp;
     newb(j,i);
@@ -304,9 +304,9 @@ Such cases may seem extremely special. But they are especially
 useful in ruling out cases that have no good $l_k(n)$.
 
 @<Make forced moves if |p| has a special form@>=
-i=p-(1<<(ubq-1));
+i=p-(1<<(ubp-1));
 if (i && ((i&(i-1))==0) && (i<<4)<p) {
-  for (j=ubq-2;(i&1)==0;i>>=1,j--);
+  for (j=ubp-2;(i&1)==0;i>>=1,j--);
   if (b[j]<(1<<j)) goto failp;
   for (;a[j]<(1<<j);j--) newa(j,1<<j);
 }
