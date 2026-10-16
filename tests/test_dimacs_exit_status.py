@@ -43,6 +43,27 @@ class ConverterStatus(unittest.TestCase):
             with self.subTest(dialect=program.name):
                 self.assertNotEqual(result.returncode, 0)
 
+    def test_malformed_headers_are_rejected(self):
+        headers = ['p cnf -1 1', 'p cnf 1 -1', 'p cnf 4294967297 1',
+                   'p cnf 1 4294967297', 'p cnf '+'9'*100+' 1',
+                   'p cnf 1 1 junk', 'p cnf1 1', 'p cnf 1', 'p cnf x 1',
+                   'p cnf 1 1\0', 'p cnf 1 1'+' '*1024]
+        for program in self.programs:
+            for header in headers:
+                result = subprocess.run([str(program)], input=(header+'\n0\n').encode(),
+                                        capture_output=True, timeout=3)
+                with self.subTest(dialect=program.name, header=header):
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertEqual(result.stdout, b'')
+
+    def test_decimal_header_counts_and_whitespace(self):
+        for program in self.programs:
+            result = subprocess.run([str(program)], input=b'p cnf 08 01 \t\n8 0\n',
+                                    capture_output=True, timeout=3)
+            with self.subTest(dialect=program.name):
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                self.assertEqual(result.stdout, b' 8\n')
+
     def test_existing_detected_input_errors_remain_failures(self):
         for program in self.programs:
             result = subprocess.run([str(program)], input=b'bad header\n',

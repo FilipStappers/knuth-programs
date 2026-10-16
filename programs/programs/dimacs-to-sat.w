@@ -25,6 +25,10 @@ would instead be ignored, losing the contradiction.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <errno.h>
+#include <limits.h>
+#include <string.h>
 char buf[buf_size];
 int m,n,v;
 @<Subroutines@>@;
@@ -48,11 +52,21 @@ while (1) {
   if (!fgets(buf,buf_size,stdin)) break;
   if (buf[0]=='c') @<Process a comment line and |continue|@>;
   if (buf[0]!='p' || buf[1]!=' ' ||
-          buf[2]!='c' || buf[3]!='n' || buf[4]!='f') {
+          buf[2]!='c' || buf[3]!='n' || buf[4]!='f' ||
+          !isspace((unsigned char)buf[5]) || !strchr(buf,'\n')) {
     fprintf(stderr,"Unrecognized input line: %s\n",buf);
     exit(-2);
   }
-  sscanf(buf+5,"%i %i",&n,&m);
+  {
+    char *cursor=buf+5;
+    n=header_count(&cursor);
+    m=header_count(&cursor);
+    while (isspace((unsigned char)*cursor)) cursor++;
+    if (*cursor) {
+      fprintf(stderr,"Unexpected data after DIMACS header counts!\n");
+      exit(-2);
+    }
+  }
   break;
 }
 
@@ -120,6 +134,23 @@ void print_var(int value) {
     putchar('v');
     while (k) putchar(name[--k]);
   }
+}
+
+@ Header counts must be positive decimal integers representable as |int|.
+
+@<Subroutines@>=
+int header_count(char **cursor) {
+  char *end;
+  long value;
+  errno=0;
+  value=strtol(*cursor,&end,10);
+  if (errno==ERANGE || end==*cursor || value<=0 || value>INT_MAX ||
+      (*end && !isspace((unsigned char)*end))) {
+    fprintf(stderr,"Invalid DIMACS header count!\n");
+    exit(-2);
+  }
+  *cursor=end;
+  return (int)value;
 }
 
 @*Index.
