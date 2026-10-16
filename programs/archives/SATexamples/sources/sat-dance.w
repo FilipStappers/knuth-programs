@@ -107,8 +107,8 @@ int rowptr; /* this many rows have been seen */
 
 @<Read the column names@>=
 cur_col=col_array+1;
-fgets(buf,buf_size,stdin);
-if (buf[strlen(buf)-1]!='\n') panic("Input line too long");
+if (!fgets(buf,buf_size,stdin)) panic("No column names");
+if (!buf[0] || buf[strlen(buf)-1]!='\n') panic("Input line too long");
 for (p=buf,primary=1;*p;p++) {
   while (isspace(*p)) p++;
   if (!*p) break;
@@ -122,6 +122,9 @@ for (p=buf,primary=1;*p;p++) {
   if (q>p+7) panic("Column name too long");
   if (cur_col>=&col_array[max_cols]) panic("Too many columns");
   for (q=cur_col->name;!isspace(*p);q++,p++) *q=*p;
+  *q='\0';
+  for (scan_col=col_array+1;scan_col<cur_col;scan_col++)
+    if (!strcmp(scan_col->name,cur_col->name)) panic("Duplicate column name");
   cur_col->head.up=cur_col->head.down=&cur_col->head;
   cur_col->head.num=-1;
   cur_col->len=0;
@@ -139,6 +142,7 @@ register column *cur_col;
 register char *p,*q;
 register node *cur_node;
 int primary;
+column *scan_col;
 int j,k;
 
 @ @<Read the rows@>=
@@ -146,7 +150,8 @@ cur_node=node_array;
 while (fgets(buf,buf_size,stdin)) {
   register column *ccol;
   register node *row_start;
-  if (buf[strlen(buf)-1]!='\n') panic("Input line too long");
+  register node *row_scan;
+  if (!buf[0] || buf[strlen(buf)-1]!='\n') panic("Input line too long");
   row_start=NULL;
   for (p=buf;*p;p++) {
     while (isspace(*p)) p++;
@@ -157,6 +162,8 @@ while (fgets(buf,buf_size,stdin)) {
     *q='\0';
     for (ccol=col_array;strcmp(ccol->name,cur_col->name);ccol++);
     if (ccol==cur_col) panic("Unknown column name");
+    if (row_start) for (row_scan=row_start;row_scan<cur_node;row_scan++)
+      if (row_scan->col==ccol) panic("Duplicate column in a row");
     if (cur_node==&node_array[max_nodes]) panic("Too many nodes");
     if (!row_start) row_start=cur_node;
     else cur_node->left=cur_node-1, (cur_node-1)->right=cur_node;

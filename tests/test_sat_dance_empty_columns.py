@@ -52,6 +52,17 @@ class SatDanceEmptyColumns(unittest.TestCase):
                     formula = [line.split() for line in result.stdout.decode().splitlines() if line.strip()]
                     self.assertFalse(satisfiable(formula))
 
+    def test_missing_empty_string_and_duplicate_records_reject(self):
+        for mode in self.programs:
+            for data in [b'', b'\x00\n', b'A\n\x00\n', b'A A\nA\n',
+                         b'A | A\nA\n', b'A B\nA A\nB\n']:
+                with self.subTest(mode=mode, data=data):
+                    result = self.encode(mode, data)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertNotIn(b'AddressSanitizer', result.stderr)
+                    self.assertEqual(result.stdout, b'')
+
     def test_every_row_selection_matches_direct_column_coverage(self):
         universe = [tuple(column for bit, column in enumerate('ABC') if mask >> bit & 1)
                     for mask in range(1, 8)]
