@@ -56,6 +56,14 @@ class EastmanCapacity(unittest.TestCase):
         for program in self.programs:
             self.assertIn(self.selected(program, word), rotations)
 
+    def test_multiphase_versions_can_choose_different_representatives(self):
+        word = (1, 1, 2, 2, 0, 1, 1, 0, 2)
+        old_reversed = self.selected(self.programs[0], word[::-1])[::-1]
+        new = self.selected(self.programs[1], word)
+        self.assertEqual(old_reversed, word)
+        self.assertEqual(new, word[3:]+word[:3])
+        self.assertNotEqual(new, old_reversed)
+
     def test_complete_small_codes_are_rotation_invariant_and_commafree(self):
         for n, alphabet in [(3, 3), (5, 3), (7, 2), (9, 2)]:
             for program in self.programs:

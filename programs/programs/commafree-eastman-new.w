@@ -35,10 +35,13 @@ the lecture I realized that some nice structure was present, and
 a day later it occurred to me that the algorithm could therefore
 be streamlined. This program significantly simplifies
 the method of the previous one, which was called {\mc COMMAFREE-EASTMAN}.
-It produces essentially the same outputs, but they are reflected left-to-right.
-(More precisely, if the former program gave the codeword $y$ from the
-the input sequence $x=x_0\ldots x_{n-1}$, this program gives
-the reverse of~$y$ when given the reverse of~$x$.)
+The first phase is related to the former construction by reversal, but
+the final codewords need not be reversals of one another: Reversing
+multi-symbol blocks need not preserve their lexicographic comparison.
+For example, on $x=112201102$ this program selects the rotation
+$201102112$, whereas reversing the former program's selected codeword
+on the reversed input gives $112201102$. Each construction chooses
+its own representatives.
 
 @d maxn 105
 
