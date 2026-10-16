@@ -80,7 +80,7 @@ printf("\n");
 for (j=pp;j<r;j++) printf(" %03d@@",j); /* at least one B turn */
 printf("\n");
 for (j=0;j<m;j++) if (state[j].var[0]==0) { /* \.{maybe} or \.{critical} */
-  if ((p<0 && state[j].name[0]=='A') || (p>0 && state[j].name[0]=='B'))
+  if ((p<0 && state[j].name[0]=='A') || (p>=0 && state[j].name[0]=='B'))
     for (k=pp;k<r;k++)
       printf("~%03d%.4s\n",k,state[j].name);
 }
