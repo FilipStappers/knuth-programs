@@ -95,6 +95,21 @@ class Sat11Boundaries(unittest.TestCase):
             with self.subTest(mask=mask):
                 self.check_formula(data, 'k')
 
+    def test_k_unary_and_binary_only_weight_table(self):
+        for data in [b'x\n', b'~x\n', b'x y\n', b'x\n~x\n', b'x y\n~x y\n']:
+            with self.subTest(data=data):
+                self.check_formula(data, 'k')
+
+    def test_k_all_two_variable_clause_families(self):
+        pool = [[('~' if sign < 0 else '')+f'x{i}'
+                 for i, sign in enumerate(signs) if sign]
+                for signs in itertools.product([0, 1, -1], repeat=2) if any(signs)]
+        for mask in range(1, 1 << len(pool)):
+            data = ''.join(' '.join(c)+'\n' for i, c in enumerate(pool)
+                           if mask & (1 << i)).encode()
+            with self.subTest(mask=mask):
+                self.check_formula(data, 'k')
+
 
 if __name__ == '__main__':
     unittest.main()

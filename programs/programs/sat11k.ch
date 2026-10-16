@@ -1295,12 +1295,12 @@ float *clause_weight; /* weights given to each length, for $k\ge2$ */
 that would defeat the logic by which autarkies are recognized.
 
 @<Allocate special arrays@>=
-clause_weight=(float*)malloc(max_clause*sizeof(float));
+clause_weight=(float*)malloc((max_clause<3?3:max_clause)*sizeof(float));
 if (!clause_weight) {
   fprintf(stderr,"Oops, I can't allocate the clause_weight array!\n");
   exit(-10);
 }
-bytes+=max_clause*sizeof(float);
+bytes+=(max_clause<3?3:max_clause)*sizeof(float);
 clause_weight[2]=1.0;
 for (k=3;k<max_clause;k++) o,clause_weight[k]=clause_weight[k-1]*gamm+0.01;
 
