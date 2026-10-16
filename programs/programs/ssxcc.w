@@ -502,7 +502,7 @@ while (1) {
           panic("Item name too long");
     @<Create a node for the item named in |buf[p]|@>;
     if (buf[p+j]!=':') o,nd[last_node].clr=0;
-    else if (k>=second) {
+    else if ((k>>2)>=second) { /* compare item ordinals during input */
       if ((o,isspace(buf[p+j+1])) || (o,!isspace(buf[p+j+2])))
         panic("Color must be a single character");
       o,nd[last_node].clr=(unsigned char)buf[p+j+1];
