@@ -6,9 +6,11 @@ int board[33][33]; /* prespecified clues */
 int n=7; /* size of the prespecified clue board */
 @z
 @x
-  if (o,buf[p=strlen(buf)-1]!='\n') panic("Input line way too long");
+  p=strlen(buf);
+  if (o,p==0 || buf[--p]!='\n') panic("Input line way too long or empty");
 @y
-  if (o,buf[p=strlen(buf)-1]!='\n') panic("Input line way too long");
+  p=strlen(buf);
+  if (o,p==0 || buf[--p]!='\n') panic("Input line way too long or empty");
   for (j=0;j<8;j++) if (buf[j]!="|sudoku!"[j]) break;
   if (j==8) {
     for (n=1;buf[n+7]!='!';n++) ;

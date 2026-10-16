@@ -53,6 +53,16 @@ class DlxInputBoundaries(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertEqual(result.stderr, b'No items!\n0: \n')
 
+    def test_nul_at_start_of_header_or_option_rejects_cleanly(self):
+        for name in self.programs:
+            for data in [b'\0\n', b'A\n\0\n']:
+                with self.subTest(program=name, data=data):
+                    result = self.run_matrix(name, data)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(b'line', result.stderr)
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertNotIn(b'AddressSanitizer', result.stderr)
+
     def test_all_64_primary_bearing_uncolored_families(self):
         options = [('A',), ('B',), ('A', 'B'), ('A', 'X'), ('B', 'X'), ('A', 'B', 'X')]
         for mask in range(64):

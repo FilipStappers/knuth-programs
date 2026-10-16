@@ -437,7 +437,8 @@ if (max_nodes<=2*max_cols) {
 } /* every item will want a header node and at least one other node */
 while (1) {
   if (!fgets(buf,bufsize,stdin)) break;
-  if (o,buf[p=strlen(buf)-1]!='\n') panic("Input line way too long");
+  p=strlen(buf);
+  if (o,p==0 || buf[--p]!='\n') panic("Input line way too long or empty");
   for (p=0;o,isspace(buf[p]);p++) ;
   if (buf[p]=='|' || !buf[p]) continue; /* bypass comment or blank line */
   last_itm=1;
@@ -485,7 +486,8 @@ possible debugging aid. But the program doesn't currently use that information.
 @<Input the options@>=
 while (1) {
   if (!fgets(buf,bufsize,stdin)) break;
-  if (o,buf[p=strlen(buf)-1]!='\n') panic("Option line too long");
+  p=strlen(buf);
+  if (o,p==0 || buf[--p]!='\n') panic("Option line too long or empty");
   for (p=0;o,isspace(buf[p]);p++) ;
   if (buf[p]=='|' || !buf[p]) continue; /* bypass comment or blank line */
   i=last_node; /* remember the spacer at the left of this option */
