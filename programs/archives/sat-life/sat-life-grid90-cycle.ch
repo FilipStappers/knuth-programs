@@ -107,9 +107,12 @@ if (pp(x-1,y-1)+pp(x-1,y)+pp(x-1,y+1)+
 @x
 @*Index.
 @y
-@ In particular, this step rules out the case where everything is dead.
+@ First require a nonempty initial grid, even when the requested period is 1.
+Then exclude each proper divisor of the requested period.
 
 @<Rule out smaller periods@>=
+for (x=1;x+x<=nn+1;x++) for (y=x;y+x<=nn+(x==y);y++) printf(" %da%d",x,y);
+printf("\n");
 for (k=1;k<r;k++) if (r%k==0) { /* generation $k$ shouldn't equal gen 0 */
   for (x=1;x+x<=nn+1;x++) for (y=x;y+x<=nn+(x==y);y++) {
     printf("%da%d %d%c%d ~%da%c%d\n",x,y,x,timecode[k],y,x,timecode[k],y);

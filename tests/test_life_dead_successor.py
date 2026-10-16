@@ -37,8 +37,8 @@ class DeadSuccessor(unittest.TestCase):
     def tearDownClass(cls):
         cls.temp.cleanup()
 
-    def encode(self, name, rounds):
-        result = subprocess.run([str(self.programs[name]), '1', '1', str(rounds)],
+    def encode(self, name, rounds, size=1):
+        result = subprocess.run([str(self.programs[name]), str(size), str(size), str(rounds)],
                                 capture_output=True, timeout=3)
         self.assertEqual(result.returncode, 0, result.stderr.decode())
         return native_clauses(result.stdout.decode())
@@ -60,9 +60,23 @@ class DeadSuccessor(unittest.TestCase):
                 with self.subTest(variant=name, rounds=rounds):
                     self.assertFalse(satisfiable(self.encode(name, rounds)+[['1a1']]))
 
+    def test_empty_pattern_is_excluded_at_period_one(self):
+        for name in ['sat-life-grid-cycle', 'sat-life-gridquad-cycle', 'sat-life-grid90-cycle']:
+            for size in [1, 2, 3]:
+                empty = [[f'~{x}a{y}'] for x in range(1, size+1)
+                         for y in range(1, size+1)]
+                with self.subTest(variant=name, size=size):
+                    self.assertFalse(satisfiable(self.encode(name, 1, size)+empty))
+
+    def test_block_has_exact_period_one(self):
+        for name in ['sat-life-grid-cycle', 'sat-life-gridquad-cycle', 'sat-life-grid90-cycle']:
+            block = [[f'{x}a{y}'] for x in [1, 2] for y in [1, 2]]
+            with self.subTest(variant=name):
+                self.assertTrue(satisfiable(self.encode(name, 1, 2)+block))
+                self.assertFalse(satisfiable(self.encode(name, 2, 2)+block))
+
     def test_all_ten_grid_changes_still_compose(self):
         self.assertEqual(len(self.programs), 10)
-
 
 
 if __name__ == '__main__':
