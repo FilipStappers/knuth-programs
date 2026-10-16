@@ -1930,9 +1930,11 @@ if (!xcutoff_file) {
 @ @<Open |xcutoff_file| for reading, and |break|@>=
 strncpy(xcutoff_name,argv[j]+1,part_file_name_size-1);
 xcutoff_file=fopen(xcutoff_name,"r");
-if (!xcutoff_file)
+if (!xcutoff_file) {
   fprintf(stderr,"Sorry, I can't open file `"O"s' for reading!\n",
       xcutoff_name);
+  exit(-1);
+}
 if (fgets(buf,bufsize,xcutoff_file)) {
   if (strncmp(buf,"Resume at stage ",16)==0) {
     for (groundstage=0,i=16;o,buf[i]>='0' && buf[i]<='9';i++)

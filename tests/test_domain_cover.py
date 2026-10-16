@@ -65,6 +65,16 @@ class DomainCover(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr.decode())
                 self.assertEqual(Counter(sparse_covers(result.stdout)), expected)
 
+    def test_missing_checkpoint_rejects_cleanly(self):
+        for mode in self.programs:
+            with self.subTest(mode=mode):
+                result = self.solve(mode, b'A\nA\n', ['Xmissing-checkpoint'])
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b"can't open file", result.stderr)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertEqual(result.stdout, b'')
+
     def test_independent_complete_families(self):
         rng = random.Random(51001)
         families = [[], [('A',), ('B',), ('A', 'B')]]
