@@ -234,6 +234,40 @@ for (k=1;k<=vars;k++) if (vmem[k].activity<0.0) {
     def test_largest_memory_exponent_uses_unsigned_shift(self):
         self.check_formula(b'x\n', ['m31'])
 
+    def test_learned_storage_checks_capacity_before_the_sentinel_write(self):
+        # Simulate exhaustion at the first learned allocation by shrinking only
+        # the unused tail. The original data and learning logic remain intact.
+        marker = 'c=max_learned; /* this will be the address of the new clause */'
+        self.assertEqual(self.source.count(marker), 1)
+        source = self.source.replace(marker, '''
+memsize=max_learned+learned_size;
+max_cells_used=max_learned;
+mem=(cel*)realloc(mem,memsize*sizeof(cel));
+if (!mem) exit(91);
+'''+marker)
+        literate = self.work/'exhausted.w'
+        literate.write_text(source)
+        generated = self.work/'exhausted.c'
+        program = self.work/'exhausted'
+        subprocess.run(['ctangle', str(literate), '-', str(generated)],
+                       check=True, capture_output=True)
+        subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-O1',
+                        '-I'+self.sgb, '-fsanitize=address,undefined,bounds',
+                        '-fno-sanitize-recover=all', str(generated),
+                        str(Path(self.sgb)/'gb_flip.c'), '-lm', '-o', str(program)],
+                       check=True, capture_output=True)
+        data = '\n'.join(' '.join(('~' if bit else '')+f'v{i}'
+                                  for i, bit in enumerate(bits))
+                         for bits in itertools.product([False, True], repeat=3))+'\n'
+        result = subprocess.run([str(program), 'v0', 'm18', 'w0'], input=data.encode(),
+                                capture_output=True, timeout=5,
+                                env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
+        self.assertGreater(result.returncode, 0)
+        self.assertIn(b'Memory overflow', result.stderr)
+        self.assertNotIn(b'AddressSanitizer', result.stderr)
+        self.assertNotIn(b'runtime error', result.stderr)
+        self.assertEqual(result.stdout, b'')
+
 
 if __name__ == '__main__':
     unittest.main()

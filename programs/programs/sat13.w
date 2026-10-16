@@ -2516,15 +2516,15 @@ if (prev_learned) {
            the current learned clause@>;
 }
 c=max_learned; /* this will be the address of the new clause */
+if ((ullng)max_learned+learned_size+learned_extra>=memsize) {
+  fprintf(stderr,
+     "Memory overflow (memsize="O"u<"O"llu), please increase m!\n",
+          memsize,(ullng)max_learned+learned_size+learned_extra+1);
+  exit(-666);
+}
 o,mem[c+learned_size].lit=0; /* put zero at end of |mem| */
 max_learned+=learned_size+learned_extra;
 if (max_learned>max_cells_used) {
-  if (max_learned>=memsize) {
-    fprintf(stderr,
-       "Memory overflow (memsize="O"u<"O"u), please increase m!\n",
-            memsize,max_cells_used+1);
-    exit(-666);
-  }
   bytes+=(max_learned-max_cells_used)*sizeof(cel);
   max_cells_used=max_learned;
 }
