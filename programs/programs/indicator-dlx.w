@@ -55,7 +55,13 @@ if (r==maxr) {
 @ @<Input relation |r|@>=
 {
   for (s=0;argv[p] && argv[p][0]!='/';p++,s++) {
-    if (s==0) m=strlen(argv[p]);
+    if (s==0) {
+      if (strlen(argv[p])>maxm) {
+        fprintf(stderr,"Relation arity must be at most %d!\n",maxm);
+        exit(-3);
+      }
+      m=strlen(argv[p]);
+    }
     else if (m!=strlen(argv[p])) {
       fprintf(stderr,"tuple %s should have length %d, not %d!\n",
                                     argv[p],m,(int)strlen(argv[p]));

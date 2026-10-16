@@ -31,6 +31,16 @@ class IndicatorBoundaries(unittest.TestCase):
         return subprocess.run([str(self.program), str(d), str(k), *tuples], capture_output=True,
                               timeout=5, env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
 
+    def test_excess_relation_arity_rejects_before_tuple_writes(self):
+        for tuples in [['0'*11], ['0'*100], ['0'*11, '/', '0'], ['0', '/', '0'*11]]:
+            with self.subTest(tuples=tuples):
+                result = self.solve(2, 1, tuples)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(b'Relation arity', result.stderr)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertEqual(result.stdout, b'')
+
     def test_all_supported_relation_arities_match_independent_matrices(self):
         for arity in range(1, 11):
             tuples = [''.join(str((i+j) % 2) for j in range(arity)) for i in range(2)]
