@@ -106,7 +106,7 @@ mark(k,p)
 @ @<Do phase 3@>=
 printf("Phase III:\n");
 t=0; m=2*n;
-build(1);
+if (n>0) build(1); /* a singleton already is the required tree */
 
 @ The |build| subroutine rebuilds a tree from the depth table,
 by doing a depth-first search according a slick idea by Bob Tarjan.
