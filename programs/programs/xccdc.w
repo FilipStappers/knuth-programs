@@ -1477,7 +1477,7 @@ for (t=tmin;t<cur_age;t++) if (o,trig_head[t]) {
   o,trig_head[t]=0;
   pp=p;
 }
-if (trig_head[cur_age]) {
+if (cur_age>=0 && trig_head[cur_age]) {
   oo,link(trig_tail[cur_age])=pp;
      /* give no hint for inactive options of the current age */
   o,pp=trig_head[cur_age],trig_head[cur_age]=0;
