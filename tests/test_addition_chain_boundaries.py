@@ -93,6 +93,32 @@ class AdditionChainBoundaries(unittest.TestCase):
     def test_achain4_rejects_exhausted_candidates_before_scanning_positions(self):
         self.check_table('achain4')
 
+    def test_strongchain_stops_at_its_results_table_boundary(self):
+        text = (ROOT/'programs/programs/strongchain.w').read_text()
+        text, count = re.subn(r'(?m)^@d maxn [^\n]+', '@d maxn 64', text)
+        self.assertEqual(count, 1)
+        source = self.work/'strongchain.w'
+        source.write_text(text)
+        generated = self.work/'strongchain.c'
+        subprocess.run(['ctangle', str(source), '-', str(generated)],
+                       check=True, capture_output=True)
+        program = self.work/'strongchain'
+        subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-O1',
+                        '-fsanitize=address,undefined,bounds', '-fno-sanitize-recover=all',
+                        str(generated), '-o', str(program)], check=True, capture_output=True)
+        result = subprocess.run([str(program)], capture_output=True, timeout=15,
+                                env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        actual = [(int(n), int(m)) for n, m in
+                  re.findall(rb'L\((\d+)\)=(\d+):', result.stdout)]
+        expected = []
+        for n in range(1, 64):
+            for length in range((n-1).bit_length(), 2*n.bit_length()+1):
+                if next(chains(n, length, strong=True), None) is not None:
+                    expected.append((n, length))
+                    break
+        self.assertEqual(actual, expected)
+
     def test_achain_all_preserves_every_canonical_value_sequence(self):
         truth = self.work/'truth'
         truth.write_bytes(bytes((0 if n == 1 else minimum(n, 1))+32

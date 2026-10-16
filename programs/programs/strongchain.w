@@ -9,7 +9,7 @@ $\vert a_i-a_j\vert$ is either zero or appears in the chain. The
 minimum possible value of~$m$ is called $L(n)$.
 
 This program calculates $L(1)$, $L(2)$, \dots, getting as far as it can
-until time runs out. As usual, I wrote it in a big hurry.
+until time runs out or $n$ reaches |maxn|. As usual, I wrote it in a big hurry.
 My main goal today is to get more
 experience writing backtrack algorithms, as I rev up to write the early
 sections of Volume~4 in earnest.
@@ -32,7 +32,7 @@ int record=0; /* largest $L(n)$ seen so far */
 
 @<Subroutines@>@;
 
-main()
+int main(void)
 {
   register int a,k,l,m,n,t,work;
   int special=0, ap, app;
@@ -48,6 +48,7 @@ main()
     else for (k=0;k<=m;k++) printf(" %d",ub[k]);
     printf(" [%d]\n",work);
     n++;@+ work=0;
+    if (n>=maxn) break; /* the results table ends at |maxn-1| */
     @<Find a shortest strong chain for $n$@>;
   }
 }
