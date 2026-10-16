@@ -15,6 +15,7 @@ the task, because it is such a nice application of exact covering.
 
 @c
 #include <stdio.h>
+#include <stdlib.h>
 char buf[11];
 int row[9][10], col[9][10], box[9][10]; /* things to cover */
 int board[9][9]; /* positions already filled */
@@ -36,7 +37,7 @@ Here I simply quit, if the rules haven't been followed.
 
 @<Input...@>=
 {
-  fgets(buf,11,stdin);
+  if (!fgets(buf,11,stdin)) panic("There are fewer than nine input rows");
   if (buf[9]!='\n')
     panic("Input line should have 9 characters exactly!\n");
   for (j=0;j<9;j++) if (buf[j]!='.') {
