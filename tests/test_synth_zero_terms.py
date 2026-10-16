@@ -2,6 +2,7 @@
 import itertools
 import os
 from pathlib import Path
+from collections import Counter
 import subprocess
 import tempfile
 import unittest
@@ -58,6 +59,18 @@ class SynthZeroTerms(unittest.TestCase):
                     formula = [line.split() for line in result.stdout.decode().splitlines()
                                if line.strip() and not line.startswith('~ ')]
                     self.assertEqual(satisfiable(formula), expected)
+
+    def test_documented_positive_example_matches_emitted_clauses(self):
+        text = (SOURCES/'sat-synth.w').read_text()
+        example = text.split('The first line of input')[1].split('And the second line')[0]
+        printed = [tuple(sorted(line.split('&')[0].split()))
+                   for line in example.splitlines() if '&(' in line]
+        self.assertEqual(len(printed), 7)
+        result = self.encode(3, 2, b'101:1\n')
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        actual = [tuple(sorted(line.split())) for line in result.stdout.decode().splitlines()
+                  if line.strip() and not line.startswith('~ ')]
+        self.assertEqual(Counter(printed), Counter(actual))
 
     def test_parameter_lower_bounds_reject_before_input_indexing(self):
         for n, k, data in [(-1, 1, b'0:0\n'), (-2147483648, 1, b''),

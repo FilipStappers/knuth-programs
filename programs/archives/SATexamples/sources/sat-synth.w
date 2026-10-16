@@ -33,9 +33,9 @@ $$\catcode`\~=11\vcenter{\halign{\tt#\hfil\quad&#\hfil\cr
 ~1.1 ~1-1&(if term 1 is true at 101, it doesn't contain $\bar x_1$)\cr
 ~1.1 ~1+2&(if term 1 is true at 101, it doesn't contain $     x_2$)\cr
 ~1.1 ~1-3&(if term 1 is true at 101, it doesn't contain $\bar x_3$)\cr
-~2.1 ~1-1&(if term 2 is true at 101, it doesn't contain $\bar x_1$)\cr
-~2.1 ~1+2&(if term 2 is true at 101, it doesn't contain $     x_2$)\cr
-~2.1 ~1-3&(if term 2 is true at 101, it doesn't contain $\bar x_3$)\cr
+~2.1 ~2-1&(if term 2 is true at 101, it doesn't contain $\bar x_1$)\cr
+~2.1 ~2+2&(if term 2 is true at 101, it doesn't contain $     x_2$)\cr
+~2.1 ~2-3&(if term 2 is true at 101, it doesn't contain $\bar x_3$)\cr
 }}$$
 And the second line generates two:
 $$\vcenter{\halign{\tt#\hfil\quad&#\hfil\cr
