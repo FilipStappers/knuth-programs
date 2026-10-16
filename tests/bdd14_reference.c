@@ -34,6 +34,20 @@ int main(int argc,char **argv) {
   bdd_original_main(2,argv); /* only replace its final normal exit by return */
   for (a=0;a<3;a++) projection(a);
   for (t=0;t<256;t++) f[t]=construct(t,0,0);
+  if (argc>2 && strcmp(argv[2],"compose")==0) {
+    for (t=0;t<=255;t+=255) {
+      node *r=f[t];
+      int before=r->xref;
+      node *result=compose_top(r);
+      if (result!=r || r->xref!=before+1) failures++;
+      /* Release only a reference that the result actually acquired. */
+      if (r->xref==before+1) deref(result);
+      if (r->xref!=before) failures++;
+    }
+    sanity_check();
+    printf("COMPOSE failures=%u\n",failures);
+    return failures?1:0;
+  }
   for (q=0;q<8;q++) {
     cube[q]=0;
     for (a=0;a<8;a++) if ((a&q)==q) cube[q]|=1U<<a;

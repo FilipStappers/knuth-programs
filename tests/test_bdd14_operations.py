@@ -53,6 +53,15 @@ class Bdd14Operations(unittest.TestCase):
                 self.assertIn(b'FUSED cases=524288 failures=0', result.stdout)
                 self.assertNotIn(b'\n! ', result.stdout)
 
+    def test_constant_composition_acquires_its_result_reference(self):
+        for name, program in self.programs.items():
+            result = subprocess.run([str(program), str(self.commands), 'compose'],
+                                    capture_output=True, timeout=10)
+            with self.subTest(revision=name):
+                self.assertEqual(result.returncode, 0, result.stdout.decode()+result.stderr.decode())
+                self.assertIn(b'COMPOSE failures=0', result.stdout)
+                self.assertNotIn(b'\n! ', result.stdout)
+
 
 if __name__ == '__main__':
     unittest.main()

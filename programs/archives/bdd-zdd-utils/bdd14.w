@@ -2301,7 +2301,10 @@ default: fprintf(stderr,"This can't happen!\n");@+exit(-69);
 node* compose_top(node*f) {
   node *r;
   unsigned long long oldmems=mems, oldrmems=rmems, oldzmems=zmems;
-  if (f<=topsink) return f;
+  if (f<=topsink) {
+    o,f->xref++;
+    return f;
+  }
   if (verbose&2)
      printf("beginning to compute %x[%u]:\n",
           id(f),thevar(f)->timestamp);
