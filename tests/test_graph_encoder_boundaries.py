@@ -58,9 +58,21 @@ class GraphEncoderBoundaries(unittest.TestCase):
                  '-fsanitize=address,undefined,bounds', '-fno-sanitize-recover=all',
                  '-I', str(GRAPHBASE)]
         cls.programs = {}
-        for name in ['connection']:
+        for name in ['connection', 'tseytin', 'tseytin-local']:
             generated = cls.work/(name+'.c')
-            subprocess.run(['ctangle', str(SOURCES/f'sat-{name}.w'), '-', str(generated)],
+            source = SOURCES/f'sat-{name}.w'
+            if name == 'tseytin-local':
+                # Isolate one vertex's original clauses to test its parity truth
+                # table: the complete odd-charge formula is always UNSAT, so its
+                # decision alone cannot verify individual vertex constraints.
+                source = cls.work/'tseytin-local.w'
+                text = (SOURCES/'sat-tseytin.w').read_text()
+                loop = 'for (v=g->vertices;v<g->vertices+g->n;v++) {'
+                assert text.count(loop) == 1
+                text = text.replace('@c\n', '@c\n#include <stdlib.h>\n', 1)
+                source.write_text(text.replace(loop, loop+
+                    '\n  if (v-g->vertices!=atoi(getenv("TEST_VERTEX"))) continue;', 1))
+            subprocess.run(['ctangle', str(source), '-', str(generated)],
                            cwd=GRAPHBASE, check=True, capture_output=True)
             program = cls.work/name
             subprocess.run(['gcc', *flags, str(generated), *objects, '-o', str(program)],
@@ -97,9 +109,10 @@ int main(int argc, char **argv) {
     def tearDownClass(cls):
         cls.temp.cleanup()
 
-    def encode(self, name, n, mask, text=''):
+    def encode(self, name, n, mask, text='', vertex=None):
+        env = ENV if vertex is None else dict(ENV, TEST_VERTEX=str(vertex))
         result = subprocess.run([str(self.programs[name]), str(self.work/f'{n}-{mask}.gb')],
-                                input=text.encode(), capture_output=True, timeout=5, env=ENV)
+                                input=text.encode(), capture_output=True, timeout=5, env=env)
         self.assertEqual(result.returncode, 0, result.stderr.decode())
         self.assertNotIn(b'runtime error', result.stderr)
         self.assertNotIn(b'AddressSanitizer', result.stderr)
@@ -138,6 +151,35 @@ int main(int argc, char **argv) {
             for groups in groups_to_test:
                 self.assertEqual(satisfiable(self.connect(n, mask, groups)),
                                  routable(n, edges, groups), (n, mask, groups))
+
+    def test_isolated_parity_vertices_terminate(self):
+        for n, mask in [(1, 0), (2, 0), (3, 1)]:
+            with self.subTest(n=n, mask=mask):
+                try:
+                    result = subprocess.run([str(self.programs['tseytin']),
+                                             str(self.work/f'{n}-{mask}.gb')],
+                                            stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                                            timeout=0.3, env=ENV)
+                except subprocess.TimeoutExpired:
+                    self.fail('Isolated-vertex parity generation did not terminate')
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+
+    def test_tseytin_complete_formulas_are_contradictory(self):
+        for n, mask, _ in graphs():
+            self.assertFalse(satisfiable(self.encode('tseytin', n, mask)), (n, mask))
+
+    def test_individual_vertex_parities_match_incident_edge_assignments(self):
+        for n, mask, edges in graphs():
+            for vertex in range(n):
+                incident = [edge for edge in edges if vertex in edge]
+                formula = self.encode('tseytin-local', n, mask, vertex=vertex)
+                for bits in itertools.product([0, 1], repeat=len(incident)):
+                    fixed = [[('' if bit else '~')+chr(ord('a')+u)+'.'+chr(ord('a')+v)]
+                             for (u, v), bit in zip(incident, bits)]
+                    self.assertEqual(satisfiable(formula+fixed), sum(bits) % 2 == (vertex == 0),
+                                     (n, mask, vertex, bits))
 
 
 if __name__ == '__main__':

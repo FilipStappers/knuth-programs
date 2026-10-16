@@ -40,6 +40,10 @@ number when $v$ is the very first vertex.
 @<Generate the clauses@>=
 for (v=g->vertices;v<g->vertices+g->n;v++) {
   for (d=-1,a=v->arcs;a;a=a->next) d++;
+  if (d<0) {
+    if (v==g->vertices) printf("empty\n~empty\n");
+    continue;
+  }
   while (1) {
     @<Generate a clause for the current |bit| setting@>;
     for (k=0;bit[k];k++) bit[k]=0;
