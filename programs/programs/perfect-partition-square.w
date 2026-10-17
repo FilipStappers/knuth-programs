@@ -30,8 +30,8 @@ arrays |rparts[l]| and |cparts[l]|. A partition is a hexadecimal integer
 $(p_1\ldots p_7)_{16}$ with $p_1\ge\cdots\ge p_7\ge0$.
 
 @d modulus 100 /* print only solutions whose number is a multiple of this */
-@d lobits(k) ((1u<<(k))-1) /* this works for $k<32$ */
-@d gosper(b) {@+ register x=b,y;
+@d lobits(k) ((1ULL<<(k))-1) /* this works for $k<64$ */
+@d gosper(b) {@+ register unsigned long long x=b,y;
                 x=b&-b,y=b+x;
                 b=y+(((y^b)/x)>>2);@+}
 
@@ -81,7 +81,8 @@ of the digit~|l|. (If |l>0|, it calls |verify(l)|, which calls |place(l-1)|.)
 @<Subroutines@>=
 void verify(int l); /* defined later */
 void place(int l) {
-  register int b,i,j,k,m,p,max,abits,bbits,thisrow,thiscol=-1;
+  register int i,j,k,m,p,max,thisrow,thiscol=-1;
+  register unsigned long long b,abits,bbits; /* up to 49 cell positions */
   if (l==0) @<Print a solution and |return|@>;
   for (max=i=0;i<7;i++)
     if (rparts[l][i]>max) max=rparts[l][i],thisrow=i;
@@ -94,12 +95,12 @@ void place(int l) {
 {
   p=max>>24; /* this many (the largest element of the partition) in |thisrow| */
   for (m=0;max;m+=max&0xf,max>>=4) ; /* |m| is number of empty cells */
-  for (abits=lobits(p);abits<1<<m;) {
+  for (abits=lobits(p);abits<1ULL<<m;) {
     for (b=1,j=0;j<7;j++) if (!a[thisrow][j]) {
       if (abits&b) a[thisrow][j]=l;
       b<<=1;
     }
-    for (bbits=lobits(7-p);bbits<1<<(7*l-m);) {
+    for (bbits=lobits(7-p);bbits<1ULL<<(7*l-m);) {
       for (b=1,i=0;i<7;i++) if (i!=thisrow) {
         for (j=0;j<7;j++) if (!a[i][j]) {
           if (bbits&b) a[i][j]=l;
@@ -122,12 +123,12 @@ void place(int l) {
 {
   p=max>>24; /* this many (the largest element of the partition) in |thiscol| */
   for (m=0;max;m+=max&0xf,max>>=4) ; /* |m| is number of empty cells */
-  for (abits=lobits(p);abits<1<<m;) {
+  for (abits=lobits(p);abits<1ULL<<m;) {
     for (b=1,i=0;i<7;i++) if (!a[i][thiscol]) {
       if (abits&b) a[i][thiscol]=l;
       b<<=1;
     }
-    for (bbits=lobits(7-p);bbits<1<<(7*l-m);) {
+    for (bbits=lobits(7-p);bbits<1ULL<<(7*l-m);) {
       for (b=1,j=0;j<7;j++) if (j!=thiscol) {
         for (i=0;i<7;i++) if (!a[i][j]) {
           if (bbits&b) a[i][j]=l;
