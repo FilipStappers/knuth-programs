@@ -131,7 +131,7 @@ labeled. The others haven't. (In fact, |vlist| is a permutation, and
 |vlist[k]| is the vertex that was labeled at level~$k$, for $0\le k<l$.)
 
 Three bitmaps are maintained: |ebits| records the edge labels that have
-appeared, with |1ULL<<q| representing label~|q|; 
+appeared, with |1ULL<<q| representing label~|q|;
 |vbits| records the vertex labels that have {\it not\/} appeared,
 in the same fashion;
 and |rebits| records |ebits| ``backwards,''
