@@ -15,10 +15,10 @@ One or more optional title lines, each beginning with `\.{\char`\~}', may also
 appear at the beginning of the input; they will be echoed in the output.
 
 The variables are \.{$ij$<$u$}, meaning that the starting time $s_{ij}$
-is less than $u$; and \.{!$iji'j'$}, meaning that ``$s_{ij}+w_{ij}\le s_{i'j'}$
-if and only if $ij<i'j'$.''
-The latter variables appear if and only if $i=i'$ and $j\ne j'$ or
-$i\ne i'$ and $j=j'$ and $w_{ij}>0$ and $w_{i'j'}>0$.
+is less than $u$; and \.{!$iji'j'$}, for lexicographically ordered pairs $ij<i'j'$.
+The latter is true exactly when $s_{ij}+w_{ij}\le s_{i'j'}$; false selects the reverse order.
+The latter variables appear exactly when both work times are positive and
+the two distinct tasks share a machine ($i=i'$) or a job ($j=j'$).
 
 @d maxmn '~'-'0' /* jobs/machines are single characters, |'0'<=c<'~'| */
 @d bufsize 128 /* for the comment lines at the beginning of |stdin| */
