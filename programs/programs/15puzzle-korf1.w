@@ -1229,7 +1229,7 @@ if (moves>1) {
   else printf("b%x\n", bord(3,3)+1);
 }@+else {
   if (moves==1) printf("%x",start[0xf]+1);
-  printf(" (%d sec)\n",time(0)-timer);
+  printf(" (%d sec)\n",moves? (int)(time(0)-timer):0);
 }
   
 @*Index.
