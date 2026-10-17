@@ -49,6 +49,21 @@ class ColorBoundaries(unittest.TestCase):
             subprocess.run(['gcc', *flags, str(generated), *objects, '-o', str(program)],
                            check=True, capture_output=True)
             cls.programs[mode] = program
+        # Keep only the first two LOG3 edge clauses. Correct its shared bit-width
+        # shift in this probe to isolate the separate doubled-color arithmetic.
+        text = (SOURCES/'sat-color-log3.w').read_text().replace('1<<t', '1u<<t')
+        text = text.replace('main(int argc, char*argv[]) {',
+                            'main(int argc, char*argv[]) {\n  unsigned emitted=0;')
+        text = text.replace('    printf("\\n");',
+                            '    printf("\\n");\n    if (++emitted==2) break;')
+        probe_source = cls.work/'log3-prefix.w'
+        probe_source.write_text(text)
+        generated = cls.work/'log3-prefix.c'
+        subprocess.run(['ctangle', str(probe_source), '-', str(generated)], cwd=GRAPHBASE,
+                       check=True, capture_output=True)
+        cls.log3_prefix = cls.work/'log3-prefix'
+        subprocess.run(['gcc', *flags, str(generated), *objects, '-o', str(cls.log3_prefix)],
+                       check=True, capture_output=True)
         fixture = cls.work/'fixture.c'
         fixture.write_text(r'''
 #include <stdio.h>
@@ -96,6 +111,39 @@ int main(int argc, char **argv) {
             for mode in MODES:
                 with self.subTest(n=n, mask=mask, mode=mode):
                     self.assertEqual(satisfiable(self.encode(mode, n, mask, 1)), not edges)
+
+    def test_large_color_counts_on_edgeless_graph(self):
+        for colors in [1073741823, 1073741824, 1073741825, 2147483647]:
+            for mode in ['log', 'log2', 'log3']:
+                with self.subTest(colors=colors, mode=mode):
+                    formula = self.encode(mode, 1, 0, colors)
+                    self.assertTrue(satisfiable(formula))
+
+    def test_log3_large_leaf_prefix_arithmetic(self):
+        for colors in [1073741824, 1073741825, 2147483647]:
+            result = subprocess.run([str(self.log3_prefix), str(self.work/'2-1.gb'), str(colors)],
+                                    capture_output=True, timeout=5,
+                                    env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            clauses = [line.split() for line in result.stdout.decode().splitlines()
+                       if line.strip() and not line.startswith('~ ')]
+            t = (colors-1).bit_length()
+            expected = []
+            for leaf in [colors, colors+1]:
+                width = t if leaf >= 1 << t else t-1
+                expected.append([('~' if leaf >> bit & 1 else '')+f'{name}.{width-bit}'
+                                 for bit in range(width) for name in ['a', 'b']])
+            self.assertEqual(clauses, expected)
+
+    def test_invalid_binary_color_counts_reject(self):
+        for colors in ['0', '-1', '2x', '4294967297', '9'*100]:
+            for mode in ['log', 'log2', 'log3']:
+                result = subprocess.run([str(self.programs[mode]), str(self.work/'1-0.gb'), colors],
+                                        capture_output=True, timeout=5,
+                                        env=dict(os.environ, ASAN_OPTIONS='detect_leaks=0'))
+                self.assertNotEqual(result.returncode, 0)
+                self.assertFalse(result.stdout)
+                self.assertNotIn(b'runtime error', result.stderr)
 
     def test_neighboring_color_counts_and_small_assignment_projections(self):
         for n, mask, edges in graph_family():

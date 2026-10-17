@@ -22,16 +22,21 @@ don't share a color.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <limits.h>
 #include "gb_graph.h"
 #include "gb_save.h"
 int c;
 main(int argc, char*argv[]) {
-  register int i,k,kk,t;
+  register int i,t;
+  register unsigned int k,kk;
+  char *end;
+  long requested;
   register Arc *a;
   register Graph *g;
   register Vertex *u,*v;
   @<Process the command line@>;
-  for (t=0;c>(1<<t);t++) ;
+  for (t=0;(unsigned)c>(1u<<t);t++) ;
   for (v=g->vertices;v<g->vertices+g->n;v++) for (a=v->arcs;a;a=a->next) {
     u=a->tip;
     if (u<v)
@@ -40,10 +45,17 @@ main(int argc, char*argv[]) {
 }
 
 @ @<Process the command line@>=
-if (argc!=3 || sscanf(argv[2],"%d",&c)!=1) {
+if (argc!=3) {
   fprintf(stderr,"Usage: %s foo.gb c\n",argv[0]);
   exit(-1);
 }
+errno=0;
+requested=strtol(argv[2],&end,10);
+if (errno || end==argv[2] || *end || requested<=0 || requested>INT_MAX) {
+  fprintf(stderr,"c must be a positive int!\n");
+  exit(-3);
+}
+c=requested;
 g=restore_graph(argv[1]);
 if (!g) {
   fprintf(stderr,"I couldn't reconstruct graph %s!\n",argv[1]);
@@ -61,9 +73,9 @@ if (c==1) {
 
 @ @<Generate clauses to keep $u$ and $v$ from having the same color@>=
 {
-  for (k=c;k<c+c;k++) {
+  for (k=c;k<2u*c;k++) {
     for (i=t,kk=k;i;i--)
-      if (i<t || k>=(1<<t)) {
+      if (i<t || k>=(1u<<t)) {
         printf(" %s%s.%d %s%s.%d",
           kk&1?"~":"",u->name,i,kk&1?"~":"",v->name,i);
         kk>>=1;
