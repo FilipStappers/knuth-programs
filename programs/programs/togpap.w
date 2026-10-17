@@ -397,7 +397,7 @@ printf(" {currentfile picstr readhexstring pop} imagemask\n");
 @ @<Output the image@>=
 for (i=1;i<=m;i++) {
   for (j=1;j<=n;j+=8) {
-    for (k=0,l=0;k<8;k++) l=l+l+(A[i][j+k]? 1: 0);
+    for (k=0,l=0;k<8;k++) l=l+l+(j+k<=n && A[i][j+k]? 1: 0);
     printf("%02x",l);
   }
   printf("\n");
