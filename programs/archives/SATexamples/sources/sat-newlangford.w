@@ -11,7 +11,7 @@ dimensions: We have variables $y_{ij}$ meaning that $p_i\le j$ and
 $z_{ij}$ meaning that $q_j\le i$, where $q$ is the inverse of~$p$.
 The permutation~$p$ is implicit; we have $p_i=k$ if and only if
 $y_{ik}=1$ and $y_{i(k-1)}=0$ if and only if $z_{ik}=1$ and $z_{(i-1)k}=0$.
-The boundary conditions are $y_{i0}=z_{0j}=0$ and $y_{in}=z_{nj}=1$.
+The boundary conditions are $y_{i0}=z_{0j}=0$ and $y_{i,2n}=z_{2n,j}=1$.
 Also $y_{i(j-1)}\le y_{ij}$ and $z_{(i-1)j}\le z_{ij}$.
 
 @c
