@@ -712,9 +712,10 @@ case pack(1,15,C): goto defer;
 @ @<Cases for the def...@>=
 case pack(1,15,B):@+if ((o,mem[9]==AA)&&(o,mem[11]!=AA)&&(o,mem[13]!=AA))
   goto test_odd; break;
-case pack(0,15,C): case pack(1,15,C):@+if ((o,mem[1]!=AA)&&(o,mem[3]!=AA)&&@|
+case pack(0,15,C): case pack(1,15,C):@+j=((o,mem[1]!=AA)&&(o,mem[3]!=AA)&&@|
   (o,mem[5]!=AA)&&(o,mem[7]!=AA)&&(o,mem[9]!=AA)&&(o,mem[11]==AA)&&@|
-  (o,mem[13]!=AA)&&(o,mem[17]!=AA)&&(o,mem[19]!=AA))@+goto b5;@+break;
+  (o,mem[13]!=AA)&&(o,mem[17]!=AA)&&(o,mem[19]!=AA));
+  if (j!=u) goto b5;@+break;
 case pack(1,15,D):@+if ((o,mem[9]!=AA)&&(o,mem[11]!=AA)&&(o,mem[13]==AA))
   goto test_odd; break;
 test_odd:@+if ((o,mem[1]!=AA)&&(o,mem[5]!=AA)&&(o,mem[7]!=AA)&&@|
