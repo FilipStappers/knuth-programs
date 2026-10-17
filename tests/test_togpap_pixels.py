@@ -2,6 +2,7 @@
 import math
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
@@ -46,6 +47,28 @@ def sphere():
             image[i][j] = ((1500.*i+j*j)/1000000. if x*x+y*y >= 1 else
                            (9+x-4*y-8*math.sqrt(1-x*x-y*y))/18.)
     return image
+
+
+def smooth_reference(image, sharp, board):
+    values = sharpen(image) if sharp else [row[1:N+1] for row in image[1:M+1]]
+    def rank(i, j):
+        return board[i % 8][j % 8]
+    pixels = sorted((rank(i, j), i, j) for i in range(M) for j in range(N))
+    leakage = 0.
+    for level, i, j in pixels:
+        bit = int(values[i][j] >= .5/(32-level))
+        error = values[i][j]-bit
+        values[i][j] = bit
+        neighbors = [(i+di, j+dj) for dj in range(-3, 4)
+                     for di in range(-3+abs(dj), 5-abs(dj)) if rank(i+di, j+dj) > level]
+        assert len(neighbors) == 31-level
+        for ii, jj in reversed(neighbors):
+            share = error/len(neighbors)
+            if 0 <= ii < M and 0 <= jj < N:
+                values[ii][jj] += share
+            else:
+                leakage += abs(share)
+    return values, leakage
 
 
 @unittest.skipUnless((GRAPHBASE/'gb_lisa.c').exists(), 'GraphBase sources required')
@@ -120,6 +143,19 @@ class TogpapPixels(unittest.TestCase):
             mismatches = sum(a != b for row, other in zip(pixels, expected)
                              for a, b in zip(row, other))
             self.assertEqual(mismatches, 0, f'sharp={sharp}, incorrect image pixels')
+
+    def test_smooth_pixels_and_physical_boundary_loss(self):
+        for sharp in [0, 1]:
+            pixels, diagnostic = self.run_image(2, sharp, 4)
+            lines = diagnostic.splitlines()
+            start = next(i for i, line in enumerate(lines)
+                         if len(line.split()) == 8 and all(x.isdigit() for x in line.split()))
+            board = [list(map(int, line.split())) for line in lines[start:start+8]]
+            self.assertEqual(sorted(x for row in board for x in row), sorted(list(range(32))*2))
+            expected, loss = smooth_reference(sphere(), sharp, board)
+            self.assertEqual(pixels, expected)
+            reported = float(re.search(r'Total leakage at boundaries: (\S+)', diagnostic)[1])
+            self.assertAlmostEqual(reported, loss, places=7)
 
 
 if __name__ == '__main__':

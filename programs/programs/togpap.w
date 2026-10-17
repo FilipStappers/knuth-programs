@@ -312,7 +312,7 @@ for (a=v->arcs;a;a=a->next) {
   ii=i+a->del_i;@+ jj=j+a->del_j;
   if (ii>0 && ii<=m && jj>0 && jj<=n) {
     A[ii][jj]+=err/(double)(31-k);@+ check(ii,jj);
-  } else edge_accum+=fabs(err); /* error leaks out the boundary */
+  } else edge_accum+=fabs(err)/(double)(31-k); /* this share leaks out the boundary */
 }
 
 @ @<Print baronial lossage@>=
