@@ -19,7 +19,7 @@ characters, for some $n$, using only spaces and \.x's and \.o's.
 
 @c
 #include <stdio.h>
-char a[maxn+1][maxn+1][maxn+maxn+1];
+char a[maxn+1][maxn+1][maxn+maxn+4]; /* full row, CRLF, and terminator */
 main() {
   register int i,j,k,n,s;
   @<Read the input into a[0], determining |n|@>;
