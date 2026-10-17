@@ -207,7 +207,7 @@ for (p=wait[l],wait[l]=0;p;p=q) {
         if (f[j]==0 && perm[p][j]>k && perm[p][j]<l) forcings[p]++;
       goto nextp;
     }@+else {
-      if (verbose) printf(" f[%x]=1 will force f[%x]=0\n",j);
+      if (verbose) printf(" f[%x]=1 will force f[%x]=0\n",l,j);
       forcings[p]++, forced[j]++;
     }
   }
@@ -395,10 +395,10 @@ for (p=wait[0];p;p=link[p]) {
   for (c=j=0;j<l;j++) {
     if (f[j]!=f[perm[p][j]]) {
       if (f[j]==0) {
-        printf("error: wait[0] contains the counterexample perm %d!\n",k,p);
+        printf("error: wait[0] contains the counterexample perm %d!\n",p);
         goto error_exit;
       }
-      printf("error: wait[0] contains the discardable perm %d!\n",k,p);
+      printf("error: wait[0] contains the discardable perm %d!\n",p);
     }
     if (perm[p][j]>=l) c++;
   }
