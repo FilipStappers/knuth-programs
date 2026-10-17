@@ -6,10 +6,10 @@ equal as possible, having constant row and column sums~$s$. Then
 we choose random rows $i\ne i'$ and random columns $j\ne j'$,
 and transfer $\delta$ units of weight by setting
 $$w_{ij}\gets w_{ij}-\delta,\quad
-  w_{i'j}\gets w{i'j}+\delta,\quad
-  w_{ij'}\gets w{ij'}+\delta,\quad
-  w_{i'j'}\gets w{i'j'}-\delta,$$
-where $\delta\ge w_{ij}$ and $\delta\ge w_{i'j'}$; this operation clearly
+  w_{i'j}\gets w_{i'j}+\delta,\quad
+  w_{ij'}\gets w_{ij'}+\delta,\quad
+  w_{i'j'}\gets w_{i'j'}-\delta,$$
+where $0\le\delta\le w_{ij}$ and $\delta\le w_{i'j'}$; this operation clearly
 preserves the row and column sums. The value of $\delta$ is randomly
 distributed between $p\min\{w_{ij},w_{i'j'}\}$ and $\min\{w_{ij},w_{i'j'}\}$,
 where $p$ is a parameter.
