@@ -18,6 +18,7 @@ in hexadecimal form.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 typedef struct node_struct {
   unsigned int footprint[footsize];
   int parent;
@@ -44,16 +45,23 @@ main(int argc,char *argv[])
 }
 
 @ @<Read the initial functions@>=
+if (argc>96) {
+  fprintf(stderr,"At most 95 special functions can be supplied!\n");
+  exit(-1);
+}
 m=argc+3;
 for (k=1;k<=m;k++) {
   if (k<=4) x[k]=0xffff/((1<<(1<<(4-k)))+1);
-  else if (sscanf(argv[k-4],"%x",&x[k])!=1) {
-    fprintf(stderr,"Parameter %s should have been hexadecimal!\n",argv[k-4]);
-    exit(-1);
-  }
-  if (x[k]>0xffff) {
-    fprintf(stderr,"Parameter %s is too big!\n",argv[k-4]);
-    exit(-1);
+  else {
+    char *end;
+    unsigned long value;
+    errno=0;
+    value=strtoul(argv[k-4],&end,16);
+    if (errno || end==argv[k-4] || *end || value>0xffff) {
+      fprintf(stderr,"Parameter %s should be a 16-bit hexadecimal value!\n",argv[k-4]);
+      exit(-1);
+    }
+    x[k]=value;
   }
   if (x[k]>=0x8000) x[k]^=0xffff;
 }
@@ -144,15 +152,16 @@ head[8].prev=&func[0x7fff], func[0x7fff].next=&head[8];
 @<Initialize the functions of cost 1@>;
 
 @ @<Initialize the functions of cost 0@>=
+c=(1<<15)-1; /* all nonzero functions are initially unknown */
 for (k=1;k<=m;k++) {
   p=&func[x[k]];
   if (p->cost==0) continue;
+  c--; /* count each distinct newly precomputed function once */
   p->next->prev=p->prev, p->prev->next=p->next;
   p->cost=0;
   p->next=head[0].next, p->prev=&head[0];
   p->next->prev=p, p->prev->next=p;
 }  
-c=(1<<15)-1-m;
 
 @ @<Initialize the functions of cost 1@>=
 s=0;
@@ -174,7 +183,7 @@ if (p->cost>1) {
   }
   p->next->prev=p->prev, p->prev->next=p->next;
   p->cost=1, p->parent=(x[k]<<16)+x[r];
-  p->footprint[s>>5]=1<<(s&0x1f);
+  p->footprint[s>>5]=1U<<(s&0x1f);
   p->next=head[1].next, p->prev=&head[1];
   p->next->prev=p, p->prev->next=p;
   s++;
@@ -187,6 +196,10 @@ while (1) {
   fflush(stdout);
   if (!fgets(buf,100,stdin)) break;
   if (sscanf(buf,"%x",&ttt)!=1) break;
+  if (ttt>0xffff) {
+    fprintf(stderr,"Truth table should be a 16-bit value!\n");
+    continue;
+  }
   printf("%04x has cost ",ttt);
   if (ttt&0x8000) ttt^=0xffff;
   printf("%d, parents (%04x,%04x), and footprint",

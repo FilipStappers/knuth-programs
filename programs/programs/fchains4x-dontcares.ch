@@ -15,6 +15,10 @@ main(int argc,char *argv[])
   fflush(stdout);
   if (!fgets(buf,100,stdin)) break;
   if (sscanf(buf,"%x",&ttt)!=1) break;
+  if (ttt>0xffff) {
+    fprintf(stderr,"Truth table should be a 16-bit value!\n");
+    continue;
+  }
 @y
   printf("Asterisks and bits (hex): ");
   fflush(stdout);
