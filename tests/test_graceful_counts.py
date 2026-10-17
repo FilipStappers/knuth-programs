@@ -83,6 +83,22 @@ class GracefulCounts(unittest.TestCase):
                 with self.subTest(m=m, limit=limit):
                     self.check_counts(m, limit)
 
+    def test_impossible_small_vertex_limits(self):
+        for m in range(2, 9):
+            for limit in range(3):
+                with self.subTest(m=m, limit=limit):
+                    self.check_counts(m, limit)
+        for limit in range(3):
+            result = subprocess.run([str(self.programs['small']), '100', str(limit)],
+                                    text=True, capture_output=True, timeout=5)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stderr, '')
+            self.assertIn('Altogether 0 connected and 0 not.', result.stdout)
+        result = subprocess.run([str(self.programs['small']), '2', '-1'],
+                                text=True, capture_output=True, timeout=5)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('between 0 and m+1', result.stderr)
+
 
 if __name__ == '__main__':
     unittest.main()

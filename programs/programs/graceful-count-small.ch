@@ -4,6 +4,9 @@ given~$m>1$. I subdivide into connected and nonconnected graphs.
 @y
 have $m$ edges and at most $n$ nonisolated vertices, for $0\le n\le m+1$,
 given~$m$ and~$n$. I subdivide into connected and nonconnected graphs.
+
+The fixed edges $m$ and $m-1$ require the three distinct vertices
+0, 1, and $m$. Thus the counts are zero whenever $n<3$.
 @z
 @x
 @d maxm 20 /* this is plenty big, because $20!$ is a 61-bit number */
@@ -19,6 +22,14 @@ int mm,nn; /* command-line parameters */
   register j,k,l,m;
 @y
   register j,k,l,m,n;
+@z
+@x
+  @<Process the command line@>;
+  @<Initialize to $(m-1,\ldots,2,1,0)$@>;
+@y
+  @<Process the command line@>;
+  if (n<3) goto done;
+  @<Initialize to $(m-1,\ldots,2,1,0)$@>;
 @z
 @x
 @ @<Process the command line@>=
@@ -49,8 +60,8 @@ if (m<2 || m>maxm) {
                         maxm);
   exit(-2);
 }
-if (n>m+1) {
-  fprintf(stderr,"Sorry, n must be less than m+1\n");
+if (n<0 || n>m+1) {
+  fprintf(stderr,"Sorry, n must be between 0 and m+1\n");
   exit(-3);
 }   
 @z
