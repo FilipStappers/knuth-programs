@@ -1,6 +1,6 @@
 """Full-word graph clique families and hypercube metric embeddings."""
 from collections import deque
-from itertools import combinations
+from itertools import combinations, product
 import os
 from pathlib import Path
 import re
@@ -109,6 +109,53 @@ int main(int argc,char **argv) {
                 edges = [edge for k, edge in enumerate(pairs) if mask & (1 << k)]
                 with self.subTest(n=n, edges=edges):
                     self.check_cliques(n, edges, maximal_cliques(n, edges))
+
+    def check_embedding(self, n, edges, dimension):
+        output = self.run_graph('embed', n, edges)
+        pairs = re.findall(r'(?m)^ v(\d+) = ([0-9a-f]+)$', output)
+        self.assertEqual(len(pairs), n)
+        codes = {int(v): int(code, 16) for v, code in pairs}
+        self.assertEqual(set(codes), set(range(n)))
+        self.assertEqual(codes[0], 0)
+        self.assertEqual(len(set(codes.values())), n)
+        edge_bits = {codes[u]^codes[v] for u, v in edges}
+        self.assertEqual(len(edge_bits), dimension)
+        self.assertTrue(all(bit > 0 and bit & (bit-1) == 0 for bit in edge_bits))
+        adjacency = [set() for _ in range(n)]
+        for u, v in edges:
+            adjacency[u].add(v)
+            adjacency[v].add(u)
+        for start in range(n):
+            distances = {start: 0}
+            pending = deque([start])
+            while pending:
+                u = pending.popleft()
+                for v in adjacency[u]:
+                    if v not in distances:
+                        distances[v] = distances[u]+1
+                        pending.append(v)
+            self.assertEqual(len(distances), n)
+            for v, distance in distances.items():
+                self.assertEqual((codes[start]^codes[v]).bit_count(), distance)
+
+    def test_thirty_second_embedding_class(self):
+        for edges in [[(v, v+1) for v in range(32)], [(0, v) for v in range(1, 33)]]:
+            with self.subTest(edges=edges[:3]):
+                self.check_embedding(33, edges, 32)
+
+    def test_tree_grid_and_cube_metrics(self):
+        for n in range(1, 6):
+            for parents in product(*(range(i) for i in range(1, n))):
+                self.check_embedding(n, [(p, v) for v, p in enumerate(parents, 1)], n-1)
+        for rows in range(1, 6):
+            for columns in range(1, 6):
+                edges = [(r*columns+c, rr*columns+cc) for r in range(rows) for c in range(columns)
+                         for rr, cc in [(r+1, c), (r, c+1)] if rr < rows and cc < columns]
+                self.check_embedding(rows*columns, edges, rows+columns-2)
+        for dimension in range(1, 7):
+            edges = [(v, v^(1 << bit)) for v in range(1 << dimension)
+                     for bit in range(dimension) if not v & (1 << bit)]
+            self.check_embedding(1 << dimension, edges, dimension)
 
 
 if __name__ == '__main__':

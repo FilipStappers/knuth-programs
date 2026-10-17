@@ -45,7 +45,8 @@ Graph *g; /* the GraphBase graph we're given */
 @<Subroutines@>@;
 main(int argc,char *argv[])
 {
-  register int j,k;
+  register int k;
+  register unsigned long j;
   register Vertex *u,*v,*w;
   register Arc *a, *b, *c;
   if (argc<2) {
@@ -269,9 +270,10 @@ but our definition of embedding codes is top-down. So we record the
 edges in two tables |rtab| and |stab|; the actual codes will be assigned
 after all embedding has been completed.
 
-@d code y.I /* we no longer need the |link| field when |code| is used */
+@d code(v) embed_code[(v)-g->vertices]
 
 @<Glob...@>=
+unsigned long embed_code[nmax]; /* unsigned words retain all 32 coordinates */
 Vertex *rtab[nmax], *stab[nmax]; /* edges of the spanning tree */
 int tabptr; /* number of spanning edges recorded so far */
 
@@ -280,16 +282,16 @@ rtab[tabptr]=r, stab[tabptr]=s, tabptr++;
 
 @ @<Print out the embedding codes@>=
 printf("The codewords are:\n %s = 00000000\n",start_vertex->name);
-start_vertex->code=0x0;
+code(start_vertex)=0x0;
 for (k=0;k<tabptr;k++) {
   u=rtab[k], v=stab[k], a=the_arc(u,v);
-  j=1<<(serial(leader(a))-1);
-  if (u->code&j) {
+  j=1UL<<(serial(leader(a))-1);
+  if (code(u)&j) {
     fprintf(stderr,"I goofed (class %d used twice)!\n",serial(leader(a)));
     exit(-8);
   }
-  v->code=u->code|j;
-  printf(" %s = %08x\n",v->name,v->code);
+  code(v)=code(u)|j;
+  printf(" %s = %08lx\n",v->name,code(v));
 }
 
 @ Now we get to real meat. Vertices of the current graph can be partitioned
