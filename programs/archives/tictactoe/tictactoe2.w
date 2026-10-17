@@ -25,7 +25,7 @@ humiliating your opponent).
 #include "gb_save.h"
 Vertex *pos[1<<18];
 unsigned int diff[1<<18]; /* the difficulty factor */
-int count[9],win[9];
+int count[10],win[10]; /* one counter for every rank, zero through nine */
 
 main()
 {
@@ -66,10 +66,13 @@ for (k=9;k>=0;k--)
 
 
 @ The |score| field takes the place of what used to be called |winner|.
-Scores are computed from the standpoint of the \.X player: A score of
-$+6$ means that \.X can force a win at move six; a score of $-9$ means
-that \.O can win (or has won) at move nine. A score of zero means
-that a draw is the best possible outcome.
+Scores are computed from the standpoint of the player whose turn is next,
+shown as \.X in the position names: A positive score means that this
+player can force a win, and a negative score means that the opponent
+can win (or has already won). The absolute value is the move number
+of that win. A terminal winning board therefore has a negative score,
+because its winner just moved. A score of zero means that a draw is
+the best possible outcome.
 
 Positions with equal score are ranked secondarily by their |diff|,
 which is a sequence of 8 hexadecimal digits. The most significant digit is
