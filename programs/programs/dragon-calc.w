@@ -136,7 +136,8 @@ main() {
     if (*p!='\n')
       printf("Junk at end of command has been ignored: %s",p);
   }
-done: @<Make sure that |outfile| is closed@>
+done: if (infile) fclose(infile);
+  @<Make sure that |outfile| is closed@>
 }
 
 @ @<Reset the current path to the unit path@>=
@@ -152,16 +153,47 @@ poly[0].x=0, congclass[0][0]=-1; fill[0]=-1;
 
 @ @<Prompt the user for a new command@>=
 {
+  int status;
   printf("> ");@+fflush(stdout);
-  fgets(buf,bufsize,stdin);
+  status=read_command(stdin);
+  if (status==0) goto done;
+  if (status<0) continue;
 }
 
 @ @<Read a new command from |infile|@>=
 {
-  if (!fgets(buf,bufsize,infile)) {
+  int status=read_command(infile);
+  if (status==0) {
+    fclose(infile), infile=NULL;
     including=0;
     continue;
   }
+  if (status<0) continue;
+}
+
+@ Command acquisition always supplies a newline, including on a final
+unterminated record. Invalid records are drained as a whole so their tails
+cannot become commands.
+
+@<Subroutines@>=
+int read_command(FILE *stream) {
+  int ch,len=0,bad=0;
+  while ((ch=getc(stream))!=EOF && ch!='\n') {
+    if (ch==0 || len==bufsize-2) bad=1;
+    if (!bad) buf[len++]=ch;
+  }
+  if (ferror(stream)) {
+    fprintf(stderr,"I couldn't read a command!\n");
+    exit(-1);
+  }
+  if (ch==EOF && len==0 && !bad) return 0;
+  if (bad) {
+    fprintf(stderr,"Command too long or containing a null byte; ignored!\n");
+    return -1;
+  }
+  if (len>0 && buf[len-1]=='\r') len--;
+  buf[len++]='\n', buf[len]='\0';
+  return 1;
 }
 
 @ @<Do the command in |buf|@>=
@@ -175,7 +207,7 @@ switch (*p) {
 case 'q': goto done;
 case 'i': if (!including) {
     for (p=buf+1;*p==' ';p++);
-    for (q=p+1;*q!='\n';q++);
+    for (q=p;*q!='\n';q++);
     *q='\0';
     if (infile=fopen(p,"r")) including=1;
     else printf("Sorry --- I couldn't open file `%s' for reading!\n",p);

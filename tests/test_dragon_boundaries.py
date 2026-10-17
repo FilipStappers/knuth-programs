@@ -3,6 +3,7 @@ from itertools import product
 import os
 from pathlib import Path
 import re
+import resource
 import subprocess
 import tempfile
 import unittest
@@ -51,6 +52,59 @@ class DragonBoundaries(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr.decode())
         self.assertNotIn(b'capacity', result.stdout)
         self.assertRegex(result.stdout, rb'1,0 is \d+_\d')
+
+    def test_stdin_exhaustion_terminates(self):
+        for commands in ['', '% a comment\n', 'p0\nc1,0\n', 'p0\nc1,0']:
+            with self.subTest(commands=commands):
+                with open(os.devnull, 'wb') as discarded:
+                    result = subprocess.run([str(self.program)], input=commands.encode(),
+                                            stdout=discarded, stderr=subprocess.PIPE,
+                                            cwd=self.work, timeout=2, env=ENV)
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+
+    def test_include_files_are_closed(self):
+        (self.work/'commands').write_text('p01\n')
+        def limit_files():
+            resource.setrlimit(resource.RLIMIT_NOFILE, (32, 32))
+        result = subprocess.run([str(self.program)], input=('icommands\n'*64+'q\n').encode(),
+                                capture_output=True, cwd=self.work, timeout=10, env=ENV,
+                                preexec_fn=limit_files)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        self.assertNotIn(b"couldn't open", result.stdout)
+        self.assertEqual(result.stdout.count(b's=2'), 64)
+
+    def test_final_include_and_bounded_command_records(self):
+        (self.work/'final').write_text('p01')
+        result = self.calculate('ifinal')
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        self.assertEqual(result.stdout.count(b's=2'), 1)
+        for invalid in [' '*1023+'p0', 'p0\0', ' '*10000+'q']:
+            result = self.calculate(invalid+'\np01\nq\n')
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            self.assertIn(b'ignored', result.stderr)
+            self.assertNotIn(b's=1', result.stdout)
+            self.assertEqual(result.stdout.count(b's=2'), 1)
+        result = self.calculate(' '*1020+'p0\np01\r\nq\n')
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        self.assertEqual(result.stdout.count(b's=1'), 1)
+        self.assertEqual(result.stdout.count(b's=2'), 1)
+        result = self.calculate('i\np01\nq\n')
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        self.assertIn(b"couldn't open", result.stdout)
+
+    def test_command_read_errors_reject(self):
+        descriptor = os.open(self.work, os.O_RDONLY)
+        try:
+            result = subprocess.run([str(self.program)], stdin=descriptor,
+                                    capture_output=True, timeout=5, env=ENV)
+        finally:
+            os.close(descriptor)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b"couldn't read", result.stderr)
+        (self.work/'directory').mkdir(exist_ok=True)
+        result = self.calculate('idirectory\nq\n')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b"couldn't read", result.stderr)
 
     def test_supported_congruence_matches_gaussian_lattice(self):
         tiles = [(x, y) for x, y in product(range(-3, 4), repeat=2) if (x+y) % 2]
