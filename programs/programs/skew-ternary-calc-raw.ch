@@ -44,6 +44,11 @@ int minrank; /* smallest rank of a node so far */
 @ @d offset 258 /* difference between |stacked| and the current rank */
 @z
 @x
+stack[0]=1, stacked=offset-1;
+@y
+stack[offset-2]=1, stacked=offset-1; /* retain the root bud at rank -2 */
+@z
+@x
 fun of deciphering it.
 @y
 fun of deciphering it.
@@ -53,6 +58,10 @@ matched (in the previous cycle), although the chart's |match| fields don't
 show this. I could patch this up, but the |match| fields aren't really used.
 We do have to shift the stack entries so that the four truly unmatched
 buds appear at the top.
+
+The root bud is seeded relative to the enlarged offset. After printing
+each conjugate we normalize the cyclic endpoint, since the first
+conjugate can end at the sentinel rather than at chart entry zero.
 @z
 @x
 for (j=1;j<4;j++) {
@@ -61,4 +70,10 @@ if (minrank<-1)
   for (i=1;i>=-2;i--)
     stack[i+offset]=stack[i+offset+minrank+1];
 for (j=0;j<4;j++) {
+@z
+@x
+  if (chart[steps].first!=stack[j+offset-2]) confusion("bad end of cycle");
+@y
+  steps%=4*n;
+  if (chart[steps].first!=stack[j+offset-2]) confusion("bad end of cycle");
 @z
