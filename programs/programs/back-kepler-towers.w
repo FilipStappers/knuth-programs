@@ -10,11 +10,11 @@ I'd blithely assumed that there are no more than $C_n$ of them.)
 #include <stdio.h>
 #include <stdlib.h>
 int n; /* command line parameter */
-int x[maxn]; /* current brick position */
-int w[maxn]; /* current wall number */
-int p[maxn]; /* beginning of supporting layer */
-int q[maxn]; /* beginning of current layer */
-int t[maxn]; /* type of move: 1 if end of layer, 2 if end of wall */
+int x[maxn+1]; /* current brick position */
+int w[maxn+1]; /* current wall number */
+int p[maxn+1]; /* beginning of supporting layer */
+int q[maxn+1]; /* beginning of current layer */
+int t[maxn+1]; /* type of move: 1 if end of layer, 2 if end of wall */
 char punct[3]={',',';',':'}; /* separators */
 unsigned long long count; /* this many found */
 main (int argc,char*argv[]) {
@@ -47,8 +47,8 @@ if (argc!=2 || sscanf(argv[1],"%d",
                   argv[0]);
   exit(-1);
 }
-if (n>maxn) {
-  fprintf(stderr,"You must be kidding; I can't handle n>%d!\n",
+if (n<1 || n>maxn) {
+  fprintf(stderr,"The number of bricks must be between 1 and %d!\n",
                                      maxn);
   exit(-2);
 }
