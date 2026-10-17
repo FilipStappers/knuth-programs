@@ -263,7 +263,7 @@ however, the default version of this program sets |slack=0|.
 @d slack 0 /* amount to shift the pattern left in harder problems */
 
 @<Choose |pos|@>=
-for (i=pos=0;i<=m;i++)
+for (i=pos=0;i<n;i++)
   if (oo,off[m+1-n+i]+last[i]>pos) pos=off[m+1-n+i]+last[i];
 pos+=slack-1;
 
