@@ -502,8 +502,7 @@ if (spack+d>bitsperword) {
 
 @ @<Save |weight[p-1]|@>=
 {
-  for (k=0;k<prec;k++)
-    oldweight[owp].val[k]=weight[p-1].val[k];
+  oldweight[owp]=weight[p-1]; /* retain zero high limbs for future precision growth */
   owp++;
 }
 
