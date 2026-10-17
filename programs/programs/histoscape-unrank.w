@@ -30,6 +30,7 @@ I thank Heiko Thei{\ss}en for pointing out my unfortunate mistake.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 @<Type definitions@>;
 @<Counting constants@>;
 int m,n,t; /* command-line parameters */
@@ -45,7 +46,8 @@ int pos[maxn+1]; /* what solution position corresponds to each index */
 int sol[maxn*maxn]; /* the partial solution known so far */
 @<Counting subroutines@>;
 int main(int argc,char*argv[]) {
-  register int a,b,c,d,i,j,k,p,q,r,pp,p0;
+  register int a,b,c,d,i,j,k,p,q,r,p0;
+  register long long pp; /* includes one unused step beyond a table slice */
   @<Process the command line@>;
   @<Compute the |bad| table@>;
   firstknown=m*n; /* nothing is known at the beginning */
@@ -78,7 +80,7 @@ if (t<2 || t>maxt) {
                    maxt);
   exit(-3);
 }
-for (j=1,k=0;k<=n+1;k++) tpow[k]=j,j*=t;
+@<Compute checked table powers@>;
 count=(bignum*)malloc(tpow[n+1]*sizeof(bignum));
 if (!count) {
   fprintf(stderr,"I couldn't allocate t^%d=%d entries for the counts!\n",

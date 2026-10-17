@@ -14,6 +14,24 @@ typedef struct {
 @ @<Counting constants@>=
 const bignum count_zero={{0}},count_one={{1}};
 
+@ The table uses signed integer indices. We compute only the powers
+actually stored, checking each multiplication before it is performed.
+The byte size must also fit the allocation interface.
+
+@<Compute checked table powers@>=
+tpow[0]=1;
+for (k=1;k<=n+1;k++) {
+  if (tpow[k-1]>INT_MAX/t) {
+    fprintf(stderr,"Sorry, t^%d exceeds the table index range!\n",n+1);
+    exit(-4);
+  }
+  tpow[k]=tpow[k-1]*t;
+}
+if ((size_t)tpow[n+1]>((size_t)-1)/sizeof(bignum)) {
+  fprintf(stderr,"Sorry, the count table byte size is too large!\n");
+  exit(-4);
+}
+
 @ @<Counting subroutines@>=
 void add_count(bignum *a,const bignum *b) {
   int k;

@@ -45,6 +45,24 @@ class HistoscapeCounts(unittest.TestCase):
             subprocess.run(['gcc', '-std=gnu99', '-O1', str(generated), '-o', str(program)],
                            check=True, capture_output=True)
             cls.programs[mode] = program
+        wrapper = cls.work/'no_memory.c'
+        wrapper.write_text('''#include <stdio.h>
+#include <stdlib.h>
+void *no_count_memory(size_t bytes) {
+  fprintf(stderr,"COUNT_ALLOCATION %zu\\n",bytes);
+  return NULL;
+}
+''')
+        obj = cls.work/'no_memory.o'
+        subprocess.run(['gcc', '-c', str(wrapper), '-o', str(obj)], check=True, capture_output=True)
+        cls.power_programs = {}
+        for mode in ['count', 'unrank']:
+            program = cls.work/(mode+'-powers')
+            subprocess.run(['gcc', '-std=gnu99', '-O1', '-fsanitize=undefined',
+                            '-fno-sanitize-recover=all', '-Dmalloc=no_count_memory',
+                            str(cls.work/(mode+'.c')), str(obj), '-o', str(program)],
+                           check=True, capture_output=True)
+            cls.power_programs[mode] = program
         probe = cls.work/'arithmetic.c'
         probe.write_text('#define main count_main\n#include "'+str(cls.work/'count.c')+'''"
 #undef main
@@ -159,6 +177,24 @@ int main(int argc,char **argv) {
                                         text=True, capture_output=True, timeout=5)
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn('exceeds the total', result.stderr)
+
+    def test_table_powers_without_allocating_large_tables(self):
+        # Refuse allocation after the unchanged native parameter calculation.
+        for mode, program in self.power_programs.items():
+            for n, t in [(6, 16), (7, 16), (10, 16), (10, 8), (10, 7), (10, 6), (10, 5), (10, 2)]:
+                with self.subTest(mode=mode, n=n, t=t):
+                    result = subprocess.run([str(program), '2', str(n), str(t)]+
+                                            (['0'] if mode == 'unrank' else []),
+                                            text=True, capture_output=True, timeout=5)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn('runtime error', result.stderr)
+                    power = t**(n+1)
+                    if power > (1 << 31)-1:
+                        self.assertIn('table index range', result.stderr)
+                        self.assertNotIn('COUNT_ALLOCATION', result.stderr)
+                    else:
+                        self.assertIn(f'COUNT_ALLOCATION {power*56}', result.stderr)
+                        self.assertIn(f't^{n+1}={power} entries', result.stderr)
 
 
 if __name__ == '__main__':

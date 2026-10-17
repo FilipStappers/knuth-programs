@@ -30,6 +30,7 @@ for purposes of testing.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 @<Type definitions@>;
 @<Counting constants@>;
 int m,n,t; /* command-line parameters */
@@ -41,7 +42,8 @@ int inx[maxn+1]; /* indices being looped over */
 int tpow[maxn+2]; /* powers of |t| */
 @<Counting subroutines@>;
 int main(int argc,char*argv[]) {
-  register int a,b,c,d,i,j,k,p,q,r,pp;
+  register int a,b,c,d,i,j,k,p,q,r;
+  register long long pp; /* includes one unused step beyond a table slice */
   @<Process the command line@>;
   @<Compute the |bad| table@>;
   for (i=1;i<m;i++) for (j=1;j<n;j++) @<Handle constraint $(i,j)$@>;
@@ -67,7 +69,7 @@ if (t<2 || t>maxt) {
                    maxt);
   exit(-3);
 }
-for (j=1,k=0;k<=n+1;k++) tpow[k]=j,j*=t;
+@<Compute checked table powers@>;
 count=(bignum*)malloc(tpow[n+1]*sizeof(bignum));
 if (!count) {
   fprintf(stderr,"I couldn't allocate t^%d=%d entries for the counts!\n",
