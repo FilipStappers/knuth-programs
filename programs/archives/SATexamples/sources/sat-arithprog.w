@@ -34,9 +34,8 @@ must be at least 19. In fact, the next number $F_3(9)$ turns out to be~20.]
 
 Continuing that example, we know that $x_{a+1}+x_{a+2}+x_{a+3}\le2$
 for $0\le a\le 15$; similarly $x_{a+1}+\cdots+x_{a+8}\le4$,
-$x_{a+1}+\cdots+x_{a+10}\le5$,
-$x_{a+1}+\cdots+x_{a+12}\le6$, and
-$x_{a+1}+\cdots+x_{a+17}\le8$, according to the previously tabulated
+$x_{a+1}+\cdots+x_{a+10}\le5$, and
+$x_{a+1}+\cdots+x_{a+12}\le6$, according to the previously tabulated
 numbers on file. (Two other inequalities,
 $x_{a+1}+\cdots+x_{a+4}\le3$ and
 $x_{a+1}+\cdots+x_{a+13}\le7$,
@@ -51,19 +50,26 @@ rewrite this statement as ``$s_{b+p-q}^k$ implies $s_b^{k-q}$'';
 that is, the clauses $\bar s_{b+p-q}^k\lor s_b^{k-q}$ must be
 valid, for $0\le b\le n-r+1-p+q$ and $q<k\le r$.
 
-For example, when $p=17$ and $q=8$, there are just two special
+For example, if we separately know that $F_3(9)\ge18$, then $p=17$
+and $q=8$ give just two special
 clauses, $\bar s_9^9\lor s_0^1$ and $\bar s_{10}^9\lor s_1^1$,
 which simplify to $\bar s_9^9$ and $s_1^1$. Equivalently,
 $x_{18}=1$ and $x_1=1$. (Similar deductions will always occur,
 when we're trying to establish extreme values; we'll necessarily have
 $x_1=x_n=1$, since the case $n-1$ admits at most $r-1$ 1s.)
+This extra lower bound for the current value of $r$ does not follow
+from the supplied smaller-$r$ table, so the program does not assume it.
+Only the imported bounds for cardinalities less than $r$ are used for
+the special implications. Thus the clauses also apply to nonextremal
+choices of $n$: A solution need not have a one at either endpoint.
 
 This program first generates the clauses in $\lnot x_i$ that enforce
 the no-$k$-equally-spaced-ones constraints. Then it generates the
 clauses above, and one more to reduce symmetry.
 
-In the example with $n=18$ and $r=9$, the Sinz-plus-subinterval
-clauses themselves (without the arithmetic progression clauses)
+In the example with $n=18$ and $r=9$, if we also add the separately
+established bound $F_3(9)\ge18$, the Sinz-plus-subinterval
+clauses (without the arithmetic progression clauses)
 already force most of the variables $s_j^k$: By unit propagations
 they are
 $$\pmatrix{
@@ -138,7 +144,6 @@ for (j=1;j<r;j++) {
     exit(-6);
   }
 }
-table[r]=n;
 
 @ @<Output the negative clauses@>=
 for (d=1;d<=(n-1)/(t-1);d++) {
@@ -167,7 +172,7 @@ for (j=0;j<=n-r;j++) for (k=1;k<=r;k++) {
 }
 
 @ @<Output the special...@>=
-for (q=2;q<r;q++) if (table[q+1]>table[q]+1) {
+for (q=2;q+1<r;q++) if (table[q+1]>table[q]+1) {
   p=table[q+1]-1;
   for (b=0;b<=n-r+1-p+q;b++) for (k=q+1;k<=r;k++) {
     if (b+p-q<=n-r) printf("~%dS%d",b+p-q,k);

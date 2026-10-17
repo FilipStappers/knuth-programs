@@ -111,6 +111,33 @@ class ProgressionLengths(unittest.TestCase):
                     with self.subTest(n=n, r=r, bits=bits):
                         self.assertEqual(satisfiable(formula+fixed), expected)
 
+    def test_nonextremal_valid_progression_free_word(self):
+        result = self.encode('arithprog', [3, 5, 3])
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        formula = [line.split() for line in result.stdout.decode().splitlines()
+                   if line.strip() and not line.startswith('~ ')]
+        bits = [0, 1, 0, 1, 1]
+        self.assertTrue(no_progression(bits, 3, 1))
+        fixed = [[('' if bit else '~')+f'x{i}'] for i, bit in enumerate(bits, 1)]
+        self.assertTrue(satisfiable(formula+fixed))
+
+    def test_all_small_arithprog_cardinalities(self):
+        for n in range(9):
+            for r in range(min(n, 5)+1):
+                result = self.encode('arithprog', [3, n, r])
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                formula = [line.split() for line in result.stdout.decode().splitlines()
+                           if line.strip() and not line.startswith('~ ')]
+                for bits in itertools.product([0, 1], repeat=n):
+                    expected = sum(bits) == r and no_progression(bits, 3, 1)
+                    if r % 2:
+                        j, k = (n-r+1)//2, (r+1)//2
+                        expected &= sum(bits[:j+k-1]) < k
+                    elif n % 2 == 0:
+                        expected &= sum(bits[:n//2]) >= r//2
+                    fixed = [[('' if bit else '~')+f'x{i}'] for i, bit in enumerate(bits, 1)]
+                    self.assertEqual(satisfiable(formula+fixed), expected, (n, r, bits))
+
 
 if __name__ == '__main__':
     unittest.main()
