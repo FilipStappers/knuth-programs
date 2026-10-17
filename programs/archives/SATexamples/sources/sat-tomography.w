@@ -10,6 +10,8 @@ $b_d=\sum\{x_{ij}\mid i-j=d-n\}$, for $0<d<m+n$. They should appear
 one per line in the input, in a format such as `\.{r3=20}'. Zero
 sums need not be given. The program deduces $m$ and $n$ from the largest
 subscripts that appear, and it makes fairly careful syntax checks.
+The companion {\mc SAT-TOMOGRAPHY-FILTER} accepts the full coordinate
+range declared below and ignores the auxiliary counter literals.
 
 @d mmax 200 /* should be at most 255 unless I use bigger radix than hex */
 @d nmax 100 /* should be at most 255 unless I use bigger radix than hex */

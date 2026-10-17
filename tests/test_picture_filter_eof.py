@@ -3,6 +3,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES = ROOT/'programs/archives/SATexamples/sources'
@@ -24,6 +25,12 @@ class PictureFilterEOF(unittest.TestCase):
                             str(generated), '-o', str(program)],
                            check=True, capture_output=True)
             cls.programs[kind] = program
+        generated, cls.encoder = work/'encoder.c', work/'encoder'
+        subprocess.run(['ctangle', str(SOURCES/'sat-tomography.w'), '-', str(generated)],
+                       check=True, capture_output=True)
+        subprocess.run(['gcc', '-std=gnu99', '-Wno-implicit-int', '-O1',
+                        '-fsanitize=undefined,bounds', '-fno-sanitize-recover=all',
+                        str(generated), '-o', str(cls.encoder)], check=True, capture_output=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -65,7 +72,7 @@ class PictureFilterEOF(unittest.TestCase):
     def test_large_coordinates_reject_without_overflow(self):
         for kind in self.programs:
             mark = 'a' if kind.startswith('life') else 'x'
-            for number in ['100', '2147483648', '9'*10000]:
+            for number in ['100' if kind.startswith('life') else '201', '2147483648', '9'*10000]:
                 for token in [number+mark+'1', '1'+mark+number]:
                     result = subprocess.run([str(self.programs[kind])],
                                             input=(' '+token+'\n').encode(),
@@ -73,7 +80,8 @@ class PictureFilterEOF(unittest.TestCase):
                     with self.subTest(kind=kind, length=len(number), token=token[:20]):
                         self.assertNotEqual(result.returncode, 0)
                         self.assertNotIn(b'runtime error', result.stderr)
-                        self.assertIn(b'more than two digits', result.stderr)
+                        expected = b'more than two digits' if kind.startswith('life') else b'out of range'
+                        self.assertIn(expected, result.stderr)
 
     def test_empty_file_has_no_picture_and_succeeds(self):
         for kind in self.programs:
@@ -94,6 +102,67 @@ class PictureFilterEOF(unittest.TestCase):
                     data = self.assignment(kind)+'\n'+self.assignment(kind, True)+ending
                     self.assertEqual(self.filter(kind, data),
                                      self.expected(kind)+self.expected(kind, True))
+
+    def test_complete_encoder_coordinate_domain(self):
+        for m, n in [(100, 1), (200, 1), (1, 100), (200, 100)]:
+            for ending in ['', '\n']:
+                with self.subTest(m=m, n=n, ending=ending):
+                    data = ''.join(' '+('' if (i+2*j) % 5 == 0 else '~')+f'{i}x{j}'
+                                   for i in range(1, m+1) for j in range(1, n+1))
+                    data += ' 297A0201 ~297B0201 295a0201 ~p297A01'+ending
+                    expected = ''.join(''.join('*' if (i+2*j) % 5 == 0 else '.'
+                                               for j in range(1, n+1))+'\n'
+                                       for i in range(1, m+1))+'\n'
+                    self.assertEqual(self.filter('tomography', data), expected)
+
+    def test_tomography_pixel_ranges_and_ignored_auxiliaries(self):
+        for token in ['0x1', '1x0', '201x1', '1x101', '000201x1', '1x000101']:
+            result = subprocess.run([str(self.programs['tomography'])],
+                                    input=(' '+token+'\n').encode(), capture_output=True, timeout=3)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertNotIn(b'runtime error', result.stderr)
+            self.assertIn(b'out of range', result.stderr)
+        self.assertEqual(self.filter('tomography', ' 299A0201 ~999999999A 1x1\n'), '*\n\n')
+
+    def test_native_encoder_assignment_to_filter(self):
+        for m, n in [(200, 1), (1, 100)]:
+            bits = {(i, j): int((i+2*j) % 5 == 0) for i in range(1, m+1) for j in range(1, n+1)}
+            groups = {f'r{i}': [(i, j) for j in range(1, n+1)] for i in range(1, m+1)}
+            groups.update({f'c{j}': [(i, j) for i in range(1, m+1)] for j in range(1, n+1)})
+            for d in range(1, m+n):
+                groups[f'a{d}'] = [(i, j) for i, j in bits if i+j == d+1]
+                groups[f'b{d}'] = [(i, j) for i, j in bits if i-j == d-n]
+            data = ''.join(f'{key}={sum(bits[cell] for cell in cells)}\n' for key, cells in groups.items())
+            encoded = subprocess.run([str(self.encoder)], input=data, text=True,
+                                     capture_output=True, timeout=10)
+            self.assertEqual(encoded.returncode, 0, encoded.stderr)
+            self.assertNotIn('runtime error', encoded.stderr)
+            clauses = [line.split() for line in encoded.stdout.splitlines()
+                       if line and not line.startswith('~ ')]
+            length = max(m, n)
+            word = [bits[i, 1] for i in range(1, m+1)] if m > 1 else [bits[1, j] for j in range(1, n+1)]
+            if sum(word) > length-sum(word):
+                word = [1-bit for bit in word]
+            counts = [0]*(2*length-1)
+            counts[length-1:] = word
+            for node in range(length-2, -1, -1):
+                counts[node] = counts[2*node+1]+counts[2*node+2]
+            values = {}
+            for name in {literal.lstrip('~') for clause in clauses for literal in clause}:
+                pixel = re.fullmatch(r'(\d+)x(\d+)', name)
+                if pixel:
+                    values[name] = bits[tuple(map(int, pixel.groups()))]
+                else:
+                    counter = re.fullmatch(r'1[RC]([0-9a-f]{2})([0-9a-f]{2})', name)
+                    self.assertIsNotNone(counter, name)
+                    node, threshold = (int(x, 16) for x in counter.groups())
+                    values[name] = counts[node-1] >= threshold
+            self.assertTrue(all(any(bool(values[literal.lstrip('~')]) != literal.startswith('~')
+                                    for literal in clause) for clause in clauses))
+            assignment = ''.join(' '+('' if value else '~')+name for name, value in sorted(values.items()))
+            expected = ''.join(''.join('*' if bits[i, j] else '.' for j in range(1, n+1))+'\n'
+                               for i in range(1, m+1))+'\n'
+            self.assertEqual(self.filter('tomography', assignment), expected)
 
 
 if __name__ == '__main__':

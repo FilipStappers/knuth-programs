@@ -3,14 +3,20 @@
 This program accepts the result (one line per solution) and converts
 the literals of the form \.{$d$x$d$} into the rectangular ``\.{dots}''
 format of periods and asterisks.
+It accepts the encoder's full range of 1 through 200 rows and 1 through
+100 columns, ignoring auxiliary literals even when their numeric prefixes
+are larger than a pixel coordinate.
 
 Input and output go from |stdin| to |stdout|.
 End of file terminates the input; a final line need not end with a newline.
 
+@d mmax 200
+@d nmax 100
+
 @c
 #include <stdio.h>
 #include <stdlib.h>
-char pix[101][101];
+char pix[mmax+1][nmax+1];
 @<Subroutine@>;
 int main(void) {
   register int c,i,j,bit,maxi=0,maxj=0;
@@ -42,22 +48,25 @@ else {
   c=nextchar();
 }
 for (i=0;c>='0' && c<='9';c=nextchar()) {
-  i=10*i+c-'0';
-  if (i>=100) {
-    fprintf(stderr,"Eh? I found a number of more than two digits!\n");
-    exit(-2);
+  if (i<=mmax) {
+    i=10*i+c-'0';
+    if (i>mmax) i=mmax+1;
   }
 }
 if (c!='x') goto litdone;
 c=nextchar();
 for (j=0;c>='0' && c<='9';c=nextchar()) {
-  j=10*j+c-'0';
-  if (j>=100) {
-    fprintf(stderr,"Eh? I found a number of more than two digits!\n");
-    exit(-2);
+  if (j<=nmax) {
+    j=10*j+c-'0';
+    if (j>nmax) j=nmax+1;
   }
 }
 if (c!=' ' && c!='\n') goto litdone;
+if (i<1 || i>mmax || j<1 || j>nmax) {
+  fprintf(stderr,"Pixel coordinates out of range (rows 1..%d, columns 1..%d)!\n",
+                         mmax,nmax);
+  exit(-2);
+}
 @<Record the pixel value $(i,j)$@>;
 litdone:@+while (c!=' ' && c!='\n') c=nextchar();
 
