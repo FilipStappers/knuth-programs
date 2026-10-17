@@ -28,11 +28,11 @@ main() {
 }
 
 @ @<Read the input into a[0], determining |n|@>=
-fgets(a[0][0],maxn+2,stdin);
+fgets(a[0][0],sizeof(a[0][0]),stdin);
 for (n=0;a[0][0][n]==' ';n++);
 a[0][0][n+n+1]='\0';
 for (k=1;k<=n;k++) {
-  fgets(a[0][k],maxn+2,stdin);
+  fgets(a[0][k],sizeof(a[0][k]),stdin);
   a[0][k][n+n+1]=0;
 }
 

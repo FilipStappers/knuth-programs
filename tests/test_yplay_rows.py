@@ -59,6 +59,21 @@ class YplayRows(unittest.TestCase):
         n = 100
         self.run_triangle(n, 'x'*((n+1)*(n+2)//2))
 
+    def test_complete_small_triangles(self):
+        for n in range(4):
+            for bits in product('xo', repeat=(n+1)*(n+2)//2):
+                with self.subTest(n=n, bits=bits):
+                    self.assertEqual(self.run_triangle(n, bits), expected_output(n, bits))
+
+    def test_large_full_rows(self):
+        for n in [49, 50, 51, 99, 100]:
+            size = (n+1)*(n+2)//2
+            for bits in ['x'*size, 'o'*size,
+                         ''.join('xo'[(i*i+3*i+1)%7 < 3] for i in range(size))]:
+                for newline in ['\n', '\r\n']:
+                    with self.subTest(n=n, prefix=bits[:12], newline=newline):
+                        self.assertEqual(self.run_triangle(n, bits, newline), expected_output(n, bits))
+
 
 if __name__ == '__main__':
     unittest.main()
