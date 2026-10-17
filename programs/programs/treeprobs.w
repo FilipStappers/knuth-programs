@@ -190,10 +190,15 @@ for (n=1;;n++) {
   kids[edgej[n]]++;
   where[edgej[n]]=n;
 }
-if (edgek[n-1]!=n)
+for (j=1,k=1;k<n;k++) if (edgek[k]>j) j=edgek[k];
+if (j!=n)
   panic("inconsistent input");
 
-@ @<Compute the $S$'s@>=
+@ The maximum child number is |n|, but it needn't occur in the last
+lexicographic edge record when a left subtree is larger than its sibling.
+With no edges we have the one-node tree, whose maximum node number is~1.
+
+@<Compute the $S$'s@>=
 for (j=1;j<n;j++) {
   switch (kids[j]) {
 case 2: S[j+1][0]=edgek[where[j]];
