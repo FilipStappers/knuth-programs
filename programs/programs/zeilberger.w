@@ -300,6 +300,15 @@ Again we do a double-reversal in order to recompute any |q|'s and |s|'s
 that have been obliterated. In this case the recomputation affects
 the near siblings of~|x|.
 
+The reattached suffix begins at its first tree of order |ql|.
+If it contains |s[z]| such trees, the old child prefix followed by
+that suffix contains |s[z]+1| of them. Every prefix suffix must
+therefore have maximum |ql|. Its multiplicity decreases only as we
+pass an actual tree of order |ql|, detected from its child labels;
+the suffix maximum |q[yy]| alone cannot detect such a tree.
+The detached sibling prefix, meanwhile, uses the ordinary bottom-up
+recurrence, preserving the successor's multiplicity.
+
 @<Undo Zeilberger's Case 2@>=
 {
   for (z=rrr[x],zz=x;s[rrr[z]]==s[z]&&q[rrr[z]]==q[z];@|
@@ -308,14 +317,15 @@ the near siblings of~|x|.
   else@+for (yy=0;zz!=x;y=zz,zz=rrr[y],rrr[y]=yy,yy=y) {
     p=q[lll[zz]]+(s[lll[zz]]>1); /* we will recompute |q[zz]| and |s[zz]| */
     if (p>q[yy]) q[zz]=p, s[zz]=1;
-    else q[zz]=q[yy], s[zz]=s[yy]=(p==q[yy]);
+    else q[zz]=q[yy], s[zz]=s[yy]+(p==q[yy]);
   } /* |x|'s former siblings are now undone */
   qr=q[yy],ss=s[z]+1; /* at this point |yy=rrr[x]| */
   for (yy=lll[x],y=rrr[yy];y;yy=y,y=rrr[yy]) {
-    s[yy]=ss;
-    if (q[yy]==ql) ss--;
+    p=q[lll[yy]]+(s[lll[yy]]>1);
+    q[yy]=ql,s[yy]=ss;
+    if (p==ql) ss--;
   }
-  s[yy]=ss, rrr[yy]=z; /* unpromote |x|'s former children */
+  q[yy]=ql,s[yy]=ss, rrr[yy]=z; /* unpromote |x|'s former children */
 }
 
 @* Index.
