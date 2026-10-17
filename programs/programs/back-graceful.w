@@ -37,8 +37,8 @@ the \.{Makefile} that you use when compiling this.
 #include "gb_save.h"
 @<Global variables@>;
 void main (int argc,char*argv[]) {
-  register int i,j,k,l,m,n,p,q,r,t,bad,vv,ll,carry,forced;
-  register unsigned long long ebits,rebits,vbits,del;
+  register int i,j,k,l,m,n,p,q,r,t,vv,ll,carry,forced;
+  register unsigned long long ebits,rebits,vbits,del,bad;
   Graph *g;
   Vertex *v,*w;
   Arc *a;
@@ -131,11 +131,11 @@ labeled. The others haven't. (In fact, |vlist| is a permutation, and
 |vlist[k]| is the vertex that was labeled at level~$k$, for $0\le k<l$.)
 
 Three bitmaps are maintained: |ebits| records the edge labels that have
-appeared, with |1LL<<q| representing label~|q|; 
+appeared, with |1ULL<<q| representing label~|q|; 
 |vbits| records the vertex labels that have {\it not\/} appeared,
 in the same fashion;
 and |rebits| records |ebits| ``backwards,''
-with |1LL<<(m-q)| representing label~|q|.
+with |1ULL<<(m-q)| representing label~|q|.
 
 @<Glob...@>=
 int deg[maxn]; /* how many neighbors of |v|? */
@@ -178,7 +178,7 @@ w2: nodes++;
                     edge |q| start with~|vv|@>@;
   else if (l<prespecptr) r=1,move[l][0]=prespec[l];
   else {
-    for (q=(l==prespecptr? m: target[l-1]-(target[l-1]!=0)),del=1LL<<q;
+    for (q=(l==prespecptr? m: target[l-1]-(target[l-1]!=0)),del=1ULL<<q;
       ebits&del;q--,del>>=1) ;
     if (q==0) {
       if (l==n) @<Visit a solution and |goto w4|@>;
@@ -305,8 +305,8 @@ for (p=deg[vv],i=p-1,bad=0;i>=0;i--) {
   if (t>=0) {
     p--,labunlab[t]--,q=abs(t-ll);
     if (!prespecptr && m>=2 && q==m-1 && (ll==0 || t==0)) bad=1;
-    del=1LL<<q, bad|=ebits&del;
-    ebits+=del,rebits+=1LL<<(m-q);
+    del=1ULL<<q, bad|=ebits&del;
+    ebits+=del,rebits+=1ULL<<(m-q);
   }@+else vertunlab[j]--;
 }
 labunlab[ll]+=p+1;
@@ -318,19 +318,19 @@ if (bad) {
 verttolab[vv]=ll,labtovert[ll]=vv;
 t=ilist[vv],p=vlist[l];
 vlist[l]=vv,vlist[t]=p,ilist[vv]=l,ilist[p]=t;
-vbits-=1LL<<ll;
+vbits-=1ULL<<ll;
 
 @ Here I use the ``sparse-set'' trick to avoid downdating |vlist| and |ilist|.
 (See 7.2.2--(23).)
 
 @<Take label |ll| from vertex |vv|...@>=
-vbits+=1LL<<ll;
+vbits+=1ULL<<ll;
 verttolab[vv]=-1;
 abort:@+for (i=deg[vv]-1;i>=0;i--) {
   j=edges[vv][i],t=verttolab[j];
   if (t>=0) {
     labunlab[t]++,q=abs(t-ll);
-    ebits-=1LL<<q,rebits-=1LL<<(m-q);
+    ebits-=1ULL<<q,rebits-=1ULL<<(m-q);
   }@+else vertunlab[j]++;
 }
 labunlab[ll]=-1;

@@ -49,6 +49,7 @@ class GracefulLabelings(unittest.TestCase):
                         '-', str(generated)], cwd=GRAPHBASE, check=True, capture_output=True)
         cls.program = cls.work/'graceful'
         subprocess.run(['gcc', '-std=gnu99', '-O1', '-fcommon', '-I'+str(GRAPHBASE),
+                        '-fsanitize=undefined,bounds', '-fno-sanitize-recover=all',
                         str(generated), *objects, '-o', str(cls.program)],
                        check=True, capture_output=True)
         fixture = cls.work/'fixture.c'
@@ -97,6 +98,7 @@ int main(int argc,char **argv) {
                                 capture_output=True, text=True, timeout=10)
         # Historical void main has no defined success status; check its complete output.
         self.assertIn('Altogether ', result.stderr)
+        self.assertNotIn('runtime error', result.stderr)
         actual = []
         for line in result.stdout.splitlines():
             assignments = {int(v): int(value) for v, value in re.findall(r'v(\d+)=(\d+)', line)}
@@ -188,6 +190,30 @@ int main(int argc,char **argv) {
                     for preset in presets:
                         with self.subTest(n=n, edges=edges, mode=mode, preset=preset):
                             self.check_encoder(mode, n, edges, preset)
+
+    def test_full_width_fixed_labelings(self):
+        n = 64
+        labels = [i//2 if i % 2 == 0 else 63-i//2 for i in range(n)]
+        cases = [(list((0, v) for v in range(1, n)), list(range(n))),
+                 (list((v, v+1) for v in range(n-1)), labels),
+                 (list((0, v) for v in range(1, n-1))+[(1, 33)], list(range(n)))]
+        for edges, labels in cases:
+            with self.subTest(edges=edges[:3], labels=labels[:4]):
+                saved = self.work/'full-width.gb'
+                subprocess.run([str(self.writer), str(n), str(saved)],
+                               input=''.join(f'{u} {v}\n' for u, v in edges),
+                               text=True, check=True, capture_output=True)
+                result = subprocess.run([str(self.program), str(saved)]+
+                                        [f'v{v}={label}' for v, label in enumerate(labels)],
+                                        text=True, capture_output=True, timeout=10)
+                self.assertNotIn('runtime error', result.stderr)
+                expected = sorted(abs(labels[u]-labels[v]) for u, v in edges) == list(range(1, 64))
+                self.assertIn(f'Altogether {int(expected)} graceful labeling', result.stderr)
+                answers = result.stdout.splitlines()
+                self.assertEqual(len(answers), int(expected))
+                if answers:
+                    actual = {int(v): int(label) for v, label in re.findall(r'v(\d+)=(\d+)', answers[0])}
+                    self.assertEqual(actual, dict(enumerate(labels)))
 
 
 if __name__ == '__main__':
