@@ -27,7 +27,7 @@ the file name.
 unsigned long long mems; /* memory references */
 unsigned long long thresh=10000000000; /* reporting time */
 int maxmm=maxmwds, maxnn=maxtriesize;
-char mword[maxmwds][maxm+1];
+char mword[maxmwds+1][maxm+1]; /* words are numbered 1 through |maxmwds| */
 int mlink[maxmwds+1][maxm];
 int head[maxm][26], size[maxm][26];
 int trie[maxtriesize][27];
