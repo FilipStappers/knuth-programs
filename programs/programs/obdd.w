@@ -381,7 +381,7 @@ int count[max_final_nodes];
 
 @ @<Count and report the number of such matchings@>=
 if (f>=max_final_nodes) {
-  printf(stderr,"Oops, out of memory for counting!\n"); exit(-3);
+  fprintf(stderr,"Oops, out of memory for counting!\n"); exit(-3);
 }
 count[0]=0; count[1]=1;
 for (k=2;k<=f;k++) count[k]=count[left[k]]+count[right[k]];

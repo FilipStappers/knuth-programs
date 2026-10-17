@@ -55,6 +55,24 @@ class ObddHash(unittest.TestCase):
     def tearDownClass(cls):
         cls.temp.cleanup()
 
+    def test_counting_capacity_diagnostic(self):
+        text = SOURCE.read_text().replace('@d mm 8 ', '@d mm 4 ')
+        text = text.replace('@d nn 8 ', '@d nn 4 ')
+        text = text.replace('@d max_final_nodes (max_nodes/2)', '@d max_final_nodes 2')
+        source, generated, program = [self.work/('limited'+suffix) for suffix in ['.w', '.c', '']]
+        source.write_text(text)
+        subprocess.run(['ctangle', str(source), '-', str(generated)], cwd=GRAPHBASE,
+                       check=True, capture_output=True)
+        subprocess.run(['gcc', '-std=gnu89', '-O1', '-fcommon', '-I'+str(GRAPHBASE),
+                        '-fsanitize=address,undefined,bounds', '-fno-sanitize-recover=all',
+                        str(generated), *self.objects, '-lm', '-o', str(program)],
+                       check=True, capture_output=True)
+        result = subprocess.run([str(program)], capture_output=True, timeout=10, env=ENV)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b'out of memory for counting', result.stderr)
+        self.assertNotIn(b'runtime error', result.stderr)
+        self.assertNotIn(b'AddressSanitizer', result.stderr)
+
     def test_matching_construction_and_counts(self):
         for m, n in [(4, 4), (4, 6), (6, 4), (6, 6), (6, 8), (8, 8)]:
             with self.subTest(m=m, n=n):
