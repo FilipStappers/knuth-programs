@@ -81,6 +81,9 @@ time_t deterministic_time(time_t *out) {
     def test_solved_timer_is_zero(self):
         self.assertEqual(self.solve(1, GOAL), (0, '0'))
 
+    def test_zero_path_needs_no_move_bookkeeping(self):
+        self.assertEqual(self.solve(0, GOAL)[0], 0)
+
     def test_nearby_shortest_paths(self):
         family = nearby(6)
         self.assertEqual(len(family), 202)

@@ -278,9 +278,9 @@ so that we can easily give the user instructions about which piece
 should be pushed at each step.
 
 @<Output the results@>=
-pos[l+1]=q;
 printf("Solution in %d+%d moves: ",moves&0xff,moves>>8);
 if (moves>0) {
+  pos[l+1]=q;
   for (j=0;j<16;j++) board[j]=start[j];
   for (k=1;k<=l;k++) {
     printf("%x",board[pos[k+1]]+1);
