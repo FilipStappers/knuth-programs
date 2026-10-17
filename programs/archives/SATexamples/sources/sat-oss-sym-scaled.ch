@@ -10,6 +10,15 @@ int scale; /* we'll divide each input weight by this much */
   register int i,j,ii,jj,k,l,reflectionsymmetryused=0;
 @z
 @x
+  @<Input the matrix@>;
+@y
+  if (scale<=0) {
+    fprintf(stderr,"The scale must be positive!\n");
+    exit(-1);
+  }
+  @<Input the matrix@>;
+@z
+@x
 if (argc!=4 ||
       sscanf(argv[1],"%d",&m)!=1 ||
       sscanf(argv[2],"%d",&n)!=1 ||
