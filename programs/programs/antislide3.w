@@ -58,6 +58,9 @@ Then the number of symmetries is 8 if $l\ne m$, or 16 if $l=m\ne n$, or
 
 @c
 #include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <limits.h>
 
 @<Type definitions@>@;
 @<Global variables@>@;
@@ -69,8 +72,16 @@ main(argc,argv)
 {
   @<Local variables@>;
   if (argc>1) {
+    long value;
+    char *end;
     verbose=argc-1; /* set |verbose| to the number of command-line arguments */
-    sscanf(argv[1],"%d",&spacing);
+    errno=0;
+    value=strtol(argv[1],&end,10);
+    if (errno || end==argv[1] || *end || value<=0 || value>INT_MAX) {
+      fprintf(stderr,"The output spacing must be a positive int!\n");
+      exit(-1);
+    }
+    spacing=value;
   }
   @<Set up data structures for antisliding blocks@>;
   @<Backtrack through all solutions@>;
