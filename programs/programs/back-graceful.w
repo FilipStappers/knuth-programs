@@ -11,6 +11,8 @@ If there are no prespecifications, the solutions are required to be
 are labeled 1 and~|m|, not 0 and~|m-1|. (This saves of factor of~2,
 because every graceful labeling without prespecifications can be
 ``complemented'' by changing each label |l| to |m-l|.)
+For the single-edge case we instead require the first vertex to have
+label zero. With no edges, the sole possible vertex label is zero.
 
 I've tried to make the inner loops run fast, using some ideas of Tom Rokicki,
 together with strange ideas of my own called `|labunlab|' and `|vertunlab|'.
@@ -176,11 +178,15 @@ w2: nodes++;
                     edge |q| start with~|vv|@>@;
   else if (l<prespecptr) r=1,move[l][0]=prespec[l];
   else {
-    for (q=(l==prespecptr? m: target[l-1]-1),del=1LL<<q;
+    for (q=(l==prespecptr? m: target[l-1]-(target[l-1]!=0)),del=1LL<<q;
       ebits&del;q--,del>>=1) ;
-    if (q==0) @<Visit a solution and |goto w4|@>;
-    target[l]=q;
-    @<Determine the |r| potential moves that might create edge |q|@>;
+    if (q==0) {
+      if (l==n) @<Visit a solution and |goto w4|@>;
+      @<Assign an unused label to the next isolated vertex@>;
+    }@+else {
+      target[l]=q;
+      @<Determine the |r| potential moves that might create edge |q|@>;
+    }
   }
   moves[l]=r;
 w3:@+if (r>0) {
@@ -213,6 +219,7 @@ else fprintf(stderr,"L%d: %s=%d (%d of %d for edge %d)\n",
 
 @ @<Visit a solution and |goto w4|@>=
 {
+  if (!prespecptr && m==1 && verttolab[0]!=0) goto w4;
   count++;
   for (k=0;k<=m;k++) if (labunlab[k]>=0) {
     if (labunlab[k]>0)
@@ -226,6 +233,17 @@ else fprintf(stderr,"L%d: %s=%d (%d of %d for edge %d)\n",
   fflush(stdout);
   goto w4;
 }
+
+@ Once all edge differences are present, any remaining vertices are
+isolated. They still need distinct labels: We assign them in |vlist|
+order, trying every unused label. A zero target keeps subsequent levels
+in this completion phase. This also handles edgeless graphs, admitting
+only as many vertices as the available labels permit.
+
+@<Assign an unused label to the next isolated vertex@>=
+target[l]=0;
+for (r=0,k=0;k<=m;k++) if (labunlab[k]<0)
+  move[l][r++]=(vlist[l]<<8)+k;
 
 @ At this point |vv| and |ll| have been set on the previous level,
 when vertex~|vv| was labeled |ll| and we're hoping to give the label
@@ -278,11 +296,15 @@ I apologize for being unable to resist jumping from
 this section into the next, when backtracking is
 seen to be needed.
 
+The complement restriction is checked when an edge is completed, too:
+Forced singleton-domain moves bypass the ordinary candidate loop.
+
 @<Give label |ll| to vertex |vv|...@>=
 for (p=deg[vv],i=p-1,bad=0;i>=0;i--) {
   j=edges[vv][i],t=verttolab[j];
   if (t>=0) {
     p--,labunlab[t]--,q=abs(t-ll);
+    if (!prespecptr && m>=2 && q==m-1 && (ll==0 || t==0)) bad=1;
     del=1LL<<q, bad|=ebits&del;
     ebits+=del,rebits+=1LL<<(m-q);
   }@+else vertunlab[j]--;
