@@ -1,33 +1,19 @@
 @x
-    @<Output the options for edge |k|@>;
+  for (v=g->vertices;v<g->vertices+n;v++) if (!v->arcs)
+    @<Output the options for vertex |v|@>;
 @y
-    @<Output the options for edge |k|@>;
   for (v=g->vertices;v<g->vertices+n;v++)
     @<Output the options for vertex |v|@>;
 @z
 @x
-There's a secondary item \.{.$v$} for each vertex; its color will be its label.
+An isolated vertex has no edge option to supply its label, so it also
+gets a primary item \.{\#$v$} and an option for each possible label.
 @y
-This version also introduces a primary item \.{\#$v$} for each vertex.
-
-There's a secondary item \.{.$v$} for each vertex; its color will be its label.
+This version gives every vertex a primary item \.{\#$v$} and an option
+for each possible label, including vertices incident with edges.
 @z
 @x
-printf("|");
+for (v=g->vertices;v<g->vertices+n;v++) if (!v->arcs) printf("#%s ",
 @y
 for (v=g->vertices;v<g->vertices+n;v++) printf("#%s ",
-                      v->name);
-printf("|");
-@z
-@x
-@*Index.
-@y
-@ @<Output the options for vertex |v|@>=
-{
-  for (k=0;k<=m;k++)
-    printf("#%s .%s:%c +%c:%c\n",
-       v->name,v->name,encode(k),encode(k),encode((int)(v-g->vertices)));
-}
-
-@*Index.
 @z

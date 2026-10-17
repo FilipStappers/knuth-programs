@@ -27,6 +27,8 @@ main(int argc, char*argv[]) {
   @<Output the item-name line@>;
   for (k=1;k<=m;k++)
     @<Output the options for edge |k|@>;
+  for (v=g->vertices;v<g->vertices+n;v++) if (!v->arcs)
+    @<Output the options for vertex |v|@>;
 }
 
 @ @<Process the command line@>=
@@ -52,6 +54,9 @@ edges and labels.
 
 There's a secondary item \.{.$v$} for each vertex; its color will be its label.
 
+An isolated vertex has no edge option to supply its label, so it also
+gets a primary item \.{\#$v$} and an option for each possible label.
+
 There's a secondary item \.{+$k$} for each vertex label; its color will be
 the vertex so labeled.
 
@@ -62,6 +67,8 @@ for (v=g->vertices;v<g->vertices+n;v++)
   for (a=v->arcs;a;a=a->next) if (a->tip>v)
     printf("%s-%s ",
               v->name,a->tip->name);
+for (v=g->vertices;v<g->vertices+n;v++) if (!v->arcs) printf("#%s ",
+                      v->name);
 printf("|");
 for (v=g->vertices;v<g->vertices+n;v++)
   printf(" .%s",
@@ -86,6 +93,13 @@ printf("\n");
          encode(j),encode(vrt(v)),encode(i),encode(vrt(a->tip)));
     }
   }
+}
+
+@ @<Output the options for vertex |v|@>=
+{
+  for (k=0;k<=m;k++)
+    printf("#%s .%s:%c +%c:%c\n",
+       v->name,v->name,encode(k),encode(k),encode(vrt(v)));
 }
 
 @*Index.
