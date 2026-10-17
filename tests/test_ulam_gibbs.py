@@ -36,6 +36,24 @@ class UlamGibbs(unittest.TestCase):
         subprocess.run(['gcc', '-std=gnu99', '-O1', '-Wno-implicit-int',
                         str(generated), '-lm', '-o', str(cls.program)],
                        check=True, capture_output=True)
+        # malloc need not return zero bytes. Control the two histogram-sized
+        # allocations without changing any sequence data or counting logic.
+        wrapper = cls.work/'allocation.c'
+        wrapper.write_text('''#include <stdlib.h>
+#include <string.h>
+void *histogram_malloc(size_t size) {
+  void *p=malloc(size);
+  if(p && (size==12*sizeof(unsigned long long) || size==2002*sizeof(unsigned long long)))
+    memset(p,0x5a,size);
+  return p;
+}
+''')
+        obj = cls.work/'allocation.o'
+        subprocess.run(['gcc', '-c', str(wrapper), '-o', str(obj)], check=True, capture_output=True)
+        cls.nonzero_program = cls.work/'ulam-nonzero'
+        subprocess.run(['gcc', '-std=gnu99', '-O1', '-Wno-implicit-int',
+                        '-Dmalloc=histogram_malloc', str(generated), str(obj), '-lm',
+                        '-o', str(cls.nonzero_program)], check=True, capture_output=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -61,6 +79,27 @@ class UlamGibbs(unittest.TestCase):
             for compression in [[], ['b4', 'B4']]:
                 with self.subTest(residue=residue, compression=compression):
                     self.run_prefix(1000, [*residue, *compression, 'w5000'])
+
+    def test_gap_histogram_from_nonzero_allocations(self):
+        gaps = Counter(b-a for a, b in zip(self.expected, self.expected[1:]))
+        for limit in [10, 2000]:
+            with self.subTest(limit=limit):
+                result = subprocess.run([str(self.nonzero_program), 'v8', 'm0',
+                                         f'g{limit}', 'w5000', '1000'],
+                                        text=True, capture_output=True, timeout=15)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(f'U1000={self.expected[-1]}', result.stdout)
+                expected = Counter()
+                for gap, count in gaps.items():
+                    expected[min(gap, limit+1)] += count
+                actual = {}
+                for overflow, gap, count in re.findall(r'(?m)^\s*(>?)\s*(\d+):\s*(\d+)$', result.stderr):
+                    gap = int(gap)
+                    if overflow:
+                        self.assertEqual(gap, limit)
+                        gap += 1
+                    actual[gap] = int(count)
+                self.assertEqual(actual, dict(expected))
 
 
 if __name__ == '__main__':

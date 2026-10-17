@@ -949,7 +949,7 @@ stat lo_out_stats,hi_out_stats;
 int ulamness; /* is |u| an Ulam number? */
 
 @ @<Allocate...@>=
-gapcount=(ullng*)malloc((maxgap+2)*sizeof(ullng));
+gapcount=(ullng*)calloc(maxgap+2,sizeof(ullng));
 if (!gapcount) alloc_quit("gapcount",maxgap);
 bytes+=(maxgap+2)*sizeof(ullng);
 
