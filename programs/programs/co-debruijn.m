@@ -89,8 +89,8 @@ purepos[n_,ax_,bx_]:=If[ax==0,
 del[n_]:=2^n-jj[n+1]
 getodd[g_]:=Block[{b,n,j,k},
                n=Length[g]-1;
-               beta=Table[Mod[g[[k]]+g[[k+1]],2],{k,n}];
-               j=geteven[beta];
+               b=Table[Mod[g[[k]]+g[[k+1]],2],{k,n}];
+               j=geteven[b];
                k=j-If[j>=jj[n],del[n],0]+If[j==jj[n] && del[n]==1,2^n,0];
                If[f[n+1,k]==g[[1]],k,k+
                 If[j<jj[n],2^n-del[n],If[j==jj[n],del[n],2^n+del[n]]]]]
