@@ -227,9 +227,11 @@ satisfiable in more than one way, a different solution can be obtained by
 inputting that file.
 \item{$\bullet$}
 `\.V$\langle\,$filename$\,\rangle$' to input a file that lists the names
-of all ``primary'' variables. A nonprimary variable will not be used for
-branching unless its value is forced, or unless all of the primary variables
-have already been assigned a value.
+of all ``primary'' variables. These variables receive a heuristic preference
+when choosing branch candidates. This is not a strict branching restriction:
+initial candidate selection and fallback selection can admit nonprimary
+variables while some primary variables remain unassigned. In particular,
+listing an unused primary variable does not force it to be branched on first.
 \item{$\bullet$}
 `\.T$\langle\,$integer$\,\rangle$' to set |timeout|: This program will
 abruptly terminate, when it discovers that |mems>timeout|.
