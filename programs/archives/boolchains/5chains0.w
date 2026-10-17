@@ -88,7 +88,7 @@ For simplicity we set each |cost| to 15, which is an upper bound.
 @d eighth_shift (1<<(n-3))
 @d xvi_shift (1<<(n-4))
 @d xxxii_shift (1<<(n-5))
-@d mask ((truthtab)((1<<full_shift)-1)) /* $2^{2^n}-1$ */
+@d mask ((truthtab)((1ULL<<full_shift)-1)) /* $2^{2^n}-1$ */
 @d half_mask ((1<<half_shift)-1)
 @d quart_mask ((1<<quart_shift)-1)
 @d eighth_mask ((1<<eighth_shift)-1)
