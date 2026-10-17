@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE keyboard SYSTEM "file://localhost/System/Library/DTDs/KeyboardLayout.dtd">
-<keyboard group="126" id="-2009" name="DonKeysExtended" maxout="2">
+<keyboard group="126" id="-2009" name="DonKeysExtended" maxout="4">
 	<layouts>
 		<layout first="0" last="17" modifiers="commonModifiers" mapSet="ANSI" />
 		<layout first="18" last="18" modifiers="commonModifiers" mapSet="JIS" />
