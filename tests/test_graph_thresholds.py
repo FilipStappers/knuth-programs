@@ -95,7 +95,7 @@ int main(int argc,char **argv) {
 
     def test_positive_multicolor_threshold(self):
         for n in range(1, 4):
-            for colors in [2, 3]:
+            for colors in [1, 2, 3]:
                 for r in range(1, n+1):
                     clauses = self.clauses('bb-double', n, r, colors)
                     for bits in product((0, 1), repeat=n*colors):
@@ -105,6 +105,26 @@ int main(int argc,char **argv) {
                         multicolored = sum(sum(bits[v*colors:(v+1)*colors]) >= 2 for v in range(n))
                         self.assertEqual(satisfiable(clauses+fixed), multicolored >= r,
                                          (n, colors, r, bits))
+
+    def test_zero_multicolor_threshold(self):
+        for n in range(4):
+            for colors in [1, 2, 3]:
+                with self.subTest(n=n, colors=colors):
+                    clauses = self.clauses('bb-double', n, 0, colors)
+                    for bits in product((0, 1), repeat=n*colors):
+                        fixed = [[('' if bits[v*colors+color] else '~')+f'v{v}.{color+1}']
+                                 for v in range(n) for color in range(colors)]
+                        self.assertTrue(satisfiable(clauses+fixed))
+
+    def test_invalid_multicolor_threshold(self):
+        for n in [0, 1, 3]:
+            for r in [-1, n+1, -(1 << 31), (1 << 31)-1]:
+                with self.subTest(n=n, r=r):
+                    result = self.encode('bb-double', n, r, 2)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn('runtime error', result.stderr)
+                    self.assertIn('between 0 and n', result.stderr)
+                    self.assertEqual(result.stdout, '')
 
 
 if __name__ == '__main__':

@@ -5,6 +5,7 @@ This version inputs a graph (specified as the third parameter),
 and the total number of colors (as the fourth).
 The output clauses will insist that at least $r$ vertices can be
 colored with more than one color.
+The trivial request $r=0$ leaves the colors unrestricted.
 @z
 @x
 int n,r; /* the given parameters */
@@ -24,6 +25,7 @@ int n,r,kk; /* the given parameters */
 @y
   @<Process the command line@>;
   @<Output clauses for multicolored vertices@>;
+  if (r==n) return 0; /* no threshold clauses for an at-least-zero request */
 @z
 @x
 if (argc!=3 || sscanf(argv[1],"%d",&n)!=1 || sscanf(argv[2],"%d",&r)!=1) {
@@ -45,7 +47,22 @@ if (g->n!=n) {
   fprintf(stderr,"The graph has %ld vertices, not %d!\n",g->n,n);
   exit(-2);
 }
+if (r<0 || r>n) {
+  fprintf(stderr,"The requested multicolor count must be between 0 and n!\n");
+  exit(-2);
+}
 r=n-r; /* $x_1+\cdots+x_n\ge r$ iff $\bar x_1+\cdots+\bar x_n\le n-r$ */
+@z
+@x
+if (r<0 || r>=n) {
+  fprintf(stderr,"Eh? r should be between 0 and n-1!\n");
+  exit(-2);
+}
+@y
+if (r<0 || r>n) {
+  fprintf(stderr,"Eh? r should be between 0 and n!\n");
+  exit(-2);
+}
 @z
 @x
 @d xbar(k) printf("~x%d",(k)-n+2)
