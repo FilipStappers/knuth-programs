@@ -11,6 +11,11 @@ figure out the $z$th solution. But I don't want to store all
 of that information. So I regenerate the auxiliary matrix $(m-1)(n-1)$
 times, taking back the updates one by one. (Eventually this gets easier.)
 
+The auxiliary counts use exact multiword integers, even when the family
+has more than $2^{64}$ members. The requested rank |z| remains a 64-bit
+unsigned integer; an exact block count is subtracted only when it fits
+within that remaining rank.
+
 {\it Note, September 2025:}\enspace I have corrected a serious error
 in the original version of this program (May 2020), which mistakenly
 said that $\bigl({a\atop c}{b\atop d}\bigr)$ is bad when $a>b>c>d$.
@@ -25,17 +30,20 @@ I thank Heiko Thei{\ss}en for pointing out my unfortunate mistake.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+@<Type definitions@>;
+@<Counting constants@>;
 int m,n,t; /* command-line parameters */
 unsigned long long z; /* another command-line parameter */
 char bad[maxt][maxt][maxt][maxt]; /* is a submatrix bad? */
-unsigned long long *count; /* the big array of counts */
-unsigned long long newcount[maxt]; /* counts that will replace old ones */
+bignum *count; /* the big array of exact counts */
+bignum newcount[maxt]; /* counts that will replace old ones */
 int firstknown; /* where the good information begins in |sol| */
-unsigned long long mems; /* memory references to octabytes */
+unsigned long long mems; /* scalar references and whole-count operations */
 int inx[maxn+1]; /* indices being looped over */
 int tpow[maxn+2]; /* powers of |t| */
 int pos[maxn+1]; /* what solution position corresponds to each index */
 int sol[maxn*maxn]; /* the partial solution known so far */
+@<Counting subroutines@>;
 int main(int argc,char*argv[]) {
   register int a,b,c,d,i,j,k,p,q,r,pp,p0;
   @<Process the command line@>;
@@ -54,7 +62,7 @@ loop:@+while (firstknown) {
 if (argc!=5 || sscanf(argv[1],"%d",
                             &m)!=1 || sscanf(argv[2],"%d",
                             &n)!=1 || sscanf(argv[3],"%d",
-                            &t)!=1 || sscanf(argv[4],"%lld",
+                            &t)!=1 || sscanf(argv[4],"%llu",
                             &z)!=1) {
   fprintf(stderr,"Usage: %s m n t z\n",
                            argv[0]);
@@ -71,7 +79,7 @@ if (t<2 || t>maxt) {
   exit(-3);
 }
 for (j=1,k=0;k<=n+1;k++) tpow[k]=j,j*=t;
-count=(unsigned long long*)malloc(tpow[n+1]*sizeof(unsigned long long));
+count=(bignum*)malloc(tpow[n+1]*sizeof(bignum));
 if (!count) {
   fprintf(stderr,"I couldn't allocate t^%d=%d entries for the counts!\n",
                              n+1,tpow[n+1]);
@@ -95,7 +103,7 @@ nogood: bad[a][b][c][d]=1;
 }
 
 @ @<Print the solution@>=
-fprintf(stderr,"Solution completed after %lld mems:\n",
+fprintf(stderr,"Solution completed after %llu mems:\n",
                     mems);
 for (i=0;i<m;i++) {
   for (j=0;j<n;j++) printf(" %d",
@@ -115,8 +123,7 @@ for (k=0;k<=n;k++) {
   if (q==0) q=n;@+else q--;
 }
 for (p=0;p<tpow[n+1];p++) {
-  if (o,z<count[p]) break;
-  z-=count[p];
+  if (o,!skip_count(&z,&count[p])) break;
 }
 if (p==tpow[n+1]) {
   fprintf(stderr,"Oops, z exceeds the total number of solutions!\n");
@@ -129,7 +136,7 @@ for (k=0;k<=n;k++) {
                       sol[pos[k]]);
   p/=t;
 }
-fprintf(stderr,"z reset to %lld\n",
+fprintf(stderr,"z reset to %llu\n",
                          z);
 
 @ Throughout the main computation, I'll keep the value of |p| equal
@@ -161,10 +168,10 @@ on constraint $(i,j)$.
     if (i*n+j>=firstknown)
       @<Work with a known value of |d|, possibly making a breakthrough@>@;
     else {
-      for (d=0;d<t;d++) o,newcount[d]=0;
+      for (d=0;d<t;d++) o,newcount[d]=count_zero;
       for (o,a=0,pp=p;a<t;a++,pp+=tpow[q]) {
         for (d=0;d<t;d++) if (o,!bad[a][b][c][d])
-          ooo,newcount[d]+=count[pp];
+          ooo,add_count(&newcount[d],&count[pp]);
       }
       for (o,d=0,pp=p;d<t;d++,pp+=tpow[q]) oo,count[pp]=newcount[d];
     }
@@ -173,16 +180,17 @@ on constraint $(i,j)$.
   }
   if (i*n+j>=firstknown) 
     ooo,pos[q]=i*n+1,inx[q]=sol[i*n+j],p+=inx[q]*tpow[q],p0=p;
-  fprintf(stderr," done with %d,%d ..%lld, %lld mems\n",
-                   i,j,count[0],mems);
+  fprintf(stderr," done with %d,%d ..",i,j);
+  print_count(stderr,&count[0]);
+  fprintf(stderr,", %llu mems\n",mems);
 }
 
 @ @<Work with a known value of |d|, possibly making a breakthrough@>=
 {
   d=sol[i*n+j];
   if (i*n+j==firstknown+n) @<Deduce cell $(i-1,j-1)$ and |goto loop|@>;
-  for (oo,newcount[d]=0,a=0,pp=p;a<t;a++,pp+=tpow[q]) {
-    if (o,!bad[a][b][c][d]) ooo,newcount[d]+=count[pp];
+  for (oo,newcount[d]=count_zero,a=0,pp=p;a<t;a++,pp+=tpow[q]) {
+    if (o,!bad[a][b][c][d]) ooo,add_count(&newcount[d],&count[pp]);
   }
   o,count[p+d*tpow[q]]=newcount[d];
 }
@@ -190,8 +198,7 @@ on constraint $(i,j)$.
 @ @<Deduce cell $(i-1,j-1)$ and |goto loop|@>=
 {
   for (o,a=0,pp=p;a<t;a++,pp+=tpow[q]) if (o,!bad[a][b][c][d]) {
-    if (o,z<count[pp]) break;
-    z-=count[pp];
+    if (o,!skip_count(&z,&count[pp])) break;
   }
   if (a==t) {
     fprintf(stderr,"internal error, z too large at %d,%d\n",
@@ -199,7 +206,7 @@ on constraint $(i,j)$.
     exit(-6);
   }
   sol[--firstknown]=a;
-  fprintf(stderr,"cell %d,%d is %d; z reset to %lld\n",
+  fprintf(stderr,"cell %d,%d is %d; z reset to %llu\n",
             firstknown/n,firstknown%n,
                     a,z);
   goto loop;
@@ -212,7 +219,7 @@ a hand simulation will reveal all.
 @<Get set to handle constraint $(i,1)$@>=
 {
   if (i==1) {
-    o,p=q=0,newcount[0]=1;
+    o,p=q=0,newcount[0]=count_one;
     for (r=0;r<=n;r++) {
       if (r<firstknown) ooo,pos[r]=inx[r]=0;
       else ooo,pos[r]=r,inx[r]=sol[r],p+=inx[r]*tpow[r];
@@ -227,8 +234,8 @@ a hand simulation will reveal all.
     q=(q==n? 0: q+1);
     if (n*i==firstknown+n) @<Deduce cell $(i-2,n-1)$ and |goto loop|@>;   
     while (1) {
-      for (o,a=0,pp=p,newcount[0]=0;a<t;a++,pp+=tpow[q])
-        o,newcount[0]+=count[pp];
+      for (o,a=0,pp=p,newcount[0]=count_zero;a<t;a++,pp+=tpow[q])
+        o,add_count(&newcount[0],&count[pp]);
       if (n*i>=firstknown) o,count[p+sol[n*i]*tpow[q]]=newcount[0];
       else@+for (a=0,pp=p;a<t;a++,pp+=tpow[q]) o,count[pp]=newcount[0];
       @<Increase the |inx| table...@>;
@@ -243,8 +250,7 @@ a hand simulation will reveal all.
 @ @<Deduce cell $(i-2,n-1)$ and |goto loop|@>=
 {
   for (o,a=0,pp=p;a<t;a++,pp+=tpow[q]) {
-    if (o,z<count[pp]) break;
-    z-=count[pp];
+    if (o,!skip_count(&z,&count[pp])) break;
   }
   if (a==t) {
     fprintf(stderr,"internal error, z too large at %d,0\n",
@@ -252,10 +258,11 @@ a hand simulation will reveal all.
     exit(-6);
   }
   sol[--firstknown]=a;
-  fprintf(stderr,"cell %d,%d is %d; z reset to %lld\n",
+  fprintf(stderr,"cell %d,%d is %d; z reset to %llu\n",
           i-2,n-1,a,z);
   goto loop;
 }
   
 
+@i histoscape-arithmetic.w
 @*Index.

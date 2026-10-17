@@ -48,8 +48,15 @@ class HistoscapeCounts(unittest.TestCase):
         probe = cls.work/'arithmetic.c'
         probe.write_text('#define main count_main\n#include "'+str(cls.work/'count.c')+'''"
 #undef main
-int main(void) {
-  bignum a,b; int k;
+int main(int argc,char **argv) {
+  bignum a,b; int k,skipped; unsigned long long rank;
+  if(argc>1) {
+    while(scanf("%llu",&rank)==1) {
+      for(k=0;k<count_digits;k++)if(scanf("%llu",&a.digit[k])!=1)return 1;
+      skipped=skip_count(&rank,&a);printf("%d %llu\\n",skipped,rank);
+    }
+    return 0;
+  }
   while(scanf("%llu",&a.digit[0])==1) {
     for(k=1;k<count_digits;k++)if(scanf("%llu",&a.digit[k])!=1)return 1;
     for(k=0;k<count_digits;k++)if(scanf("%llu",&b.digit[k])!=1)return 1;
@@ -102,6 +109,56 @@ int main(void) {
         result = subprocess.run([str(self.probe)], input=data, text=True,
                                 check=True, capture_output=True)
         self.assertEqual(list(map(int, result.stdout.split())), [a+b for a, b in pairs])
+
+    def test_unranker_exact_large_frontier(self):
+        # A zero bottom row is compatible with every preceding binary row.
+        # Fixing its preceding corner to zero keeps half of the 9-row family,
+        # by bit-complement symmetry. This is exactly the zero frontier entry.
+        expected = row_counts(10, 2)[8]//2
+        self.assertGreater(expected, (1 << 64)-1)
+        result = subprocess.run([str(self.programs['unrank']), '10', '10', '2', '0'],
+                                text=True, capture_output=True, timeout=30)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        first = re.search(r'done with 9,9 \.\.(-?\d+),', result.stderr)
+        self.assertIsNotNone(first)
+        self.assertEqual(int(first[1]), expected)
+        self.assertEqual(list(map(int, result.stdout.split())), [0]*100)
+
+    def test_exact_block_skip_with_full_width_rank(self):
+        pairs = [(rank, value) for rank in [0, 1, 10**18-1, 10**18, (1 << 64)-1]
+                 for value in [0, 1, rank, rank+1, 1 << 400]]
+        lines = []
+        for rank, value in pairs:
+            digits = []
+            for _ in range(7):
+                value, digit = divmod(value, 10**18)
+                digits.append(digit)
+            lines.append(' '.join(map(str, [rank, *digits])))
+        result = subprocess.run([str(self.probe), 'skip'], input='\n'.join(lines),
+                                text=True, check=True, capture_output=True)
+        actual = [tuple(map(int, line.split())) for line in result.stdout.splitlines()]
+        self.assertEqual(actual, [(1, rank-value) if value <= rank else (0, rank)
+                                  for rank, value in pairs])
+
+    def test_complete_small_unranked_families(self):
+        for m, n, t in [(2, 2, 2), (2, 2, 3), (2, 2, 4), (2, 3, 2), (3, 2, 2), (3, 3, 2)]:
+            expected = {matrix for matrix in product(range(t), repeat=m*n)
+                        if all(not bad(matrix[(i-1)*n+j-1], matrix[(i-1)*n+j],
+                                       matrix[i*n+j-1], matrix[i*n+j])
+                               for i in range(1, m) for j in range(1, n))}
+            actual = []
+            for rank in range(len(expected)):
+                result = subprocess.run([str(self.programs['unrank']), str(m), str(n), str(t), str(rank)],
+                                        text=True, capture_output=True, timeout=5)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                actual.append(tuple(map(int, result.stdout.split())))
+            with self.subTest(m=m, n=n, t=t):
+                self.assertEqual(len(set(actual)), len(expected))
+                self.assertEqual(set(actual), expected)
+                result = subprocess.run([str(self.programs['unrank']), str(m), str(n), str(t), str(len(expected))],
+                                        text=True, capture_output=True, timeout=5)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn('exceeds the total', result.stderr)
 
 
 if __name__ == '__main__':

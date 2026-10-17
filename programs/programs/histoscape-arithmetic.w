@@ -35,3 +35,18 @@ void print_count(FILE *stream,const bignum *a) {
   fprintf(stream,"%llu",a->digit[k]);
   while (k) fprintf(stream,"%018llu",a->digit[--k]);
 }
+
+@ The unranker accepts a 64-bit rank, even when the total family is larger.
+We skip a block only if its exact count is at most the remaining rank;
+only then is conversion to a 64-bit quantity safe.
+
+@<Counting subroutines@>=
+int skip_count(unsigned long long *rank,const bignum *a) {
+  int k;
+  unsigned long long high=*rank/count_base,low=*rank%count_base;
+  for (k=count_digits-1;k>=2;k--) if (a->digit[k]) return 0;
+  if (a->digit[1]>high ||
+      (a->digit[1]==high && a->digit[0]>low)) return 0;
+  *rank-=a->digit[1]*count_base+a->digit[0];
+  return 1;
+}
