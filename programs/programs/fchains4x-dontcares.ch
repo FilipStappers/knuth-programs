@@ -20,13 +20,18 @@ main(int argc,char *argv[])
   fflush(stdout);
   if (!fgets(buf,100,stdin)) break;
   if (sscanf(buf,"%x %x",&tta,&ttb)!=2) break;
+  if (tta>0xffff || ttb>0xffff || (tta&ttb)) {
+    fprintf(stderr,"Asterisks and bits must be disjoint 16-bit values!\n");
+    continue;
+  }
   a=tta,b=ttb;
-  if (b&0x8000) b^=0xffff^a;
   for (j=b,k=9999;j<0x10000;) {
-    if (func[j].cost<=k) {
-       if (func[j].cost<k) for (r=0;r<mm;r++) footp[r]=0;
-       k=func[j].cost,ttt=j;
-       for (r=0;r<mm;r++) footp[r]|=func[j].footprint[r];
+    t=j;
+    if (t&0x8000) t^=0xffff;
+    if (func[t].cost<=k) {
+       if (func[t].cost<k) for (r=0;r<mm;r++) footp[r]=0;
+       k=func[t].cost,ttt=t;
+       for (r=0;r<mm;r++) footp[r]|=func[t].footprint[r];
     }
     r=(j|(0xffff-a))+1;
     j=(r&(0x10000+a))+b;
