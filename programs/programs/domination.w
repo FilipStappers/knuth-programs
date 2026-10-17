@@ -37,6 +37,7 @@ find proofs.)
 
 @c
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 char perm[maxp][maxn+1]; /* the permutations */
 char work[maxn+1]; /* where I generate new ones */
@@ -59,7 +60,7 @@ if (argc!=2) {
   exit(-1);
 }
 for (j=0;argv[1][j];j++) {
-  if (j>maxn) {
+  if (j>=maxn) {
     fprintf(stderr,"String too long (maxn=%d)!\n",maxn);
     exit(-2);
   }
@@ -74,6 +75,10 @@ for (j=0;argv[1][j];j++) {
   work[j+1]=argv[1][j];
 }
 n=j;
+if (n==0) {
+  fprintf(stderr,"The string must contain at least one digit!\n");
+  exit(-2);
+}
 
 @ Here I use ye olde Algorithm 7.2.1.2L.
 
