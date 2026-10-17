@@ -57,6 +57,8 @@ overflow, and the floating-point method may suffer from rounding errors.
 @c
 #include <stdio.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <errno.h>
 @<Include tricky code for zapping@>@;
 typedef long intword; /* keep integer output formats consistent with this type */
 char buf[buf_size];
@@ -72,6 +74,8 @@ main()
 {
   register intword h,i,j,k,l,m,n,s;
   register double z;
+  int ch,len;
+  char *end;
   @<Check the zap trick@>;
   @<Read the input matrix@>;
   @<Solve the problem@>;
@@ -112,24 +116,50 @@ zap_OK:@;
 
 @ @<Read the input matrix@>=
 for (i=n=0;;i++) {
-  if (!fgets(buf,buf_size,stdin)) break;
+  for (len=0;;) {
+    ch=getchar();
+    if (ch==EOF || ch=='\n') break;
+    if (ch==0 || len==buf_size-1) {
+      fprintf(stderr,"Input line is too long or contains a null byte!\n");
+      exit(-1);
+    }
+    buf[len++]=ch;
+  }
+  if (ch==EOF) {
+    if (ferror(stdin)) {
+      fprintf(stderr,"I couldn't read standard input!\n");
+      exit(-1);
+    }
+    if (len==0) break;
+  }
+  buf[len]='\0';
   if (i>maxm) {
     fprintf(stderr,"Sorry, I'm set up only for m<=%d!\n",maxm);
     exit(-9);
   }
   for (k=0, j=(i==0);buf[k];) {
-    while (isspace(buf[k]) && buf[k]!='\n') k++;
-    if (buf[k]=='\n') break;
-    if (buf[k]=='-') l=1, k++;@+ else l=0;
-    for (s=0;buf[k]>='0' && buf[k]<='9';k++) s=10*s+buf[k]-'0';
-    a[i][j++]=(l? -s: s);
-  }
-  if (!buf[k]) { /* no end-of-line in the buffer */
-    fprintf(stderr,"Input line too long! (%s...)\n",buf);
-    exit(-1);
+    while (isspace((unsigned char)buf[k])) k++;
+    if (!buf[k]) break;
+    errno=0;
+    s=strtol(buf+k,&end,10);
+    if (end==buf+k || errno==ERANGE ||
+        (*end && !isspace((unsigned char)*end))) {
+      fprintf(stderr,"Invalid or out-of-range input integer in row %ld!\n",i);
+      exit(-1);
+    }
+    if ((i==0 && j>maxn) || (i>0 && j>n)) {
+      fprintf(stderr,"Too many input numbers in row %ld!\n",i);
+      exit(-2);
+    }
+    a[i][j++]=s;
+    k=end-buf;
   }
   if (i==0) {
     n=j-1;
+    if (n==0) {
+      fprintf(stderr,"The input objective must contain at least one integer!\n");
+      exit(-2);
+    }
     if (n>maxn) {
       fprintf(stderr,"Sorry, I'm set up only for n<=%d, not n=%ld!\n",
          maxn,n);
@@ -146,6 +176,10 @@ for (i=n=0;;i++) {
       exit(-4);
     }
   }
+}
+if (i==0) {
+  fprintf(stderr,"The input objective is missing!\n");
+  exit(-1);
 }
 m=i-1;
 

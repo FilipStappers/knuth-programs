@@ -77,6 +77,36 @@ class LpInputOutput(unittest.TestCase):
         self.assertNotIn(b'runtime error', result.stderr)
         self.assertNotIn(b'AddressSanitizer', result.stderr)
 
+    def test_malformed_tokens_and_capacity_reject_without_invalid_writes(self):
+        cases = ['', '\n', 'x\n', '-\n', '1.2\n', '1x\n', '9'*100+'\n',
+                 '1\n2 x\n', '1\n2 1 0\n', '1\n'+'1 '*10000+'\n',
+                 '1\n2 1\0 3\n', ' '*100000+'1\n', '1 '*101+'\n']
+        for text in cases:
+            with self.subTest(text=text[:60]):
+                result = self.solve(text)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertNotIn(b'Optimal value', result.stdout)
+
+    def test_final_record_and_signed_decimal_grammar(self):
+        for text in ['+3\n+2 +3', '  +3 \t\r\n  +2 +3\r\n']:
+            result = self.solve(text)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            match = re.search(rb'Optimal value [^=]+=(-?\d+)/(\d+)', result.stdout)
+            self.assertIsNotNone(match)
+            self.assertEqual(Fraction(int(match[1]), int(match[2])), 2)
+
+    def test_input_stream_read_error_rejects(self):
+        descriptor = os.open(self.work, os.O_RDONLY)
+        try:
+            result = subprocess.run([str(self.program)], stdin=descriptor, capture_output=True,
+                                    timeout=5, env=ENV)
+        finally:
+            os.close(descriptor)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b'input', result.stderr.lower())
+
 
 if __name__ == '__main__':
     unittest.main()
