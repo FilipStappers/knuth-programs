@@ -73,6 +73,52 @@ class ObddHash(unittest.TestCase):
         self.assertNotIn(b'runtime error', result.stderr)
         self.assertNotIn(b'AddressSanitizer', result.stderr)
 
+    def test_printed_tours_are_complete_independent_cycles(self):
+        for m, n, cycles, pseudo in [(6, 6, 78, 84), (6, 8, 5634, 5674)]:
+            text = SOURCE.read_text().replace('@d mm 8 ', f'@d mm {m} ')
+            text = text.replace('@d nn 8 ', f'@d nn {n} ')
+            text = text.replace('@d interval 100000 ', '@d interval 1 ')
+            source, generated, program = [self.work/('tours'+s) for s in ['.w', '.c', '']]
+            source.write_text(text)
+            subprocess.run(['ctangle', str(source), '-', str(generated)], cwd=GRAPHBASE,
+                           check=True, capture_output=True)
+            subprocess.run(['gcc', '-std=gnu89', '-O1', '-fcommon', '-I'+str(GRAPHBASE),
+                            str(generated), *self.objects, '-lm', '-o', str(program)],
+                           check=True, capture_output=True)
+            result = subprocess.run([str(program)], capture_output=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            summary = f'Total {cycles} solutions and {pseudo} pseudo-solutions.'
+            self.assertIn(summary.encode(), result.stdout)
+            answers = re.findall(rb'(?m)^\d+:([^\n]+)', result.stdout)
+            self.assertEqual(len(answers), cycles)
+            seen = set()
+            opposite = lambda point: (m-1-point[0], n-1-point[1])
+            for answer in answers:
+                edges = re.findall(rb'(\d+)\.(\d+)-(\d+)\.(\d+)(\*?)', answer)
+                self.assertEqual(len(edges), m*n//2)
+                adjacency = {(x, y): set() for x in range(m) for y in range(n)}
+                undirected = set()
+                for x, y, xx, yy, star in edges:
+                    first, second = (int(x), int(y)), (int(xx), int(yy))
+                    if star:
+                        second = opposite(second)
+                    self.assertEqual(sorted([abs(first[0]-second[0]), abs(first[1]-second[1])]), [1, 2])
+                    for a, b in [(first, second), (opposite(first), opposite(second))]:
+                        edge = frozenset((a, b))
+                        self.assertNotIn(edge, undirected)
+                        undirected.add(edge)
+                        adjacency[a].add(b); adjacency[b].add(a)
+                self.assertTrue(all(len(neighbors) == 2 for neighbors in adjacency.values()))
+                reached, todo = {(0, 0)}, [(0, 0)]
+                while todo:
+                    for point in adjacency[todo.pop()]:
+                        if point not in reached:
+                            reached.add(point); todo.append(point)
+                self.assertEqual(len(reached), m*n)
+                certificate = frozenset(undirected)
+                self.assertNotIn(certificate, seen)
+                seen.add(certificate)
+
     def test_matching_construction_and_counts(self):
         for m, n in [(4, 4), (4, 6), (6, 4), (6, 6), (6, 8), (8, 8)]:
             with self.subTest(m=m, n=n):

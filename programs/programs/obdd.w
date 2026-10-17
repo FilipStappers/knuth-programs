@@ -535,16 +535,25 @@ else {
   sols++;
   if (sols%interval==0) {
     printf("%d:",sols);
+    print_edge(0); /* forced corner choice in the outer matching */
     for (k=0;k<outerptr;k++)
-      printf(" %s-%s%s",black[var[outerstack[k]]]->name,
-                        red[var[outerstack[k]]]->name,
-                        parity[var[outerstack[k]]]? "*" : "");
+      print_edge(var[outerstack[k]]);
+    print_edge(var[tt]); /* the outer matching's final choice isn't stacked */
+    print_edge(1); /* forced corner choice in the inner matching */
     for (k=0;k<innerptr;k++)
-      printf(" %s-%s%s",black[var[innerstack[k]]]->name,
-                        red[var[innerstack[k]]]->name,
-                        parity[var[innerstack[k]]]? "*" : "");
+      print_edge(var[innerstack[k]]);
+    print_edge(var[t]); /* likewise for the inner matching */
     printf("\n");
   }
+}
+
+@ The printed edge list includes every choice in both matchings. A starred
+edge goes to the antipodal mate of its printed red endpoint; adding the
+antipodal copy of each listed edge reconstructs the full board cycle.
+
+@<Sub...@>=
+void print_edge(int k) {
+  printf(" %s-%s%s",black[k]->name,red[k]->name,parity[k]? "*": "");
 }
 
 @* Experiences. When I ran this program in May, 1996, I was able to
