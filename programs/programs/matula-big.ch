@@ -76,6 +76,17 @@ a permutation of the node numbers in these rectree specifications.)
 @d maxn 2000
 @z
 @x
+  else {
+    @<Solve the problem@>;
+@y
+  else if (m==1) {
+    fprintf(stderr,"There %s %d place%s to anchor an embedding of node 0.\n",
+                            n==1?"is":"are",n,n==1?"":"s");
+    printf(" 0\n"); /* any target vertex embeds the singleton */
+  }@+else {
+    @<Solve the problem@>;
+@z
+@x
   fprintf(stderr,"Usage: %s S_parents T_parents\n",
 @y
   fprintf(stderr,"Usage: %s S.rectree T.rectree\n",
@@ -371,10 +382,15 @@ the |tnode| array so that the root is a leaf. Then we copy |tnode| to |snode|,
 remapping all node numbers as we go. The new number for node~|k| is
 kept in |snode[k].arc|, which is otherwise unused.
 
+The singleton needs no rerooting or remapping: It embeds at every
+vertex of the nonempty target, so the main routine handles it directly.
+
 @<Input the tree $S$@>=
 m=read_rectree(argv[1]);
-@<Make the root of |tnode| into a leaf@>;
-@<Copy and remap |tnode| into |snode|@>;
+if (m>1) {
+  @<Make the root of |tnode| into a leaf@>;
+  @<Copy and remap |tnode| into |snode|@>;
+}
 
 @ I thought this would be easier than it has turned out to be.
 Did I miss something? It's a nice little exercise in datastructurology.
