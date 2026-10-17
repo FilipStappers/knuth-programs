@@ -61,6 +61,7 @@ in the multiplier. Both $m$ and $z$ are specified on the command line.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 @<Typedefs@>;
 int m; /* the number of nonzero digits in the multiplier */
 int z; /* the maximum number of zero digits in the multiplier */
@@ -96,9 +97,8 @@ main(int argc,char*argv[]) {
 }
 
 @ @<Process the command line@>=
-if (argc<3 || sscanf(argv[1],"%d",
-                                   &m)!=1 || sscanf(argv[2],"%d",
-                                            &z)!=1) {
+if (argc<3 || (m=parameter(argv[1],maxm-1))<0 ||
+             (z=parameter(argv[2],maxdigs-2))<0) {
   fprintf(stderr,"Usage: %s m z [verbose] [extraverbose] < foo.dots\n",
                                      argv[0]);
   exit(-1);
@@ -117,7 +117,7 @@ vbose=argc-3;
 
 @ @<Input the pattern@>=
 for (n=k=0;;n++) {
-  if (!fgets(buf,bufsize,stdin)) break;
+  if (!read_pattern_row()) break;
   if (n>=maxdim) {
      fprintf(stderr,"Recompile me: I allow at most %d lines of input!\n",
                              maxdim);
@@ -125,12 +125,48 @@ for (n=k=0;;n++) {
   }
   @<Input row |n| of the shape@>;
 }
+if (n==0 || k==0) {
+  fprintf(stderr,"The pattern must contain at least one asterisk!\n");
+  exit(-3);
+}
 fprintf(stderr,"OK, I've got a pattern with %d rows and %d asterisks.\n",
                                    n,k);
 if (m<n-1) {
   fprintf(stderr,"So there must be at least %d multiplier digits, not %d!\n",
                                    n-1,m);
   exit(-2);
+}
+
+@ Input parameters and complete pattern records are checked before use.
+
+@<Subroutines@>=
+int parameter(char *text,int limit) {
+  char *end;
+  long value;
+  errno=0;
+  value=strtol(text,&end,10);
+  if (errno || end==text || *end || value<0 || value>limit) return -1;
+  return value;
+}
+
+int read_pattern_row(void) {
+  int ch,len=0;
+  while ((ch=getchar())!=EOF && ch!='\n') {
+    if (ch==0 || len==bufsize-1) goto bad_row;
+    buf[len++]=ch;
+  }
+  if (ferror(stdin)) {
+    fprintf(stderr,"I couldn't read the pattern!\n");
+    exit(-3);
+  }
+  if (ch==EOF && len==0) return 0;
+  if (len && buf[len-1]=='\r') len--;
+  if (len>maxdim) goto bad_row;
+  buf[len]='\0';
+  return 1;
+bad_row:
+  fprintf(stderr,"Pattern row exceeds %d columns or contains a null byte!\n",maxdim);
+  exit(-5);
 }
 
 @ @<Input row |n|...@>=
@@ -173,24 +209,26 @@ void copy(bignum a,bignum b) {
 (But beware of |a=c|.)
 
 @<Sub...@>=
+void decimal_overflow(void) {
+  fprintf(stderr,"Integer overflow, more than %d digits!\n",maxdigs-1);
+  exit(-666);
+}
+
 void add(bignum a,bignum b,bignum c,int p) { /* set $a=b+10^p c$ */
   register int lb=b[0],lc=c[0],i,k,d;
   if (oo,lc==0) {
     copy(a,b);
     return;
   }
+  if (p<0 || p>=maxdigs) decimal_overflow();
   for (i=1;i<=p && i<=lb;i++) oo,a[i]=b[i];
   for (k=0;i<=lb || i<=lc+p || k;i++) {
+    if (i>=maxdigs) decimal_overflow();
     d=k+(i<=lb? o,b[i]:0)+(i<=lc+p && i>p? o,c[i-p]:0);
     if (d>=10) k=1,d-=10;@+else k=0;
     o,a[i]=d;
   }
   o,a[0]=i-1;  
-  if (i>=maxdigs) {
-    fprintf(stderr,"Integer overflow, more than %d digits!\n",
-                                 maxdigs-1);
-    exit(-666);
-  }
   if (a[a[0]]==0)
     fprintf(stderr,"why?\n");
 }
