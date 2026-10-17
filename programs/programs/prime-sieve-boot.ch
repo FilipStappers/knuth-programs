@@ -11,6 +11,9 @@ found by different instances of this program.
 The output file in this ``bootstrap'' version is a list of all
 primes $\le s_t$, in a format suitable for use as the input file
 in the regular version.
+Unlike the regular version, it must also load every prime below $s_0$.
+The input must extend through a prime that is at least $s_0$ and whose
+square exceeds $s_t$; otherwise the bootstrap rejects it before output.
 @z
 @x
   @<Report the final prime@>;
@@ -34,6 +37,18 @@ if (st>0xffffffff) {
   fprintf(stderr,"Sorry, s[t] = %llu exceeds 32 bits!\n",st);
   exit(-69);
 }
+@z
+@x
+    fprintf(stderr,"The input file ended prematurely (%d^2<%llu)!\n",
+      k? prime[k-1]: 0,st);
+@y
+    fprintf(stderr,"The input file ended prematurely: bootstrap needs a prime"
+      " at least %llu whose square exceeds %llu!\n",s0,st);
+@z
+@x
+  if (((unsigned long long)prime[k])*prime[k]>st) break;
+@y
+  if (prime[k]>=s0 && ((unsigned long long)prime[k])*prime[k]>st) break;
 @z
 @x
 @<Initialize the active primes@>;
