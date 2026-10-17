@@ -23,6 +23,9 @@ class CelticFonts(unittest.TestCase):
     def test_family_150_endpoints(self):
         self.check_family('150', [(0, 5), (1, 4)])
 
+    def test_family_270_endpoints(self):
+        self.check_family('270', [(0, 5), (2, 7)])
+
     @unittest.skipUnless(shutil.which('mf'), 'MetaFont is required for native font compilation')
     def test_native_fonts_compile(self):
         with tempfile.TemporaryDirectory() as directory:

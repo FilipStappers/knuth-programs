@@ -294,7 +294,7 @@ doublechar(oct"250",0,3,1,6);
 doublechar(oct"254",0,3,2,5);
 doublechar(oct"260",7,4,2,5);
 doublechar(oct"264",7,4,1,6);
-doublechar(oct"270",0,5,1,7);
+doublechar(oct"270",0,5,2,7);
 doublechar(oct"274",7,2,1,4);
 doublechar(oct"300",6,3,1,4);
 doublechar(oct"304",0,5,3,6);
