@@ -19,7 +19,7 @@ run through all of these possibilities.
 #include "gb_graph.h"
 #include "gb_save.h"
 int kk; /* the given cycle length */
-Vertex *vv[maxn]; /* tentative cycle */
+Vertex *vv[maxn+2]; /* tentative cycle, plus the SAT variant's two closing entries */
 Arc *aa[maxn]; /* pointers to them the adjacency lists */
 long count; /* the number of cycles found */
 main(int argc,char*argv[]) {
@@ -57,6 +57,10 @@ if (kk<3) {
   fprintf(stderr,"The cycle length must be 3 or more, not %d!\n",
                                         kk);
   exit(-4);
+}
+if (kk>g->n) {
+  fprintf(stderr,"Altogether 0 cycles found.\n");
+  return 0;
 }
 
 @ @d elig u.I /* is this vertex a legal candidate for $v_{k-1}$? */
