@@ -24,6 +24,7 @@ the file name.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 unsigned long long mems; /* memory references */
 unsigned long long thresh=10000000000; /* reporting time */
 typedef struct {
@@ -66,7 +67,7 @@ if (argc!=3) {
 }
 w=strchr(argv[1],':');
 if (w) { /* colon in filename */
-  if (sscanf(w+1,"%d",&maxmm)!=1) {
+  if (!(maxmm=word_limit(w+1,maxmwds))) {
     fprintf(stderr,"I can't parse the m-file spec `%s'!\n",argv[1]);
     exit(-20);
   }
@@ -78,7 +79,7 @@ if (!(mfile=fopen(argv[1],"r"))) {
 }
 w=strchr(argv[2],':');
 if (w) { /* colon in filename */
-  if (sscanf(w+1,"%d",&maxnn)!=1) {
+  if (!(maxnn=word_limit(w+1,maxtriesize))) {
     fprintf(stderr,"I can't parse the n-file spec `%s'!\n",argv[1]);
     exit(-22);
   }
@@ -93,7 +94,7 @@ if (!(nfile=fopen(argv[2],"r"))) {
 m=mm=0;
 while (1) {
   if (mm==maxmm) break;
-  if (!fgets(buf,bufsize,mfile)) break;
+  if (!read_word(mfile,maxm)) break;
   for (k=0;o,buf[k]>='a' && buf[k]<='z';k++) o,mword[mm][k]=buf[k];
   if (buf[k]!='\n') {
     fprintf(stderr,"Illegal m-word: %s",buf);
@@ -110,6 +111,10 @@ while (1) {
     exit(-4);
   }
   mm++;
+}
+if (mm==0) {
+  fprintf(stderr,"The m-file must contain at least one nonempty word!\n");
+  exit(-10);
 }
 @<Build the tri@>;
 fprintf(stderr,"OK, I've successfully read %d words of length m=%d.\n",mm,m);
@@ -130,7 +135,7 @@ that the program can compute without fetching.)
 n=nn=0, trieptr=1;
 while (1) {
   if (nn==maxnn) break;
-  if (!fgets(buf,bufsize,nfile)) break;
+  if (!read_word(nfile,maxn)) break;
   for (k=p=0;o,buf[k]>='a' && buf[k]<='z';k++,p=q) {
     o,q=trie[p][trunc(buf[k])];
     if (q==0) break;
@@ -155,6 +160,10 @@ while (1) {
      /* we knew |trie[p]| when |p=0| and when |q=0|; |buf[j]| when |j=k| */
   nn++;
 }      
+if (nn==0) {
+  fprintf(stderr,"The n-file must contain at least one nonempty word!\n");
+  exit(-11);
+}
 fprintf(stderr,"Plus %d words of length n=%d.\n",nn,n);
 fprintf(stderr,"(The trie has %d nodes.)\n",trieptr);
 
@@ -232,6 +241,40 @@ int compress(int p,int l) {
     o,trie[p][k]=0; /* clear the trie for the next user */
   }
   return a;
+}
+
+@ Validate dictionary records before copying characters or constructing trie
+nodes. A final word without a newline is normalized to the same buffer form.
+
+@<Subroutines@>=
+int word_limit(char *text,int capacity) {
+  char *end;
+  long value;
+  errno=0;
+  value=strtol(text,&end,10);
+  if (errno || end==text || *end || value<=0 || value>capacity) return 0;
+  return value;
+}
+
+int read_word(FILE *stream,int capacity) {
+  int ch,len=0,i;
+  while ((ch=getc(stream))!=EOF && ch!='\n') {
+    if (ch==0 || len==bufsize-2) goto bad_word;
+    buf[len++]=ch;
+  }
+  if (ferror(stream)) {
+    fprintf(stderr,"I couldn't read a dictionary word!\n");
+    exit(-10);
+  }
+  if (ch==EOF && len==0) return 0;
+  if (len && buf[len-1]=='\r') len--;
+  if (len==0 || len>capacity) goto bad_word;
+  for (i=0;i<len;i++) if (buf[i]<'a' || buf[i]>'z') goto bad_word;
+  buf[len]='\n',buf[len+1]='\0';
+  return len;
+bad_word:
+  fprintf(stderr,"Invalid dictionary word: require 1 through %d lowercase letters!\n",capacity);
+  exit(-10);
 }
 
 @ Here I follow Algorithm 7.2.2B.
