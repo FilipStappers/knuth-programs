@@ -1,4 +1,16 @@
 @x
+The restrictions are intended for minimal-chain searches: Every computed
+@y
+This variant additionally orders operand pairs lexicographically and orders
+the first use of inputs $x_1$, $x_2$, $x_3$, $x_4$. Its symmetry reduction
+requires those four input roles to be interchangeable in the target problem;
+it is not an equivalent encoding for arbitrary fixed truth tables.
+For example, the one-gate target $x_3\mathbin{\&}x_4$ (table \.{1111})
+is admitted by the base but excluded by this variant.
+
+The restrictions are intended for minimal-chain searches: Every computed
+@z
+@x
 if (n<2 || n>maxn) {
   fprintf(stderr,"n should be between 2 and %d, not %d!\n",maxn,n);
 @y

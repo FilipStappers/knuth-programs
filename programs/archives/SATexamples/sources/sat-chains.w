@@ -1,10 +1,17 @@
-@*Intro. This program generates clauses that are satisfiable if and only if
-there's a Boolean chain $x_1$, \dots, $x_{n+r}$ in $n$ variables
-$x_1$, \dots, $x_n$ that computes
+@*Intro. This program generates clauses describing restricted Boolean chains
+$x_1$, \dots, $x_{n+r}$ in $n$ variables
+$x_1$, \dots, $x_n$ that compute
 the functions whose truth tables are $T_1$, \dots, $T_m$. The parameters
 are given on the command line. I assume that $n\le6$, so that each truth
 table has at most 64 bits. The truth tables are specified in
 hexadecimal notation, using $2^{n-2}$ hex digits each.
+
+The restrictions are intended for minimal-chain searches: Every computed
+gate is nontrivial and is used by a later gate or an output, and the
+complete-basis pruning below excludes reducible pairs of gates. Thus this
+is not a general existence test for an arbitrarily padded chain of exactly
+$r$ gates. Completeness of these minimization restrictions must be justified
+for the intended search.
 
 The chains are assumed to be ``normal''; that is, each function on each
 step takes $(0,\ldots,0)\mapsto0$. (If a parameter $T_j$ isn't normal, we
