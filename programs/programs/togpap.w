@@ -63,7 +63,7 @@ usage:
 
 @ @<Input the image@>=
 if (imagecode==lisacode) {@+Area workplace;
-  register int *mtx=lisa(m,n,255,0,0,0,0,0,0,workplace);
+  register long *mtx=lisa(m,n,255,0,0,0,0,0,0,workplace);
   for (i=0;i<m;i++) for (j=0;j<n;j++)
     A[i+1][j+1]=pow(1.0-(*(mtx+i*n+j)+0.5)/256.0,2.0);
   fprintf(stderr,"(Mona Lisa image loaded)\n");

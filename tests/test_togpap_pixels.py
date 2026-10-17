@@ -95,6 +95,32 @@ class TogpapPixels(unittest.TestCase):
             pixels, _ = self.run_image(2, sharp, 2)
             self.assertEqual(pixels, ordered_pixels(sphere(), sharp))
 
+    def test_lisa_ordered_pixels_from_direct_data_decoder(self):
+        shutil.copyfile(GRAPHBASE/'lisa.dat', self.work/'lisa.dat')
+        alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_^~&@,;.:?!%#$+-*/|\\<=>()[]{}`\'" \n'
+        records = [line for line in (GRAPHBASE/'lisa.dat').read_text().splitlines()
+                   if not line.startswith('*')]
+        self.assertEqual(len(records), 1800)
+        image = [[0.]*(N+2) for _ in range(M+2)]
+        for i in range(M):
+            chars = ''.join(records[5*i:5*i+5])
+            self.assertEqual(len(chars), 313)
+            values = []
+            for start in range(0, len(chars), 5):
+                value = 0
+                group = chars[start:start+5]
+                for char in group:
+                    value = value*85+alphabet.index(char)
+                values.extend(value.to_bytes(4 if len(group) == 5 else 2, 'big'))
+            self.assertEqual(len(values), N)
+            image[i+1][1:N+1] = [(1-(value+.5)/256)**2 for value in values]
+        for sharp in [0, 1]:
+            pixels, _ = self.run_image(1, sharp, 2)
+            expected = ordered_pixels(image, sharp)
+            mismatches = sum(a != b for row, other in zip(pixels, expected)
+                             for a, b in zip(row, other))
+            self.assertEqual(mismatches, 0, f'sharp={sharp}, incorrect image pixels')
+
 
 if __name__ == '__main__':
     unittest.main()
