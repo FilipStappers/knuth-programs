@@ -38,6 +38,20 @@ class DragonBoundaries(unittest.TestCase):
         self.assertIn(b'zero', result.stdout.lower())
         self.assertRegex(result.stdout, rb'1,0 is \d_\d')
 
+    def test_congruence_capacity_rejects_and_recovers(self):
+        for path in ['01'*256, '01'*255+'0']:
+            with self.subTest(length=len(path)):
+                result = self.calculate('p'+path+'\nc1,0\nc1,0\np0\nc1,0\nq\n')
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                self.assertEqual(result.stdout.count(b'congruence table capacity'), 2)
+                self.assertRegex(result.stdout, rb'1,0 is \d_\d')
+
+    def test_congruence_exact_row_boundary(self):
+        result = self.calculate('p'+'01'*128+'\nc1,0\nq\n')
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        self.assertNotIn(b'capacity', result.stdout)
+        self.assertRegex(result.stdout, rb'1,0 is \d+_\d')
+
     def test_supported_congruence_matches_gaussian_lattice(self):
         tiles = [(x, y) for x, y in product(range(-3, 4), repeat=2) if (x+y) % 2]
         for path in ['0', '01', '010', '01012', '030', '010101', '01210']:

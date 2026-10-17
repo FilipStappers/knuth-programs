@@ -54,7 +54,8 @@ When prompted, the user can do the following things:
 \thing{\.c\<tile> or \.c}
   Show the congruence class and type of the specified tile.
   Or, if no tile is specified, show the congruence classes and types
-  of all tiles in the current polynomino.  
+  of all tiles in the current polynomino. The endpoint must be nonzero,
+  and the reduced lattice must fit the compiled congruence table.
 
 \thing{\.f\<tile> or \.F\<tile>}
   ``Factor'' the given tile $u$ to obtain $v$ and $w$ such that $u=v*w$
@@ -90,7 +91,7 @@ because of many other commitments.
 @ Here we go.
 
 @d maxm (1<<15) /* length of longest path allowed */
-@d maxd (1<<8) /* anything $\ge\sqrt{2|maxm|}$ is safe here */
+@d maxd (1<<8) /* rows available; $\sqrt{2|maxm|}$ suffices for plane-filling paths */
 @d maxp 100 /* how much memory is allowed for cycle detection? */
 @d bufsize 1024 /* maximum length of commands */
 @d verbose_echo (1<<0) /* should commands of included files be echoed? */
@@ -442,6 +443,10 @@ if (congclass[0][0]<0) {
     continue;
   }
   @<Compute |U| and |V|@>;
+  if ((vv.y>>1)>maxd || uu.x>4*maxm) {
+    printf("Sorry, the reduced lattice exceeds my congruence table capacity; recompile me!\n");
+    continue;
+  }
   for (j=0;j<vv.y>>1;j++) for (k=0;k<uu.x;k++) congclass[j][k]=-1;
   for (c=j=0;j<vv.y>>1;j++) for (k=0;k<uu.x;k++) if (congclass[j][k]<0) {
     congclass[j][k]=c;
