@@ -279,7 +279,7 @@ the |new_template| routine returns 0 if either input function is the
 constant~0. This feature, in fact, is what makes the |intersect| routine
 compute intersections(!).
 
-@d hash_rand 314159  /* $(1001100101100101111)_2$;
+@d hash_rand 314159u /* $(1001100101100101111)_2$;
               this ``random'' multiplier seems OK */
 
 @<Basic subroutines needed by |intersect|@>=
