@@ -54,7 +54,7 @@ def row expr s =
   ny:=ny+1;
   for j=0 upto length s-1:
     ch:=substring(j,j+1) of s;
-    draw pic[ASCII ch] shifted (j*h,ny*h);
+    draw pic[ASCII ch] shifted (j*h,(n-1-ny)*h);
   endfor
 enddef;
 

@@ -188,7 +188,7 @@ fprintf(MPfile,"def row expr s =\n");
 fprintf(MPfile,"  ny:=ny+1;\n");
 fprintf(MPfile,"  for j=0 upto length s-1:\n");
 fprintf(MPfile,"    ch:=substring(j,j+1) of s;\n");
-fprintf(MPfile,"    draw pic[ASCII ch] shifted (j*h,ny*h);\n");
+fprintf(MPfile,"    draw pic[ASCII ch] shifted (j*h,(n-1-ny)*h);\n");
 fprintf(MPfile,"  endfor\n");
 fprintf(MPfile,"enddef;\n");
 fprintf(MPfile,"\n");
