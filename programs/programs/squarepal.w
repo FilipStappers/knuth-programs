@@ -248,8 +248,8 @@ t=(n-11)/4;
 @ @<Check if |trial| is a solution@>=
 @<Square the contents of |trial|@>;
 for (j=0,k=n-1;j<k;j++,k--) {
-  jj=((acc[j>>5]&(1<<(j&0x1f)))!=0);
-  kk=((acc[k>>5]&(1<<(k&0x1f)))!=0);
+  jj=((acc[j>>5]&(1ULL<<(j&0x1f)))!=0);
+  kk=((acc[k>>5]&(1ULL<<(k&0x1f)))!=0);
   if (jj!=kk) break;
 }
 if (j>=k) /* solution! */
