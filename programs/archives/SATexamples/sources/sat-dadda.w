@@ -27,10 +27,10 @@ $c$ is a carry that becomes an \.A in the next bin.)
 @c
 #include <stdio.h>
 #include <stdlib.h>
-int bin[nmax+nmax][nmax]; /* what items $l$ are in bin $k$? */
-int count[nmax+nmax]; /* how many items have we ever put in bin $k$? */
-int size[nmax+nmax]; /* how many items currently in bin $k$? */
-int adders[nmax+nmax]; /* how many full adders have we used in bin $k$? */
+int bin[nmax+nmax+1][nmax+nmax]; /* what items $l$ are in bin $k$? */
+int count[nmax+nmax+1]; /* how many items have we ever put in bin $k$? */
+int size[nmax+nmax+1]; /* how many items currently in bin $k$? */
+int adders[nmax+nmax+1]; /* how many full adders have we used in bin $k$? */
 int m,n; /* the given parameters */
 int addend[3]; /* three inputs to a full adder */
 main(int argc, char*argv[]) {
@@ -81,6 +81,13 @@ for (i=0;argv[3][i];i++) if (argv[3][i]!='0')
 @<Generate the original one-bit products@>;
 for (k=3;k<=m+n;k++)
   @<Generate the clauses for bin $k$@>;
+
+@ Rows are indexed through |m+n|, inclusively. Each row initially contains
+at most |m| partial products. A row of size |s| sends |s/2| carries to
+the next row (integer division), so induction bounds each row's peak
+occupancy by |2*m-1|. Full additions reduce occupancy; their local sums
+do not increase that peak. Thus |2*nmax| columns suffice for either queue
+discipline, and no carry is stored beyond row |m+n|.
 
 @ @<Generate the clauses for bin $k$@>=
 {
