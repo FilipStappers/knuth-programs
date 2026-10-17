@@ -16,7 +16,7 @@ can be quenched.
 Thus the ordering of vertices is highly significant. Quenchability is
 a monotone property of the adjacency matrix. A quenchable graph is
 always connected. For each $n$ there exists a set of I-know-not-how-many
-labeled spanning trees such that $G$ is connected if and only if it contains
+labeled spanning trees such that $G$ is quenchable if and only if it contains
 one of these spanning trees. (Those spanning trees correspond to the
 prime implicants of the quenchability function. When $n=4$ there are
 six of them: $1\adj2\adj3\adj4$, $1\adj2\adj4\adj3$, $1\adj4\adj2\adj3$,
