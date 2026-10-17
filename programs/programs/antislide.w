@@ -1,9 +1,17 @@
 \datethis
-@* Introduction. This program finds all ways to pack $2\times2\times1$ bricks
+@* Introduction. This program searches for packings of $2\times2\times1$ bricks
 into a $4\times4\times4$ box in such a way that each face of each brick
 touches the boundary of the box or the face of another brick. The program
 is also designed to be readily modified so that it applies to other sorts
 of pieces in other sorts of boxes.
+
+The default search stops at 13 bricks and fixes the first brick in one
+corner orientation. The companion change file \.{antislide-nocorner.ch}
+instead excludes corner placements and requires the particular cell
+$(0,0,1)$ to be occupied. Outputs are representatives subject to these
+search restrictions, rather than an enumeration of every labeled packing.
+In particular, neither search includes the empty packing or full 16-brick
+tilings, although both satisfy the face-contact condition.
 
 I'm writing it primarily to gain further experience of the technique
 of ``dancing links,'' which worked so nicely in the {\sc XCOVER}
