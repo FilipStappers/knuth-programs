@@ -55,6 +55,7 @@ pump by going from \.{5chains0.db} to \.{5chains5.db} (or even to
 
 @c
 #include <stdio.h>
+#include <stdlib.h>
 char delta[nnn]; /* for symmetries via exercise 7.2.1.2--20 */
 typedef unsigned int truthtab;
 typedef struct class_struct {
@@ -143,7 +144,7 @@ requires arrays to have less than $2^{31}$ bytes.
 @d eighth_shift (1<<(n-3))
 @d xvi_shift (1<<(n-4))
 @d xxxii_shift (1<<(n-5))
-@d mask ((truthtab)((1<<full_shift)-1)) /* $2^{2^n}-1$ */
+@d mask ((truthtab)((1ULL<<full_shift)-1)) /* $2^{2^n}-1$ */
 @d half_mask ((1<<half_shift)-1)
 @d quart_mask ((1<<quart_shift)-1)
 @d eighth_mask ((1<<eighth_shift)-1)
@@ -153,12 +154,12 @@ requires arrays to have less than $2^{31}$ bytes.
 @d xx(k) (mask/((1<<(1<<(n-k)))+1)) /* the truth table of $x_k$ */
 
 @<Make the |dist|...@>=
-dist=(char*)malloc((unsigned int)(1<<((1<<n)-1)));
+dist=(char*)malloc((size_t)1<<((1<<n)-1));
 if (!dist) {
   fprintf(stderr,"I couldn't allocate the dist array!\n");
   exit(-5);
 }
-for (j=0;j<(1<<((1<<n)-1))-1;j++) dist[j]=15;
+for (j=0;j<(1U<<((1<<n)-1))-1;j++) dist[j]=15;
 dist[j]=15; /* we need to be sure that |j| stays nonnegative */
 for (k=0;k<15;k++) for (c=next(head(k));c->parent;c=next(c)) {
   t=c->tt;
@@ -355,7 +356,7 @@ the case $n=4$. (Indeed, I think the previous step improves
 the cost of just one more class.) But computers sometimes surprise me.
 
 @<Try replacing $x_1$ by $x_2\xor x_3$@>=
-tt=t^((t^(t>>half_shift)^(t<<half_shift))&(xx(1)^(xx(2)&xx(3))));
+tt=t^((t^(t>>half_shift)^(t<<half_shift))&(xx(1)^(xx(2)^xx(3))));
 if (dist[tt]>r) {
   cc=classify(tt);
   setcost(cc,r);
