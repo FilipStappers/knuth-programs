@@ -37,6 +37,8 @@ endchar;\cr
 (operating from standard input to standard output).
 
 It does absolutely nothing fancy.
+Coordinates are rounded to the nearest integer, with exact half units
+rounded away from zero.
 
 On a closed shape like the letter O, the user has to change some \.{stroke}
 commands to \.{unstroke}, because Fontographer gives the outside contour and
@@ -88,6 +90,11 @@ gtok()
 @d panic(str) { fprintf(stderr,"Oops! %s:\n%s", str, buffer); exit(-1); }
 
 @<Sub...@>=
+int round_coord(double value)
+{
+  return (int)(value<0? value-.5: value+.5);
+}
+
 double gnum()
 {
   double xx;
@@ -121,7 +128,7 @@ get_token;
 check(";","Expected `;'");
 check("B","Expected `B'");
 get_token; get_token;
-k=(int)(get_num+.5); if (k>0) k=0; else k=-k;
+k=round_coord(get_num); if (k>0) k=0; else k=-k;
 get_token; get_token; printf("%su#,%du#);\n",token,k);
 check(";","Expected `;'");
 get_token;
@@ -142,20 +149,20 @@ while (1) {
   get_token; x=get_num;
   get_token; if (strcmp(token,"FillStroke")==0) break;
   y=get_num; check("moveto","Expected `moveto'");
-  printf("stroke (%d,%d)\n",(int)(x+.5),(int)(y+.5));
+  printf("stroke (%d,%d)\n",round_coord(x),round_coord(y));
   while (1) {
     get_token;
     if (strcmp(token,"closepath")==0) break;
     x+=get_num; get_token; y+=get_num;
     get_token;
     if (strcmp(token,"rlineto")==0)
-      printf(" --(%d,%d)\n",(int)(x+.5),(int)(y+.5));
+      printf(" --(%d,%d)\n",round_coord(x),round_coord(y));
     else {
-      printf(" ...(%d,%d",(int)(x+.5),(int)(y+.5));
+      printf(" ...(%d,%d",round_coord(x),round_coord(y));
       x+=get_num; get_token; y+=get_num;
-      printf(",%d,%d",(int)(x+.5),(int)(y+.5));
+      printf(",%d,%d",round_coord(x),round_coord(y));
       get_token; x+=get_num; get_token; y+=get_num;
-      printf(",%d,%d)\n",(int)(x+.5),(int)(y+.5));
+      printf(",%d,%d)\n",round_coord(x),round_coord(y));
       check("rrcurveto","Expected `rrcurveto'");
     }
   };
