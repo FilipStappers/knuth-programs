@@ -44,6 +44,10 @@ if (argc==1) {
                 argv[0]);
   exit(-1);
 }
+for (k=1;k<argc;k++) if (!argv[k][0]) {
+  fprintf(stderr,"Words must not be empty!\n");
+  exit(-1);
+}
 printf("| %s",argv[0]);
 for (k=1;k<argc;k++) printf(" %s",
                   argv[k]);
@@ -51,6 +55,10 @@ printf("\n");
 
 @ The primary items are \.{$k$!$j$} for $j$ from 1 to $l-1$,
 where $l$ is the length of word~$k$.
+For a one-character word, the primary item is \.$k$\.!0 instead;
+it chooses one cell containing that character. Such a word has no middle
+transition, so its possible cells are not restricted by the transition
+reflection rule.
 
 There are secondary items \.a thru \.r, representing the cells of the array.
 Their colors will be the characters in those cells.
@@ -71,6 +79,7 @@ if this solution is possibly not canonical under reflections.
 
 @<Print the item-name line@>=
 for (k=1;k<argc;k++) {
+  if (!argv[k][1]) printf(" %c!0",encode(k-1));
   for (l=1;argv[k][l];l++)
     printf(" %c!%c",
                      encode(k-1),encode(l));
@@ -92,13 +101,17 @@ printf(" flag\n");
 
 @ @<Print the options for word |k-1|@>=
 {
-  for (i=0;i<rows;i++) for (j=0;j<cols;j++)
-    @<Print the options for king moves of word |k-1| that start in cell $(i,j)$@>;
+  if (!argv[k][1]) {
+    @<Print the options for the start position of word |k-1|@>;
+  }@+else {
+    for (i=0;i<rows;i++) for (j=0;j<cols;j++)
+      @<Print the options for king moves of word |k-1| that start in cell $(i,j)$@>;
+  }
 }
 
 @ @<Print the options for the start position of word |k-1|@>=
 for (i=0;i<rows;i++) for (j=0;j<cols;j++)
-  printf("#%c %c:%c %c>0:%c %c<%c:0\n",
+  printf("%c!0 %c:%c %c>0:%c %c<%c:0\n",
             encode(k-1),encodeij(i,j),argv[k][0],
             encode(k-1),encodeij(i,j),
             encode(k-1),encodeij(i,j));
