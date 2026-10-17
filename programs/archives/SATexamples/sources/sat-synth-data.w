@@ -5,13 +5,13 @@ I hacked it in a big hurry, for one particular case. With a little more
 work I can of course parameterize it so that it will generate a reasonably
 wide class of examples from user-friendly input specs.
 
-At the moment I have only one parameter, $t$: Each new data point is
-chosen so that each of its coordinates differs from the previous
-point with probability $2^{-t}$. For example, if $t=3$ and if
-I've just output $x$ and $f(x)$, I will next output $x\oplus y$ and
-$f(x\oplus y)$, where every bit of~$y$ is 1 with probability 1/8
-and 0 with probability 7/8.
-On the other hand if $t=1$, every data point is random.
+At the moment I have only one parameter, $t$: Each candidate data point
+flips coordinates of the previous point with nominal probability $2^{-t}$.
+For example, if $t=3$ and if I've just output $x$ and $f(x)$, the next
+candidate is $x\oplus y$ with each bit of~$y$ drawn as 1 with probability 1/8
+and 0 with probability 7/8. Candidates with $y=0$ are retried, so the emitted
+transition is conditioned on changing at least one coordinate.
+For $t=1$ this rejection still excludes the preceding point.
 
 (Well, there's also a second parameter, namely a random seed.)
 
