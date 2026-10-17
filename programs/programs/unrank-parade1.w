@@ -27,7 +27,7 @@ main(int argc,char*argv[]) {
   
 @ @<Compute the |spart| table@>=
 spart[0][0]=1;
-for (j=1;j<maxn;j++) for (i=1;i<=j;i++)
+for (j=1;j<=maxn;j++) for (i=1;i<=j;i++)
   spart[j][i]=i*spart[j-1][i]+spart[j-1][i-1];
 
 @ @<Process the command line@>=
