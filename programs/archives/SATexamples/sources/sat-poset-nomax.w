@@ -1,5 +1,5 @@
 @*Intro. This quickie outputs clauses that are unsatisfiable because they
-state that there exists a partial ordering on $m$ elements in which
+state that there exists a partial ordering on $m>0$ elements in which
 no element is maximal. (All backtrack proofs of this fact are known
 to require $\Omega(2^m)$ steps.)
 
