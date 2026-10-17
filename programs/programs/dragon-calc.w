@@ -437,6 +437,10 @@ formula (saving a factor of 2 in space) because $x+y$ is always odd.
 
 @<Make sure |congclass| is uptodate@>=
 if (congclass[0][0]<0) {
+  if (z.x==0 && z.y==0) {
+    printf("Sorry, congruence classes require a nonzero modulus; z is zero!\n");
+    continue;
+  }
   @<Compute |U| and |V|@>;
   for (j=0;j<vv.y>>1;j++) for (k=0;k<uu.x;k++) congclass[j][k]=-1;
   for (c=j=0;j<vv.y>>1;j++) for (k=0;k<uu.x;k++) if (congclass[j][k]<0) {
