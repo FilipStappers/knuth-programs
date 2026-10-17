@@ -44,7 +44,13 @@ main(int argc, char *argv[])
 {
   @<Local variables@>;
   @<Input the graph@>;
-  if (n>1) @<Generate all spanning trees@>;
+  if (n>1) {
+    @<Generate all spanning trees@>;
+  }
+  else {
+    count=1; /* a singleton has one empty spanning tree */
+    if (verbose) printf("1:\n");
+  }
   printf("Altogether %.15g spanning trees, using %.15g mems.\n",count,mems);
   exit(0);
 }

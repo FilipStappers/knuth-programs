@@ -76,7 +76,7 @@ class SeriesParallelIndices(unittest.TestCase):
                             '-I'+str(GRAPHBASE), '-c', str(GRAPHBASE/(name+'.c')),
                             '-o', str(obj)], check=True, capture_output=True)
             objects.append(str(obj))
-        for name in ['spgraph', 'spspan']:
+        for name in ['spgraph', 'spspan', 'grayspspan']:
             generated = cls.work/(name+'.c')
             subprocess.run(['ctangle', str(ROOT/'programs/programs'/(name+'.w')),
                             '-', str(generated)], cwd=GRAPHBASE,
@@ -84,7 +84,7 @@ class SeriesParallelIndices(unittest.TestCase):
             subprocess.run(['gcc', '-std=gnu99', '-O1', '-fcommon',
                             '-Wno-implicit-int', '-Wno-implicit-function-declaration',
                             '-I'+str(GRAPHBASE), str(generated),
-                            *(objects if name == 'spgraph' else []), '-lm',
+                            *(objects if name != 'spspan' else []), '-lm',
                             '-o', str(cls.work/name)], check=True, capture_output=True)
         reader = cls.work/'read_graph.c'
         reader.write_text('''#include <stdio.h>
@@ -102,6 +102,22 @@ int main(int argc,char **argv) {
 ''')
         subprocess.run(['gcc', '-std=gnu99', '-O1', '-fcommon', '-I'+str(GRAPHBASE),
                         str(reader), *objects, '-lm', '-o', str(cls.work/'read_graph')],
+                       check=True, capture_output=True)
+        writer = cls.work/'write_graph.c'
+        writer.write_text('''#include <stdio.h>
+#include <stdlib.h>
+#include "gb_graph.h"
+#include "gb_save.h"
+int main(int argc,char **argv) {
+  int n=atoi(argv[1]),i,u,v; char name[16]; Graph *g=gb_new_graph(n);
+  if(!g) return 1;
+  for(i=0;i<n;i++){sprintf(name,"v%d",i);g->vertices[i].name=gb_save_string(name);}
+  while(scanf("%d %d",&u,&v)==2) gb_new_edge(g->vertices+u,g->vertices+v,1);
+  return save_graph(g,argv[2]);
+}
+''')
+        subprocess.run(['gcc', '-std=gnu99', '-O1', '-fcommon', '-I'+str(GRAPHBASE),
+                        str(writer), *objects, '-lm', '-o', str(cls.work/'write_graph')],
                        check=True, capture_output=True)
 
     @classmethod
@@ -194,6 +210,44 @@ int main(int argc,char **argv) {
                         self.assertNotIn(frozenset(state), seen)
                         seen.add(frozenset(state))
                     self.assertEqual(seen, family)
+
+    def gray_count(self, n, edges, verbose=False):
+        saved = self.work/'gray.gb'
+        subprocess.run([str(self.work/'write_graph'), str(n), str(saved)],
+                       input=''.join(f'{u} {v}\n' for u, v in edges), text=True,
+                       check=True, capture_output=True)
+        return subprocess.run([str(self.work/'grayspspan'), str(saved)]+
+                              (['show'] if verbose else []),
+                              text=True, capture_output=True, timeout=10)
+
+    def test_gray_singleton_has_one_empty_tree(self):
+        for loops in range(4):
+            for verbose in [False, True]:
+                with self.subTest(loops=loops, verbose=verbose):
+                    result = self.gray_count(1, [(0, 0)]*loops, verbose)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertIn('Altogether 1 spanning trees', result.stdout)
+                    if verbose:
+                        self.assertRegex(result.stdout, r'(?m)^1:$')
+
+    def test_gray_small_graph_counts(self):
+        cases = []
+        for n in range(2, 5):
+            pairs = list(combinations(range(n), 2))
+            for mask in range(1 << len(pairs)):
+                cases.append((n, [e for k, e in enumerate(pairs) if mask & (1 << k)]))
+        cases += [(2, [(0, 1)]*k) for k in range(1, 8)]
+        cases += [(3, [(0, 1)]*k+[(1, 2)]*j) for k in range(1, 4) for j in range(1, 4)]
+        for n, edges in cases:
+            with self.subTest(n=n, edges=edges):
+                expected = len(tree_family(n, edges))
+                result = self.gray_count(n, edges)
+                if expected:
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertIn(f'Altogether {expected} spanning trees', result.stdout)
+                else:
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("graph isn't connected", result.stderr)
 
 
 if __name__ == '__main__':
