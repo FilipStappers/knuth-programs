@@ -293,17 +293,17 @@ for (j=0;j<del/256;j++) {
 @ Now we want to set 1 bits for every odd multiple of |prime[k]|
 in the current segment, whenever |prime[k]| is active.
 The bit for the integer $s_i+4j+1$ is
-|1<<(j&0x3f)| in |sieve[j>>6]|, for $0\le j<\delta/4$.
+|1ULL<<(j&0x3f)| in |sieve[j>>6]|, for $0\le j<\delta/4$.
 
 @<Sieve in the previously active primes@>=
 if (dd>=kk) { /* no large primes are active */
   for (k=d;k<kk;k++) {
-    for (j=start[k];j<ddel;j+=prime[k]) sieve[j>>6] |= 1LL<<(j&0x3f);
+    for (j=start[k];j<ddel;j+=prime[k]) sieve[j>>6] |= 1ULL<<(j&0x3f);
     start[k]=j-ddel;
   }
 }@+else@+{
   for (k=d;k<dd;k++) {
-    for (j=start[k];j<ddel;j+=prime[k]) sieve[j>>6] |= 1LL<<(j&0x3f);
+    for (j=start[k];j<ddel;j+=prime[k]) sieve[j>>6] |= 1ULL<<(j&0x3f);
     start[k]=j-ddel;
   }
   @<Sieve in the enqueued large primes@>;
@@ -321,7 +321,7 @@ for (j=k=0;k<count[qq];k++) {
   else {
     register unsigned int nstart;
     jj=slist[qq][k]%ddel;
-    sieve[jj>>6] |= 1LL<<(jj&0x3f);
+    sieve[jj>>6] |= 1ULL<<(jj&0x3f);
     nstart=slist[qq][k]+plist[qq][k];
     jj=(nstart/ddel)%qsize; /* possibly |jj=qq|; that's no problem */
     if (count[jj]==countmax) {
@@ -344,7 +344,7 @@ not `|jj>=qq|' as before. Do you see why?
 @<Sieve in the newly active primes@>=
 for (k=kk;((unsigned long long)prime[k])*prime[k]<ss;k++) {
   for (j=(((unsigned long long)prime[k])*prime[k]-s-1)>>2;j<ddel;j+=prime[k])
-    sieve[j>>6] |= 1LL<<(j&0x3f);
+    sieve[j>>6] |= 1ULL<<(j&0x3f);
   if (k<dd) start[k]=j-ddel;
   else {
     j+=qq*ddel;

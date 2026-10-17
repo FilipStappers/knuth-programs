@@ -201,18 +201,18 @@ for (j=0;j<del/128;j++) {
 @ Now we want to set 1 bits for every odd multiple of |prime[k]|
 in the current segment, whenever |prime[k]| is active.
 The bit for the integer $s_i+2j+1$ is
-|1<<(j&0x3f)| in |sieve[j>>6]|, for $0\le j<\delta/2$.
+|1ULL<<(j&0x3f)| in |sieve[j>>6]|, for $0\le j<\delta/2$.
 
 @<Sieve in the previously active primes@>=
 for (k=d;k<kk;k++) {
-  for (j=start[k];j<del/2;j+=prime[k]) sieve[j>>6] |= 1LL<<(j&0x3f);
+  for (j=start[k];j<del/2;j+=prime[k]) sieve[j>>6] |= 1ULL<<(j&0x3f);
   start[k]=j-del/2;
 }
 
 @ @<Sieve in the newly active primes@>=
 while (((unsigned long long)prime[k])*prime[k]<ss) {
   for (j=(((unsigned long long)prime[k])*prime[k]-s-1)>>1;j<del/2;j+=prime[k])
-    sieve[j>>6] |= 1LL<<(j&0x3f);
+    sieve[j>>6] |= 1ULL<<(j&0x3f);
   start[k]=j-del/2;
   k++;
 }
