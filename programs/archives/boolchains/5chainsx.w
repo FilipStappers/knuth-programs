@@ -209,9 +209,9 @@ if (c->parent<0) {
 case 0: botup(t^((t^(t>>half_shift))&(quart_mask<<quart_shift)),"1&2,2");
 case 1: botup(t^((t^(t>>half_shift)^(t<<half_shift))&xx(2)),"1^2,2");
 case 2: botup(t^((t^(t>>half_shift)^(t<<half_shift))&(xx(1)^(xx(2)&xx(3)))),
-          "2&3,3");
-case 3: botup(t^((t^(t>>half_shift)^(t<<half_shift))&(xx(1)^(xx(2)&xx(3)))),
-          "2^3,3");
+          "2&3,2");
+case 3: botup(t^((t^(t>>half_shift)^(t<<half_shift))&(xx(1)^(xx(2)^xx(3)))),
+          "2^3,2");
 case 4: botup(t^((t^(t>>quart_shift))&(quart_mask<<quart_shift)),"1&2,1|2");
 case 5: botup(t^((t^(t>>quart_shift))&half_mask),"1&2,1^2");
 case 8: topdown(c->history2&t);
