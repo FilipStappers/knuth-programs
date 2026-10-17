@@ -94,10 +94,12 @@ stack[k++]=0;
   if (k<2) abort("missing operand");
   rlink[++j]=stack[--k];
   llink[j]=stack[k-1];
-  stack[k-1]=(*p=='s'? 0x100: 0)+j;
+  stack[k-1]=(*p=='s'? maxn: 0)+j;
 }
 
-@ Now we convert the binary tree to the desired working tree, whose branch
+@ The operator index is at most |maxn-1|, so radix |maxn| keeps it
+separate from the series/parallel type throughout the supported range.
+Now we convert the binary tree to the desired working tree, whose branch
 nodes appear in preorder.
 
 @<Type...@>=
@@ -144,7 +146,7 @@ node* build(int stackitem, node* par)
   register node *p,*l,*r,*lc,*rc;
   register int t,j;
   if (stackitem==0) return curleaf++;
-  t=stackitem>>8, j=stackitem&0xff; /* type and location of a binary op */
+  t=stackitem/maxn, j=stackitem%maxn; /* type and location of a binary op */
   if (t!=par->typ) p=++curnode, p->typ=t;
   else p=par;
   l=build(llink[j],p), lc=l->lchild, rc=l->rchild, r=build(rlink[j],p);

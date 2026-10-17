@@ -70,10 +70,12 @@ stack[k++]=0;
   rlink[++j]=stack[--k];
   llink[j]=stack[k-1];
   if (*p=='s') jj++;
-  stack[k-1]=(*p=='s'? 0x100: 0)+j;
+  stack[k-1]=(*p=='s'? maxn: 0)+j;
 }
 
-@ Now we convert the binary tree to the desired graph, working top down.
+@ The operator index is at most |maxn-1|, so radix |maxn| keeps it
+separate from the series/parallel type throughout the supported range.
+Now we convert the binary tree to the desired graph, working top down.
 
 @d vert(k) (g->vertices+(k))
 
@@ -98,7 +100,7 @@ void build(int stackitem, int lft, int rt)
   register int t,j;
   if (stackitem==0) gb_new_edge(vert(lft),vert(rt),0);
   else {
-    t=stackitem>>8, j=stackitem&0xff; /* type and location of a binary op */
+    t=stackitem/maxn, j=stackitem%maxn; /* type and location of a binary op */
     if (t) t=--jj+2,build(llink[j],lft,t),build(rlink[j],t,rt);
     else build(llink[j],lft,rt),build(rlink[j],lft,rt);
   }
