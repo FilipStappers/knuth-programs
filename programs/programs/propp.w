@@ -50,7 +50,7 @@ main() {
     @<Check the null link counts and the level parity counts@>;
     @<Move to the next binary tree |(llink,rlink)|, or |break|@>;
   }
-  for (k=1;count[k];k++)
+  for (k=1;k<nodes;k++) if (count[k])
     printf("Altogether %d case%s with %d node%s at odd levels.\n",
            count[k],count[k]==1?"":"s",k,k==1?"":"s");
 }
