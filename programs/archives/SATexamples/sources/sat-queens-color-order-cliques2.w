@@ -31,6 +31,10 @@ if (argc!=4 || sscanf(argv[1],"%d",&n)!=1
   fprintf(stderr,"Usage: %s n d seed\n",argv[0]);
   exit(-1);
 }
+if (n<=0 || d<=0) {
+  fprintf(stderr,"The board size and number of colors must be positive!\n");
+  exit(-2);
+}
 if (d<n) {
   fprintf(stderr,"The number of colors (%d) must be at least %d!\n", d,n);
   exit(-2);
@@ -54,6 +58,7 @@ printf("\n");
 
 @ @<Generate the clauses@>=
 @<Generate consistency clauses for |perm|@>;
+if (n==1) return 0; /* singleton cliques need no additional clauses */
 for (k=0;k<n;k++) {
   @<Generate cliques for row |k|@>;
   @<Generate cliques for column |k|@>;
