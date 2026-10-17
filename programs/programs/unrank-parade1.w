@@ -9,7 +9,7 @@ given $m$, $n$, and $r$.
 #include <stdio.h>
 #include <stdlib.h>
 int m,n; /* command-line parameters */
-int gpart,gperm,bpart,bperm;
+long long gpart,gperm,bpart,bperm; /* exact mixed-radix rank components */
 long long r,rr; /* command-line parameter */
 long long spart[maxn+1][maxn+1]; /* stirling partition numbers */
 int rgsg[maxn+1],rgsb[maxn+1]; /* restricted growth sequences for girls, boys */
@@ -74,10 +74,10 @@ fprintf(stderr,"We will find the parade for term %d of rank %lld.\n",
                                 kk,r);
 bpart=r % spart[n+1][kk+1], r=r/spart[n+1][kk+1];
 bperm=r % f, r=r/f;
-fprintf(stderr,"Boys use partition of rank %d and permutation of rank %d.\n",
+fprintf(stderr,"Boys use partition of rank %lld and permutation of rank %lld.\n",
                        bpart,bperm);
 gpart=r % spart[m+1][kk+1], gperm=r/spart[m+1][kk+1];
-fprintf(stderr,"Girls use partition of rank %d and permutation of rank %d.\n",
+fprintf(stderr,"Girls use partition of rank %lld and permutation of rank %lld.\n",
                        gpart,gperm);
 
 @ @<Compute and print the result@>=

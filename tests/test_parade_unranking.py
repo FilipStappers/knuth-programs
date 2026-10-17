@@ -99,5 +99,17 @@ class ParadeUnranking(unittest.TestCase):
                     actual = {self.run_rank(m, n, r) for r in range(len(expected))}
                     self.assertEqual(actual, expected)
 
+    def test_wide_partition_rank(self):
+        for m, n in [(15, 5), (5, 15)]:
+            first = sum(factorial(k)**2*STIRLING[m+1][k+1]*STIRLING[n+1][k+1]
+                        for k in range(5))
+            total = first+factorial(5)**2*STIRLING[m+1][6]*STIRLING[n+1][6]
+            ranks = [first, total-1]
+            for component in [(1 << 31)-1, 1 << 31, (1 << 31)+1]:
+                ranks.append(first+component*(factorial(5) if m == 15 else 1))
+            for rank in ranks:
+                with self.subTest(m=m, n=n, rank=rank):
+                    self.run_rank(m, n, rank)
+
 if __name__ == '__main__':
     unittest.main()
