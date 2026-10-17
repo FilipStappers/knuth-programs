@@ -105,7 +105,7 @@ int p[maxn+1]; /* the permutation to be represented */
 int q[maxn+1]; /* the inverse of $p$ */
 int t[maxn][maxn], tt[maxn][maxn]; /* working tableaux */
 int aa[maxn+2]; /* row sizes of |tt| */
-int stand[maxf][maxn]; /* standard tableaux */
+int stand[maxf][maxn+1]; /* standard tableaux, indexed by labels 1 through n */
 int basis[maxf][maxf]; /* basis elements */
 int rep[maxf]; /* a linear combination of standard tableaux */
 
