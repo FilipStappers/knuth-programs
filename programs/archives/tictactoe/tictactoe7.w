@@ -28,8 +28,8 @@ As before, the standard input file should be the output of {\mc TICTACTOE4}.
 @c
 #include <stdio.h>
 typedef struct col_struct {
-  int ah,al; /* 64 asterisk specs, for don't cares */
-  int bh,bl; /* 64 bit specs, for cares */
+  unsigned int ah,al; /* 64 asterisk specs, for don't cares */
+  unsigned int bh,bl; /* 64 bit specs, for cares */
   int c,m; /* the number of cares and the number of 1s */
   struct col_struct *prev,*next; /* links for priority list */
 }@+column;
@@ -115,8 +115,8 @@ zero, so we don't worry about them here.
 {
   j=care[k]>>14;
   t=care[k]&0x3fff;
-  if (j&0x20) col[t].ah-=1<<(j-0x20);
-  else col[t].al-=1<<j;
+  if (j&0x20) col[t].ah-=1U<<(j-0x20);
+  else col[t].al-=1U<<j;
   j=++col[t].c;
   p=col[t].prev, q=col[t].next;
   p->next=q, q->prev=p;
@@ -189,8 +189,8 @@ int dir[nnn], link[nnn], leader[nnn]; /* equivalence class structures */
 
 @ @<Set care bit |j| to~1@>=
 l=j>>14, i=j&0x3fff;
-if (l&0x20) col[i].bh+=1<<(l-0x20);
-else col[i].bl+=1<<l;
+if (l&0x20) col[i].bh+=1U<<(l-0x20);
+else col[i].bl+=1U<<l;
 col[i].m++;
 p=col[i].prev, q=col[i].next, p->next=q, q->prev=p;
 for (l=col[i].c;l==q->c && col[i].m>q->m;q=q->next) ;
@@ -200,8 +200,8 @@ p->next=q->prev=&col[i], col[i].prev=p, col[i].next=q;
 @ @<Change bit |j| to don't-care@>=
 {
   l=j>>14, i=j&0x3fff;
-  if (l&0x20) col[i].ah+=1<<(l-0x20);
-  else col[i].al+=1<<l;
+  if (l&0x20) col[i].ah+=1U<<(l-0x20);
+  else col[i].al+=1U<<l;
   col[i].c--;
   p=col[i].prev, q=col[i].next, p->next=q, q->prev=p;
   for (l=col[i].c;l<p->c || (l==p->c && col[i].m<p->m);p=p->prev) ;
@@ -356,14 +356,14 @@ colbase1=makemins(vx+12,6);
 
 @ @<Make the row selector functions@>=
 for (j=1;j<v;j++) {
-  for (k=0;k<32;k++) if (vec[j].bl&(1<<k)) {
+  for (k=0;k<32;k++) if (vec[j].bl&(1U<<k)) {
     if (!vv[j]) vv[j]=rowbase+k;
     else {
       make0(vv[j],or,rowbase+k);
       vv[j]=g;
     }
   }
-  for (k=0;k<32;k++) if (vec[j].bh&(1<<k)) {
+  for (k=0;k<32;k++) if (vec[j].bh&(1U<<k)) {
     if (!vv[j]) vv[j]=rowbase+k+32;
     else {
       make0(vv[j],or,rowbase+k+32);
