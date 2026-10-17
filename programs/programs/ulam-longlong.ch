@@ -22,9 +22,9 @@ unsigned long long ubit[nsize+1], vbit[nsize+1];
     k=kr+(kq<<6);
 @z
 @x
-        fprintf(stderr,"Unexpectedly large gap (%d)! Recompile me...\n",del);
+      fprintf(stderr,"Unexpectedly large gap (%d)! Recompile me...\n",del);
 @y
-        fprintf(stderr,"Unexpectedly large gap (%lld)! Recompile me...\n",del);
+      fprintf(stderr,"Unexpectedly large gap (%lld)! Recompile me...\n",del);
 @z
 @x
       printf("New gap %d: U_%d=%d, U_%d=%d\n",gap,n-1,prevu,n,k);

@@ -59,12 +59,12 @@ main()
     @<Advance $k$ to $U_{n+1}$ and advance $n$@>;
     k=kr+(kq<<5);
     del=k-prevu;
+    if (del>=gsize) {
+      fprintf(stderr,"Unexpectedly large gap (%d)! Recompile me...\n",del);
+      return -666;
+    }
     count[del]++, example[del]=k;
     if (del>gap) {
-      if (del>=gsize) {
-        fprintf(stderr,"Unexpectedly large gap (%d)! Recompile me...\n",del);
-        return -666;
-      }
       gap=del;
       printf("New gap %d: U_%d=%d, U_%d=%d\n",gap,n-1,prevu,n,k);
       fflush(stdout);
