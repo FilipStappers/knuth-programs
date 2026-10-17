@@ -236,9 +236,10 @@ $|sig|[l]=\sum_{k=0}^{xl-1}|pdist|[l][k]\cdot k^m+
           \sum_{k=xl}^9|dist|[l][k]\cdot k^m+|pd|\cdot|xl|^m$.
 
 @ @<Glob...@>=
-int dist[maxm+1][16],pdist[maxm+1][16];
-ull a[maxm+1][maxdigs],b[maxm+1][maxdigs],sig[maxm+1][maxdigs];
-int x[maxm+1],rsave[maxm+1],tsave[maxm+1],pdsave[maxm+1];
+/* Level |m+2| is entered before the terminal solution check. */
+int dist[maxm+3][16],pdist[maxm+3][16];
+ull a[maxm+3][maxdigs],b[maxm+3][maxdigs],sig[maxm+3][maxdigs];
+int x[maxm+3],rsave[maxm+3],tsave[maxm+3],pdsave[maxm+3];
 
 @ @<Initialize the data structures@>=
 l=1;
