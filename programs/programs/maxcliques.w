@@ -89,8 +89,8 @@ if (n>64) {
 
 @ @<Set up the |rho| table@>=
 for (j=0;j<n;j++) {
-  w=1LL<<j;
-  for (a=(g->vertices+j)->arcs;a;a=a->next) w|=1LL<<(a->tip-g->vertices);
+  w=1ULL<<j;
+  for (a=(g->vertices+j)->arcs;a;a=a->next) w|=1ULL<<(a->tip-g->vertices);
   rho[j]=w;
 }
 
@@ -129,11 +129,11 @@ A vertex that's adjacent to all other vertices is just carried
 along in all entries, so we needn't bother with it.
 
 @<Find the maximal cliques@>=
-w=1LL<<(n-1);
-oo,work[1]=work[size-1]=(w<<1)-1; /* $n$ 1s */
+w=(n? 1ULL<<(n-1):0);
+oo,work[1]=work[size-1]=(n? (w<<1)-1:0); /* $n$ 1s, including n=0 */
 m=1, space=4;
 for (i=0;i<n;i++) if (oo,rho[i]!=work[size-1]) {
-  v=1LL<<i; /* this is the new vertex we're considering */
+  v=1ULL<<i; /* this is the new vertex we're considering */
   @<Partition the |work| area, putting entries that contain~$v$ last@>;
   @<Convert the $v$-containing entries $u$ into
       $u\AND\rho_v$, $u\AND\delta_v$@>;
