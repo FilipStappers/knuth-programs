@@ -187,7 +187,7 @@ Now we're ready to harvest the routines we've built up.
 Answer: Not if, say, $m=7$ and $(x_1,\ldots,x_m)=(5,4,3,2,0,1,0)$.]
 
 @<Study the current graph@>=
-for (k=parent[m];parent[k]>=0;k=parent[k]) ;
+for (k=m;parent[k]>=0;k=parent[k]) ;
 if (size[k]==active) connected[active]++;
 else disconnected[active]++;
 
