@@ -742,7 +742,9 @@ previously windowed results will suffice.
   hits=0; /* this is the number of solutions we've found to $u=u'+u''$ */
   if (r<=lamp>>2 || bar(r)<=lamp>>2)
     @<Decide the question via brute force@>@;
-  else @<Decide the question via outlier testing@>;
+  else {
+    @<Decide the question via outlier testing@>;
+  }
 ulam_miss: misses++;
   miss_bin[n/alpha][r/beta]++;
 not_ulam: ulamness=0;
