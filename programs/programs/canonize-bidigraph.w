@@ -47,15 +47,14 @@ is maximized.
 #include "gb_save.h"
 int a[maxn][maxn]; /* adjacency matrix */
 int sign[maxn]; /* the sign of |vert(k)|, or zero */
-int fixed[maxn]; /* is the sign of |vert(k)| known? */
-int depend[maxn]; /* does |sign[k]| depend on the current row sign? */
-int dptr; /* this many dependencies in the current row */
-int indep; /* this many vertices are independent */
-int unknown; /* this many vertices still haven't been fixed */
+int parent[maxn]; /* representatives of sign components */
+int parity[maxn]; /* sign difference from a vertex to its parent */
+int indep; /* the number of free sign components */
 Graph *g,*gg;
 @<Subroutines@>;
 int main(int argc,char*argv[]) {
-  register int i,j,k,n,c00,c01,c10,c11,cmax,code,edoc,exo;
+  register int i,j,k,n,cmax,code,edoc,exo;
+  register int l,r,rk,rj,rn,pk,pj,pn,mask,c;
   register Arc *aa;
   register Vertex *v, *w;
   @<Process the command line@>;
@@ -115,95 +114,69 @@ int ccode(int code,int l,int r) {
   return c;
 }
 
-@ @<Determine canonical signs@>=
-for (unknown=n,k=0;unknown;k++) {
-  for (j=k;j<n && unknown;j++) {
-    if (!fixed[j]) {
-      if (!fixed[k]) @<Try four possibilities for |j| and |k|@>@;
-      else @<Try two possibilities for |j|@>;
-    }@+else if (!fixed[k]) @<Try two possibilities for |k|@>;
+@ We retain all sign choices that maximize the entries examined so far.
+A component records equations of the form $s_i\mathbin\oplus s_j=b$;
+vertex |n| is an extra anchor whose sign is zero. Thus an unanchored
+component retains its two possible orientations until a later entry
+can distinguish them.
+
+For a four-bit code, the sign pairs attaining any particular value
+form a coset of its stabilizer under the two complementations. Such a set has one, two,
+or four elements, and can always be represented by fixed signs and/or
+a fixed exclusive-or. Intersecting it with the existing component
+equations preserves that representation. Consequently the greedy scan
+retains exactly the choices attaining the lexicographic maximum; it
+never chooses an orientation merely because the current row is done.
+
+@<Determine canonical signs@>=
+for (k=0;k<=n;k++) parent[k]=k,parity[k]=0;
+for (k=0;k<n;k++) for (j=k;j<n;j++) {
+  rk=representative(k),pk=parity[k];
+  rj=representative(j),pj=parity[j];
+  rn=representative(n),pn=parity[n];
+  cmax=-1,mask=0;
+  for (l=0;l<2;l++) for (r=0;r<2;r++) {
+    if (rk==rn && l!=(pk^pn)) continue;
+    if (rj==rn && r!=(pj^pn)) continue;
+    if (rk==rj && (l^r)!=(pk^pj)) continue;
+    c=ccode(a[k][j],l,r);
+    if (c>cmax) cmax=c,mask=0;
+    if (c==cmax) mask|=1<<(2*l+r);
   }
-  if (!fixed[k]) {
-    fprintf(stderr," %s is free\n",
-                        vert(k)->name);
-    indep++;
-    fix(k,0);
-  }
-  while (dptr) {
-    j=depend[--dptr];
-    if (j>=0) fix(j,sign[k]);
-    else fix(~j,sign[k]^1);
-  }
+  if (!(mask&0xc)) join(k,n,0);
+  if (!(mask&0x3)) join(k,n,1);
+  if (!(mask&0xa)) join(j,n,0);
+  if (!(mask&0x5)) join(j,n,1);
+  if (!(mask&0x6)) join(k,j,0);
+  if (!(mask&0x9)) join(k,j,1);
+}
+rn=representative(n),pn=parity[n];
+for (k=0;k<n;k++) {
+  rk=representative(k);
+  sign[k]=parity[k]^(rk==rn? pn:0);
+  if (rk==k && rk!=rn) indep++;
+  fprintf(stderr,"%s=%d\n",vert(k)->name,sign[k]);
 }
 
-@ @<Sub...@>=
-void fix(int k,int c) {
-  fprintf(stderr,"%s=%d\n",
-                    vert(k)->name,c);
-  fixed[k]=1,sign[k]=c;
-  unknown--;
-}
+@ The parity is accumulated while compressing the path to a representative.
+Joining two components imposes one sign-difference equation. The scan
+above has already checked consistency with all previous equations.
 
-@ Here's the heart of the computation. We're trying to find a
-sequence of complementations that maximizes the codes.
-
-The case |j==k| is tricky; I think I've got it right (knock on wood).
-For example, only cases |0x2|, |0x8|, |0xa|, and |0xf| are
-possible in the big switch when |j=k|.
-
-@<Try four possibilities for |j| and |k|@>=
-{
-  c00=cmax=a[k][j];
-  c01=ccode(a[k][j],0,1);@+if (j!=k && cmax<c01) cmax=c01;
-  c11=ccode(a[k][j],1,1);@+if (cmax<c11) cmax=c11;
-  c10=ccode(a[k][j],1,0);@+if (j!=k && cmax<c10) cmax=c10;
-  switch ((c00==cmax?0x8:0)+
-         (c01==cmax?0x4:0)+
-         (c11==cmax?0x2:0)+
-         (c10==cmax?0x1:0)) {
-case 0x1:@+fix(j,0),fix(k,1);@+break;
-case 0x2:@+if (j==k) fix(k,1);@+else fix(j,1),fix(k,1);@+break;
-case 0x4:@+fix(j,1),fix(k,0);@+break;
-case 0x8:@+if (j==k) fix(k,0);@+else fix(j,0),fix(k,0);@+break;
-case 0x3:@+fix(j,1);@+break;
-case 0x5:@+fprintf(stderr," %s!=%s\n",
-                          vert(j)->name,vert(k)->name),
-          depend[dptr++]=~j;@+break;
-case 0x6:@+fix(k,1);@+break;
-case 0x9:@+fix(k,0);@+break;
-case 0xa:@+if (j!=k) fprintf(stderr," %s==%s\n",
-                          vert(j)->name,vert(k)->name),
-    depend[dptr++]=j;@+break;
-case 0xc:@+fix(j,0);@+break;
-case 0xf:@+break; /* complementation has no effect */
-default:@+fprintf(stderr,"I'm confused!\n");
-    exit(-666);
+@<Sub...@>=
+int representative(int k) {
+  int p=parent[k];
+  if (p!=k) {
+    parent[k]=representative(p);
+    parity[k]^=parity[p];
   }
+  return parent[k];
 }
-  
-@ We always have |j!=k| here.
-
-@<Try two possibilities for |j|@>=
-{
-  c00=cmax=ccode(a[k][j],sign[k],0);
-  c01=ccode(a[k][j],sign[k],1);@+if (cmax<c01) cmax=c01;
-  switch ((c00==cmax?0x2:0)+(c01==cmax?0x1:0)) {
-case 0x1: fix(j,1);@+break;
-case 0x2: fix(j,0);@+break;
-case 0x3: break; /* complementation has no effect */
-  }
-}
-
-@ Again, |j!=k| here.
-
-@<Try two possibilities for |k|@>=
-{
-  c00=cmax=ccode(a[k][j],0,sign[j]);
-  c10=ccode(a[k][j],1,sign[j]);@+if (cmax<c10) cmax=c10;
-  switch ((c00==cmax?0x2:0)+(c10==cmax?0x1:0)) {
-case 0x1: fix(k,1);@+break;
-case 0x2: fix(k,0);@+break;
-case 0x3: break; /* complementation has no effect */
+@#
+void join(int k,int j,int difference) {
+  int rk=representative(k),rj=representative(j);
+  if (rk!=rj) {
+    parent[rk]=rj;
+    parity[rk]=parity[k]^parity[j]^difference;
   }
 }
 
