@@ -52,6 +52,23 @@ class TwentyQuestions(unittest.TestCase):
                         self.assertTrue({'AeCBABCECACADBdBDDCA', 'AeDBACDEBCDBDBdBACCA',
                                          'AeDBACAEBACBDBdBDCCA'} <= answers)
 
+    def test_question18_false_answers_and_known_witnesses(self):
+        witnesses = {'ACaBAEACBAABDBCBDeCA', 'ACaBAAACBDABDBCBEeCA', 'CCaBABACAAAEDBCBDbEA',
+                     'CCaBAEACAAABDBCBDbEA', 'ACbBAAACADABDBCBEeCA', 'ACeBAEACBAABDBCBDaCA',
+                     'ACeBAAACBAABDBCBDeCA', 'ECeBAAACBAABDBCBDaCA', 'ECeBABACAAABDBCBDaCA'}
+        for variant in self.programs:
+            for first, second in [(18, 3), (18, 2), (18, 0)]:
+                answers = self.answers(variant, first, second)
+                if (variant, second) == ('base', 3):
+                    self.assertEqual(answers, witnesses)
+                for answer in answers:
+                    number = sum(answer[i-1].upper() in 'AE' for i in [2, 3, 5, 7, 11, 13, 17, 19])
+                    claims = [number in [2, 3, 5, 7], number in [0, 1, 4],
+                              number % 2 == 1, number % 2 == 0, number == 0]
+                    option = ord(answer[17].upper())-ord('A')
+                    self.assertEqual(claims[option], answer[17].isupper(), (variant, answer))
+                    self.assertTrue(question15_matches(answer, variant), (variant, answer))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -777,8 +777,7 @@ case pack(1,18,A): case pack(1,18,B): case pack(1,18,C): case pack(1,18,D):
  case pack(1,18,E): j=isvowel(2)+isvowel(3)+isvowel(5)+isvowel(7)+@|
         isvowel(11)+isvowel(13)+isvowel(17)+isvowel(19);
  j=(1<<j)&magic[x];
- if (!u && j) goto okay;@+goto bad;
- if (u && !j) goto okay;@+goto bad;
+ if ((!u && j) || (u && !j)) goto okay;@+goto bad;
 
 @ @<Other glob...@>+=
 int magic[]={(1<<2)+(1<<3)+(1<<5)+(1<<7),@|
