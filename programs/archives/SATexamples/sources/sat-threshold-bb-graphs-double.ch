@@ -41,8 +41,10 @@ if (!g) {
   fprintf(stderr,"I can't input the graph `%s'!\n",argv[3]);
   exit(-2);
 }
-if (g->n!=n)
-  fprintf(stderr,"Warning: The graph has %ld vertices, not %d!\n",g->n,n);
+if (g->n!=n) {
+  fprintf(stderr,"The graph has %ld vertices, not %d!\n",g->n,n);
+  exit(-2);
+}
 r=n-r; /* $x_1+\cdots+x_n\ge r$ iff $\bar x_1+\cdots+\bar x_n\le n-r$ */
 @z
 @x
