@@ -15,8 +15,8 @@ said that $\bigl({a\atop c}{b\atop d}\bigr)$ is bad when $a>b>c>d$.
 I thank Heiko Thei{\ss}en for pointing out my unfortunate mistake.
 
 The enumeration is by dynamic programming, using an auxiliary
-matrix of $t^{n+1}$ 64-bit counts. (If necessary, I'll use
-double precision floating point, but this version uses unsigned integers.)
+matrix of $t^{n+1}$ exact integer counts. Seven base-$10^{18}$ digits
+per count suffice for the entire stated matrix-size and height domain.
 
 It's better to have $m\ge n$. But I'll try some cases with $m<n$ too,
 for purposes of testing.
@@ -30,13 +30,16 @@ for purposes of testing.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+@<Type definitions@>;
+@<Counting constants@>;
 int m,n,t; /* command-line parameters */
 char bad[maxt][maxt][maxt][maxt]; /* is a submatrix bad? */
-unsigned long long *count; /* the big array of counts */
-unsigned long long newcount[maxt]; /* counts that will replace old ones */
-unsigned long long mems; /* memory references to octabytes */
+bignum *count; /* the big array of exact counts */
+bignum newcount[maxt]; /* counts that will replace old ones */
+unsigned long long mems; /* scalar references and whole-count operations */
 int inx[maxn+1]; /* indices being looped over */
 int tpow[maxn+2]; /* powers of |t| */
+@<Counting subroutines@>;
 int main(int argc,char*argv[]) {
   register int a,b,c,d,i,j,k,p,q,r,pp;
   @<Process the command line@>;
@@ -65,7 +68,7 @@ if (t<2 || t>maxt) {
   exit(-3);
 }
 for (j=1,k=0;k<=n+1;k++) tpow[k]=j,j*=t;
-count=(unsigned long long*)malloc(tpow[n+1]*sizeof(unsigned long long));
+count=(bignum*)malloc(tpow[n+1]*sizeof(bignum));
 if (!count) {
   fprintf(stderr,"I couldn't allocate t^%d=%d entries for the counts!\n",
                              n+1,tpow[n+1]);
@@ -107,17 +110,18 @@ for (r=0;r<=n;r++) if (r!=q) {
   while (1) {
     o,b=(q==n? inx[0]: inx[q+1]);
     o,c=(q==0? inx[n]: inx[q-1]);
-    for (d=0;d<t;d++) o,newcount[d]=0;
+    for (d=0;d<t;d++) o,newcount[d]=count_zero;
     for (o,a=0,pp=p;a<t;a++,pp+=tpow[q]) {
       for (d=0;d<t;d++) if (o,!bad[a][b][c][d])
-        ooo,newcount[d]+=count[pp];
+        ooo,add_count(&newcount[d],&count[pp]);
     }
     for (o,d=0,pp=p;d<t;d++,pp+=tpow[q]) oo,count[pp]=newcount[d];
     @<Increase the |inx| table, keeping |inx[q]=0|@>;
     if (p==0) break;
   }
-  fprintf(stderr," done with %d,%d ..%lld, %lld mems\n",
-                   i,j,count[0],mems);
+  fprintf(stderr," done with %d,%d ..",i,j);
+  print_count(stderr,&count[0]);
+  fprintf(stderr,", %llu mems\n",mems);
 }
 
 @ And here's the tricky part that keeps the inner loop easy.
@@ -127,12 +131,13 @@ a hand simulation will reveal all.
 @<Get set to handle constraint $(i,1)$@>=
 {
   if (i==1) {
-    for (o,p=tpow[n+1];p>0;p--) o,count[p-1]=1;
+    for (o,p=tpow[n+1];p>0;p--) o,count[p-1]=count_one;
     q=0;
   }@+else {
     q=(q==n? 0: q+1);
     while (1) {
-      for (o,a=0,pp=p,newcount[0]=0;a<t;a++,pp+=tpow[q]) o,newcount[0]+=count[pp];
+      for (o,a=0,pp=p,newcount[0]=count_zero;a<t;a++,pp+=tpow[q])
+        o,add_count(&newcount[0],&count[pp]);
       for (a=0,pp=p;a<t;a++,pp+=tpow[q]) o,count[pp]=newcount[0];
       @<Increase the |inx| table, keeping |inx[q]=0|@>;
       if (p==0) break;
@@ -142,9 +147,11 @@ a hand simulation will reveal all.
 }
 
 @ @<Print the grand total@>=
-for (newcount[0]=0,p=tpow[n+1]-1;p>=0;p--)
-  o,newcount[0]+=count[p];
-printf("Altogether %lld 3VPs (%lld mems).\n",
-               newcount[0],mems);
+for (newcount[0]=count_zero,p=tpow[n+1]-1;p>=0;p--)
+  o,add_count(&newcount[0],&count[p]);
+printf("Altogether ");
+print_count(stdout,&newcount[0]);
+printf(" 3VPs (%llu mems).\n",mems);
 
+@i histoscape-arithmetic.w
 @*Index.
