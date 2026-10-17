@@ -5,7 +5,7 @@ links.'' I hacked it together from the {\mc XCOVER} program that I wrote in
 1994; I apologize for not having time to apply spit and polish.
 
 Given a matrix whose elements are 0 or 1, the problem is to
-find all subsets of its rows whose sum is at most~1 in all columns and
+find all subsets of its retained rows whose sum is at most~1 in all columns and
 {\it exactly\/}~1 in all ``primary'' columns. The matrix is specified
 in the standard input file as follows: Each column has a symbolic name,
 from one to seven characters long. The first line of input contains
@@ -13,6 +13,8 @@ the names of all primary columns, followed by `\.{\char"7C}', followed by
 the names of all other columns.
 (If all columns are primary, the~`\.{\char"7C}' may be omitted.)
 The remaining lines represent the rows, by listing the columns where 1 appears.
+Rows with no primary entry are discarded; the counted subsets use only
+rows that meet at least one primary column.
 
 The program prints the number of solutions and the total number of link
 updates. It also prints every $n$th solution, if the integer command

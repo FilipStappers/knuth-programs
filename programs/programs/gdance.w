@@ -14,6 +14,8 @@ the names of all primary columns, followed by `\.{\char"7C}', followed by
 the names of all other columns.
 (If all columns are primary, the~`\.{\char"7C}' may be omitted.)
 The remaining lines represent the rows, by listing the columns where 1 appears.
+This program discards rows with no primary entry; its counted subsets use
+only rows that meet at least one primary column.
 
 Here I extend the idea so that nonprimary columns can have a different sort
 of restriction: If a row specifies a ``color'' in a nonprimary column,
