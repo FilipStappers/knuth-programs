@@ -120,6 +120,7 @@ int inout[maxm][maxn][8]; /* inside/outside coloring of regions */
 @<Declare the magic tables@>;
 main() {
   register int i,j,k,ii,jj,kk,m,n,s,t;
+  int ch,len;
   @<Initialize |codetable|@>;
   @<Read the input into |a|, and check it for consistency@>;
   @<Do the black/white coloring@>;
@@ -204,23 +205,46 @@ The rows are numbered from 0 to |m-1|, and the columns from 0 to |n-1|.
 
 @<Read the input into |a|, and check it for consistency@>=
 for (m=0;;m++) {
-  if (!fgets(buf,bufsize,stdin)) break;
-  for (j=0;;j++) {
-    k=5*j;
-    if (j==n && m>0) {
-      fprintf(stderr,"Missing `.' at the end of row %d!\n",m);
+  for (len=0;;) {
+    ch=getchar();
+    if (ch==EOF || ch=='\n') break;
+    if (ch==0 || len==bufsize-1) {
+      fprintf(stderr,"Input row is too long or contains a null byte!\n");
       exit(-1);
     }
+    buf[len++]=ch;
+  }
+  if (ch==EOF) {
+    if (ferror(stdin)) {
+      fprintf(stderr,"I couldn't read standard input!\n");
+      exit(-1);
+    }
+    if (len==0) break;
+  }
+  if (len>0 && buf[len-1]=='\r') len--;
+  buf[len]='\0';
+  if (m==maxm) {
+    fprintf(stderr,"Sorry, I'm set up only for %d rows!\n",maxm);
+    exit(-1);
+  }
+  if (len==0 || len%5 || buf[len-1]!='.') {
+    fprintf(stderr,"Incomplete row or missing final `.' in row %d!\n",m);
+    exit(-1);
+  }
+  if (len/5>maxn) {
+    fprintf(stderr,"Sorry, I'm set up only for %d columns!\n",maxn);
+    exit(-1);
+  }
+  if (m==0) n=len/5;
+  else if (n!=len/5) {
+    fprintf(stderr,"Wrong number of columns in row %d!\n",m);
+    exit(-2);
+  }
+  for (j=0;j<n;j++) {
+    k=5*j;
     @<Parse the entry for row |m| and column |j|@>;
-    if (buf[k+4]=='.') {
-      if (m==0) n=j+1;
-      else if (n!=j+1) {
-        fprintf(stderr,"Premature `.' in row %d!\n",m);
-        exit(-2);
-      }
-      break;
-    }@+else if (buf[k+4]!=' ') {
-      fprintf(stderr,"Tile spec in row %d, col %d not followed by blank!\n",
+    if (buf[k+4]!=(j==n-1? '.': ' ')) {
+      fprintf(stderr,"Incorrect tile separator in row %d, col %d!\n",
                 m,j);
       exit(-5);
     }

@@ -91,6 +91,46 @@ class CelticTiles(unittest.TestCase):
             result = self.solve(serialize(rows))
             self.assertEqual(result.returncode, 0, result.stderr.decode())
 
+    def test_row_capacity_rejects_before_store(self):
+        result = self.solve(serialize([['    ']]*101))
+        self.assertNotEqual(result.returncode, 0)
+        self.assertNotIn(b'runtime error', result.stderr)
+        self.assertNotIn(b'AddressSanitizer', result.stderr)
+        self.assertIn(b'rows', result.stderr)
+
+    def test_records_and_column_capacity(self):
+        for text in ['    .extra\n', '    .\0\n', ' '*505+'.\n',
+                     ' '*10000+'\n', '    \n', '   .\n', '    .\n    ',
+                     '    .\n         .\n', '    .\n\n', '    .    .\n',
+                     '    !    .\n', 'xxxx.\n', '9999.\n']:
+            with self.subTest(text=text[:40]):
+                result = self.solve(text)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+                self.assertFalse(result.stdout)
+
+    def test_supported_dimensions_and_line_endings(self):
+        for m, n in [(1, 100), (100, 1), (100, 100)]:
+            result = self.solve(serialize([['    ']*n]*m))
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            self.assertIn(f'{m} rows and {n} columns'.encode(), result.stderr)
+        expected = self.solve(serialize(FIXTURE)).stdout
+        for text in [serialize(FIXTURE).rstrip('\n'), serialize(FIXTURE).replace('\n', '\r\n')]:
+            result = self.solve(text)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            self.assertEqual(result.stdout, expected)
+
+    def test_input_read_error_rejects(self):
+        descriptor = os.open(self.work, os.O_RDONLY)
+        try:
+            result = subprocess.run([str(self.program)], stdin=descriptor,
+                                    capture_output=True, timeout=5, env=ENV)
+        finally:
+            os.close(descriptor)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b'read standard input', result.stderr)
+
 
 if __name__ == '__main__':
     unittest.main()
