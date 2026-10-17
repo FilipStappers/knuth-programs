@@ -4,6 +4,9 @@ in {\sl Constraints\/ \bf14} (2009), 254--272.
 
 The command line contains three things: the number of machines, $m$; the
 number of jobs, $n$; and the desired ``makespan,''~$t$.
+Both dimensions must be positive and fit their single-character names.
+We require $0\le t\le100000$, so every time threshold has at most five
+decimal digits and its variable name fits native SAT's eight-character limit.
 
 Standard input contains an $m\times n$ matrix of work times $w_{ij}$,
 representing the time taken on machine $i$ by job~$j$.
@@ -19,13 +22,18 @@ $i\ne i'$ and $j=j'$ and $w_{ij}>0$ and $w_{i'j'}>0$.
 
 @d maxmn '~'-'0' /* jobs/machines are single characters, |'0'<=c<'~'| */
 @d bufsize 128 /* for the comment lines at the beginning of |stdin| */
+@d maxt 100000 /* largest threshold is |t-1| */
 
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <limits.h>
+#include <ctype.h>
 int m,n,t; /* command-line parameters */
 int w[maxmn][maxmn]; /* the input matrix */
 char buf[bufsize];
+@<Subroutines@>;
 main (int argc,char*argv[]) {
   register int i,j,ii,jj,k,l;
   @<Process the command line@>;
@@ -36,19 +44,52 @@ main (int argc,char*argv[]) {
 
 @ @<Process the command line@>=
 if (argc!=4 ||
-      sscanf(argv[1],"%d",&m)!=1 ||
-      sscanf(argv[2],"%d",&n)!=1 ||
-      sscanf(argv[3],"%d",&t)!=1) {
+      !decimal_integer(argv[1],&m) ||
+      !decimal_integer(argv[2],&n) ||
+      !decimal_integer(argv[3],&t)) {
   fprintf(stderr,"Usage: %s m n t < w[m][n]\n", argv[0]);
   exit(-1);
 }
-if (m>maxmn) {
-  fprintf(stderr,"Sorry, m (%d) must not exceed %d!\n",m,maxmn);
+if (m<=0 || m>maxmn) {
+  fprintf(stderr,"Sorry, m (%d) must be between 1 and %d!\n",m,maxmn);
   exit(-2);
 }
-if (n>maxmn) {
-  fprintf(stderr,"Sorry, n (%d) must not exceed %d!\n",n,maxmn);
+if (n<=0 || n>maxmn) {
+  fprintf(stderr,"Sorry, n (%d) must be between 1 and %d!\n",n,maxmn);
   exit(-3);
+}
+if (t<0 || t>maxt) {
+  fprintf(stderr,"The makespan must be between 0 and %d!\n",maxt);
+  exit(-3);
+}
+
+@ Decimal input is checked before conversion to int, including complete
+weight tokens. The bounds above also keep every row/column sum within int.
+
+@<Subroutines@>=
+int decimal_integer(char *text,int *value) {
+  char *end;
+  long parsed;
+  errno=0;
+  parsed=strtol(text,&end,10);
+  if (errno || end==text || *end || parsed<INT_MIN || parsed>INT_MAX) return 0;
+  *value=parsed;
+  return 1;
+}
+
+int read_weight(int *value) {
+  char token[64];
+  int ch,len=0;
+  do ch=getchar(); while (ch!=EOF && isspace((unsigned char)ch));
+  if (ch==EOF) return 0;
+  do {
+    if (ch==0 || len==63) return 0;
+    token[len++]=ch;
+    ch=getchar();
+  } while (ch!=EOF && !isspace((unsigned char)ch));
+  if (ferror(stdin)) return 0;
+  token[len]='\0';
+  return decimal_integer(token,value);
 }
 
 @ I don't do any fancy error checking about breaks between lines.
@@ -63,7 +104,7 @@ while (1) {
 }    
 for (i=0;i<m;i++) {
   for (j=0;j<n;j++) {
-    if (fscanf(stdin,"%d",&w[i][j])!=1) {
+    if (!read_weight(&w[i][j])) {
       fprintf(stderr,"Oops, I had trouble reading w%d%d!\n",i,j);
       exit(-4);
     }

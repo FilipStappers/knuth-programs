@@ -61,6 +61,33 @@ class OpenShopBounds(unittest.TestCase):
             self.assertNotIn(b'runtime error', result.stderr)
             self.assertNotIn(b'AddressSanitizer', result.stderr)
 
+    def test_parameter_and_weight_domains(self):
+        for mode in self.programs:
+            for m, n, t in [(0, 1, 1), (-1, 1, 1), (1, 0, 1), (79, 1, 1),
+                            (1, 79, 1), (1, 1, -1), (1, 1, 100001), (1, 1, 2147483647),
+                            ('4294967297', 1, 1), ('1x', 1, 1)]:
+                with self.subTest(mode=mode, m=m, n=n, t=t):
+                    result = self.encode(mode, m, n, t, [0])
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn(b'runtime error', result.stderr)
+                    self.assertNotIn(b'AddressSanitizer', result.stderr)
+            for weight in ['4294967297', '9'*100, '1x', '-1']:
+                result = self.encode(mode, 1, 1, 1, [weight], 2)
+                self.assertNotEqual(result.returncode, 0, (mode, weight))
+                self.assertNotIn(b'runtime error', result.stderr)
+                self.assertNotIn(b'AddressSanitizer', result.stderr)
+
+    def test_load_and_makespan_boundaries(self):
+        for mode in self.programs:
+            result = self.encode(mode, 1, 1, 100000, [100000])
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            result = self.encode(mode, 1, 2, 100000, [100000, 100000])
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b'Unsatisfiable', result.stderr)
+            for m, n in [(78, 1), (1, 78)]:
+                result = self.encode(mode, m, n, 0, [0]*(m*n))
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+
     def test_scaling_matches_symmetric_encoder(self):
         for weights in [(0, 1, 2, 0), (1, 1, 1, 1), (2, 0, 0, 2)]:
             expected = self.encode('sym', 2, 2, 3, weights)

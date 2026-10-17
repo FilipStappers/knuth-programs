@@ -20,21 +20,25 @@ int scale; /* we'll divide each input weight by this much */
 @z
 @x
 if (argc!=4 ||
-      sscanf(argv[1],"%d",&m)!=1 ||
-      sscanf(argv[2],"%d",&n)!=1 ||
-      sscanf(argv[3],"%d",&t)!=1) {
+      !decimal_integer(argv[1],&m) ||
+      !decimal_integer(argv[2],&n) ||
+      !decimal_integer(argv[3],&t)) {
   fprintf(stderr,"Usage: %s m n t < w[m][n]\n", argv[0]);
 @y
 if (argc!=5 ||
-      sscanf(argv[1],"%d",&m)!=1 ||
-      sscanf(argv[2],"%d",&n)!=1 ||
-      sscanf(argv[3],"%d",&t)!=1 ||
-      sscanf(argv[4],"%d",&scale)!=1) {
+      !decimal_integer(argv[1],&m) ||
+      !decimal_integer(argv[2],&n) ||
+      !decimal_integer(argv[3],&t) ||
+      !decimal_integer(argv[4],&scale)) {
   fprintf(stderr,"Usage: %s m n t scale < w[m][n]\n", argv[0]);
 @z
 @x
     if (w[i][j]<0 || w[i][j]>t) {
 @y
+    if (w[i][j]<0) {
+      fprintf(stderr,"Input work times must be nonnegative!\n");
+      exit(-5);
+    }
     w[i][j]/=scale;
     if (w[i][j]<0 || w[i][j]>t) {
 @z
