@@ -32,10 +32,27 @@ class SkeletonSpecification(unittest.TestCase):
         subprocess.run(['gcc', '-std=gnu99', '-O1', '-fsanitize=address,undefined,bounds',
                         '-fno-sanitize-recover=all', str(generated), '-o', str(cls.program)],
                        check=True, capture_output=True)
+        # Give every fresh search a nonzero previous printed state, then inspect
+        # its entry state instead of running the unbounded multiplier search.
+        text = SOURCE.read_text().replace(marker, '    printed=1;\n'+marker)
+        text = text.replace('@<Initialize the data structures@>;',
+                            'printf("PRINTED %d\\n",printed); printed=1; continue;')
+        source.write_text(text)
+        subprocess.run(['ctangle', str(source), '-', str(generated)], check=True, capture_output=True)
+        cls.printed_program = work/'printed'
+        subprocess.run(['gcc', '-std=gnu99', '-O1', '-fsanitize=address,undefined,bounds',
+                        '-fno-sanitize-recover=all', str(generated), '-o', str(cls.printed_program)],
+                       check=True, capture_output=True)
 
     @classmethod
     def tearDownClass(cls):
         cls.temp.cleanup()
+
+    def test_each_digit_search_resets_printed_state(self):
+        result = subprocess.run([str(self.printed_program), '2', '0'], input=b'*\n',
+                                capture_output=True, timeout=5, env=ENV)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        self.assertEqual(re.findall(rb'PRINTED (\d+)', result.stdout), [b'0']*10)
 
     def test_pattern_rows_determine_offsets_and_constraints(self):
         for m in range(2, 8):

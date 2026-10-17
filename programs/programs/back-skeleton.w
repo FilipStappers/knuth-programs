@@ -379,7 +379,7 @@ Algorithm 7.2.2B:
 
 @<Find all solutions for the current offsets and special digit $d$@>=
 b1: o,maxl=maxdigs-2-off[m-1];
-l=0;
+l=0, printed=0;
 @<Initialize the data structures@>;
 b2: nodes+=10;
   if (vbose>1) {
