@@ -3370,6 +3370,9 @@ Treats actions as defuns."
 
 ;;; Customizable settings
 
+(defvar gud-tooltip-saved-mouse-binding nil)
+(defvar gud-tooltip-mouse-binding-saved nil)
+
 ;;;###autoload
 (define-minor-mode gud-tooltip-mode
   "Toggle the display of GUD tooltips."
@@ -3379,33 +3382,39 @@ Treats actions as defuns."
   (require 'tooltip)
   (if gud-tooltip-mode
       (progn
-	(add-hook 'change-major-mode-hook 'gud-tooltip-change-major-mode)
-	(add-hook 'pre-command-hook 'tooltip-hide)
-	(add-hook 'tooltip-functions 'gud-tooltip-tips)
-	(define-key global-map [mouse-movement] 'gud-tooltip-mouse-motion))
-    (unless tooltip-mode (remove-hook 'pre-command-hook 'tooltip-hide)
+        (add-hook 'change-major-mode-hook 'gud-tooltip-change-major-mode)
+        (add-hook 'pre-command-hook 'tooltip-hide)
+        (add-hook 'tooltip-functions 'gud-tooltip-tips)
+        (unless gud-tooltip-mouse-binding-saved
+          (setq gud-tooltip-saved-mouse-binding (lookup-key global-map [mouse-movement])
+                gud-tooltip-mouse-binding-saved t))
+        (define-key global-map [mouse-movement] 'gud-tooltip-mouse-motion))
+    (unless tooltip-mode (remove-hook 'pre-command-hook 'tooltip-hide))
     (remove-hook 'change-major-mode-hook 'gud-tooltip-change-major-mode)
     (remove-hook 'tooltip-functions 'gud-tooltip-tips)
-    (define-key global-map [mouse-movement] 'ignore)))
+    (when gud-tooltip-mouse-binding-saved
+      (when (eq (lookup-key global-map [mouse-movement]) 'gud-tooltip-mouse-motion)
+        (define-key global-map [mouse-movement] gud-tooltip-saved-mouse-binding))
+      (setq gud-tooltip-mouse-binding-saved nil
+            gud-tooltip-saved-mouse-binding nil)))
   (gud-tooltip-activate-mouse-motions-if-enabled)
-  (if (and gud-comint-buffer
-	   (buffer-name gud-comint-buffer); gud-comint-buffer might be killed
-	   (memq (buffer-local-value 'gud-minor-mode gud-comint-buffer)
-		 '(gdbmi gdba)))
-      (if gud-tooltip-mode
-	  (progn
-	    (dolist (buffer (buffer-list))
-	      (unless (eq buffer gud-comint-buffer)
-		(with-current-buffer buffer
-		  (when (and (memq gud-minor-mode '(gdbmi gdba))
-			     (not (string-match "\\`\\*.+\\*\\'"
-						(buffer-name))))
-		    (make-local-variable 'gdb-define-alist)
-		    (gdb-create-define-alist)
-		    (add-hook 'after-save-hook
-			      'gdb-create-define-alist nil t))))))
-	(kill-local-variable 'gdb-define-alist)
-	(remove-hook 'after-save-hook 'gdb-create-define-alist t))))
+  (if gud-tooltip-mode
+      (when (and (buffer-live-p gud-comint-buffer)
+                 (memq (buffer-local-value 'gud-minor-mode gud-comint-buffer) '(gdbmi gdba)))
+        (dolist (buffer (buffer-list))
+          (unless (eq buffer gud-comint-buffer)
+            (with-current-buffer buffer
+              (when (and (memq gud-minor-mode '(gdbmi gdba))
+                         (not (string-match "\\`\\*.+\\*\\'" (buffer-name))))
+                (make-local-variable 'gdb-define-alist)
+                (gdb-create-define-alist)
+                (add-hook 'after-save-hook 'gdb-create-define-alist nil t))))))
+    (dolist (buffer (buffer-list))
+      (with-current-buffer buffer
+        (when (and (local-variable-p 'after-save-hook)
+                   (memq 'gdb-create-define-alist after-save-hook))
+          (kill-local-variable 'gdb-define-alist)
+          (remove-hook 'after-save-hook 'gdb-create-define-alist t))))))
 
 (define-obsolete-variable-alias 'tooltip-gud-modes
                                 'gud-tooltip-modes "22.1")
