@@ -16,6 +16,8 @@ more moduli than strictly necessary.
 @c
 #include <stdio.h>
 #include <setjmp.h>
+#include <stdint.h>
+#include <limits.h>
 jmp_buf restart_point;
 @<Type definitions@>@;
 @<Global variables@>@;
@@ -252,10 +254,18 @@ restart: advance_b;
     if (!p) panic("Parameter is zero");  
   }  
   switch (o) {
- case inc_src: cur_src+=p;@+ goto restart;
- case dec_src: cur_src-=p;@+ goto restart;
- case inc_trg: cur_trg+=p;@+ goto restart;
- case dec_trg: cur_trg-=p;@+ goto restart;
+ case inc_src:
+   if (p>slave_size-cur_src) panic("Source address out of range");
+   cur_src+=p;@+ goto restart;
+ case dec_src:
+   if (p>cur_src) panic("Source address out of range");
+   cur_src-=p;@+ goto restart;
+ case inc_trg:
+   if (p>slave_size-cur_trg) panic("Target address out of range");
+   cur_trg+=p;@+ goto restart;
+ case dec_trg:
+   if (p>cur_trg) panic("Target address out of range");
+   cur_trg-=p;@+ goto restart;
  default: op=o;
   }
   if (verbose) {
@@ -274,6 +284,7 @@ restart: advance_b;
     b-=buf_size;
   }
   p=((*b&0x3f)<<24)+(*(b+1)<<16)+(*(b+2)<<8)+*(b+3);
+  if (p>slave_size) panic("Absolute address out of range");
   if (*b&0x40) cur_trg=p;
   else cur_src=p;
   b+=3;
@@ -309,7 +320,13 @@ read_it();
 n=in.buf[4];
 last_row=in.buf[5];
 prev_row=0;
-slave_size=(in.buf[6]<<24)+(in.buf[7]<<16)+(in.buf[8]<<8)+in.buf[9];
+{
+  uint32_t declared_size=((uint32_t)in.buf[6]<<24)+
+                         ((uint32_t)in.buf[7]<<16)+(in.buf[8]<<8)+in.buf[9];
+  if (declared_size>INT_MAX || declared_size<=(uint32_t)n)
+    panic("Bad counter storage size");
+  slave_size=(int)declared_size;
+}
 buf_ptr=&in.buf[9];
 w=n+2-last_row;
 if (w<2 || n<w+w-1 || n>w+w+126) panic("Bad bytes at the beginning");
@@ -337,8 +354,8 @@ it wouldn't be nearly as much fun without \.{CWEB}.)
 @<Interpret the instructions in the input@>=
 while (1) {
   p=get_inst();
-  if (cur_trg+p>slave_size && op>=clear) panic("Target address out of range");
-  if (cur_src+p>slave_size && op>=copy) panic("Source address out of range");
+  if (op>=clear && p>slave_size-cur_trg) panic("Target address out of range");
+  if (op>=copy && p>slave_size-cur_src) panic("Source address out of range");
   switch (op) {
  case sync: @<Finish a row; |goto done| if it was the last@>;@+break;
  case clear: @<Clear |p| counters@>;@+break;
