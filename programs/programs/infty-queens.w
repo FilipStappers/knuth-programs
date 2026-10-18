@@ -46,6 +46,9 @@ $q_{F_{40}}=F_{41}=\phi F_{40}+\phi^{-40}$.
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <errno.h>
+#include <limits.h>
+#include <stdint.h>
 int goal; /* command-line parameter */
 char *a,*b,*c;
 long long int maxmema,maxmemb,minmemc,maxmemc;
@@ -73,18 +76,34 @@ done:@+@<Print the final stats@>;
 }
 
 @ @<Process the command line@>=
-if (argc!=2 || sscanf(argv[1],"%d",
-                                 &goal)!=1) {
+if (argc!=2) {
   fprintf(stderr,"Usage: %s n\n",
                              argv[0]);
   exit(-1);
 }
+{
+  char *end;
+  long parsed;
+  errno=0;
+  parsed=strtol(argv[1],&end,10);
+  if (errno || end==argv[1] || *end || parsed<1 || parsed>INT_MAX) {
+    fprintf(stderr,"The goal must be a positive int!\n");
+    exit(-1);
+  }
+  goal=(int)parsed;
+}
 
 @ @<Allocate the arrays@>=
-maxmema=((int)(phi*goal)+slack);
+maxmema=((long long)(phi*goal)+slack);
 maxmemb=(maxmema+goal);
 maxmemc=(maxmema-goal);
 minmemc=(goal-maxmemc+2*slack);
+if ((unsigned long long)maxmema>SIZE_MAX ||
+    (unsigned long long)maxmemb>SIZE_MAX ||
+    (unsigned long long)(minmemc+maxmemc)>SIZE_MAX) {
+  fprintf(stderr,"The requested arrays exceed this machine's size limit!\n");
+  exit(-2);
+}
 a=(char*)calloc(maxmema,sizeof(char));
 if (!a) {
   fprintf(stderr,"Can't allocate array a!\n");
