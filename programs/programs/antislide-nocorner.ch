@@ -33,6 +33,7 @@ the change file \.{antislide-nocorner.ch}.
 
 @<Put the initial constraints onto the constraint stack@>=
 pp=first[0]=mtop;
+if (mtop==&move_stack[move_stack_size]) panic(move);
 *mtop++=&nodes[0];
 goto advance; /* yes, I'm jumping right into the thick of things */
 @y
@@ -42,5 +43,6 @@ next to a corner. So I make that the initial constraint.
 
 @<Put the initial constraints onto the constraint stack@>=
 special_constraints[0]=&headers[0][0][1];
+if (ctop==&constr_stack[constr_stack_size]) panic(constraint);
 *ctop++=&special_constraints[0];
 @z

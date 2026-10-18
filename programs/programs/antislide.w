@@ -307,8 +307,10 @@ if (count<best_count) best_count=count,cbest=*cc;
 stamp++;
 for (pp=cbest;*pp;pp++)
   for (p=(*pp)->down;p->left;p=p->down)
-    if (*(p->tag)!=stamp) *mtop++=p,*(p->tag)=stamp;
-if (mtop>=&move_stack[move_stack_size]) panic(move);
+      if (*(p->tag)!=stamp) {
+        if (mtop==&move_stack[move_stack_size]) panic(move);
+        *mtop++=p,*(p->tag)=stamp;
+      }
 
 @ Here I'm sorta cheating. Strictly speaking, this problem has no
 constraints, so the empty solution is one valid answer; then we have
@@ -319,6 +321,7 @@ the change file \.{antislide-nocorner.ch}.
 
 @<Put the initial constraints onto the constraint stack@>=
 pp=first[0]=mtop;
+if (mtop==&move_stack[move_stack_size]) panic(move);
 *mtop++=&nodes[0];
 goto advance; /* yes, I'm jumping right into the thick of things */
 
@@ -338,7 +341,6 @@ for (cc=constr[l];cc<constr[l+1];cc++)
   @<If constraint |pp=*cc| is not satisfied, put it on the constraint stack@>;
 for (cc=p->clist;*cc;cc++)
   @<If constraint |pp=*cc| is not satisfied, put it on the constraint stack@>;
-if (ctop>=&constr_stack[constr_stack_size]) panic(constraint);
 
 @ When a cell is occupied by the move at level |l|, we put |l+1| into
 the |right| field of its header node. That way we can tell if the
@@ -362,7 +364,10 @@ for (q=p->down;q!=p;q=q->down) {
 @ @<If constraint |pp=*cc| is not satisfied, put it on the constraint stack@>=
 {
   for (pp=*cc;*pp;pp++) if ((*pp)->right) break;
-  if (!*pp) *ctop++=*cc;
+  if (!*pp) {
+    if (ctop==&constr_stack[constr_stack_size]) panic(constraint);
+    *ctop++=*cc;
+  }
 }
 
 @ The links do their dance in this step. We have to reconstruct the lists
@@ -410,9 +415,12 @@ for (pp=mtop-1;pp>=first[l];pp--)
 @ @<Put all remaining moves on the move stack@>=
 {
   stamp++;
-  for (p=&headers[0][0][0];p<&headers[n1][0][0];p++) if (!p->right)
+  for (p=&headers[0][0][0];p<(node*)(headers+n1);p++) if (!p->right)
     for (q=p->down;q!=p;q=q->down)
-      if (*(q->tag)!=stamp) *mtop++=q,*(q->tag)=stamp;
+      if (*(q->tag)!=stamp) {
+        if (mtop==&move_stack[move_stack_size]) panic(move);
+        *mtop++=q,*(q->tag)=stamp;
+      }
 }
 
 @ @<Print a progress report@>=
