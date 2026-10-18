@@ -50,10 +50,10 @@ LOADLIBES = $(LDLIBS)
 	tex $*.tex
 
 .w.c:
-	if test -r $*.ch; then ctangle $*.w $*.ch; else ctangle $*.w; fi
+	ctangle $*.w -
 
 .w.tex:
-	if test -r $*.ch; then cweave $*.w $*.ch; else cweave $*.w; fi
+	cweave $*.w -
 
 .w.o:
 	make $*.c
@@ -93,6 +93,11 @@ help:
 	@ echo "then 'make install';"
 	@ echo "then (optionally) 'make installdemos';"
 	@ echo "then (optionally) 'make clean'."
+
+# Repairs are in the .w sources; historical change files are archival only.
+$(OBJS:.o=.c) $(DEMOFILES:.w=.c) test_sample.c: gb_types.w boilerplate.w
+$(KERNELFILES:.w=.tex) $(GENERATORFILES:.w=.tex) $(MISCWEBS:.w=.tex) \
+        $(DEMOFILES:.w=.tex): gb_types.w boilerplate.w
 
 lib: libgb.a
 
