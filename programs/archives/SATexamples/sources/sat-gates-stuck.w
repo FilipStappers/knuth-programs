@@ -45,6 +45,8 @@ if (argv[2][0]!='0' && argv[2][0]!='1') {
 
 @ If necessary, I could rename vertices whose name is empty or too long.
 But I don't want to bother with that unless it proves to be necessary.
+One of the SAT reader's eight name characters must remain available for
+the prime or active-path suffix.
 
 @d prime_char '\''
 @d sharp_char '#'
@@ -56,7 +58,7 @@ for (j=0,v=g->vertices;v<g->vertices+g->n;v++) {
   if (v->name[0]=='~' || k==0 || v->name[k]) {
     fprintf(stderr,"Sorry, the wire name `%s' is illegal!\n",v->name);
     j=1;
-  }@+else if (k>8) {
+  }@+else if (k>7) {
     fprintf(stderr,"Sorry, the wire name `%s' is too long!\n",v->name);
     j=1;
   }@+else if (v->name[k-1]==prime_char || v->name[k-1]==sharp_char) {
