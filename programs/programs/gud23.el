@@ -3165,22 +3165,26 @@ class of the file (using s to separate nested class ids)."
           ;; returns the buffer position of same
           (fset 'syntax-symbol (lambda (x) (c-langelem-sym (car x))))
           (fset 'syntax-point (lambda (x) (c-langelem-pos (car x))))
-          ;; Search through classpath list for an entry that is
-          ;; contained in f
+          ;; A classpath must be a literal directory prefix of f.
           (while (and cplist (not class-found))
-            (if (string-match (car cplist) f)
+            (let ((prefix (file-name-as-directory (car cplist))))
+            (if (string-prefix-p prefix f (memq system-type '(windows-nt ms-dos cygwin)))
                 (setq class-found
 		      (mapconcat 'identity
                                  (split-string
-                                   (substring f (+ (match-end 0) 1))
-                                  "/") ".")))
+                                   (substring f (length prefix))
+                                  "/") "."))))
             (setq cplist (cdr cplist)))
           ;; if f is visited by a java(cc-mode) buffer, walk up the
           ;; syntactic information chain and collect any 'inclass
           ;; symbols until 'topmost-intro is reached to find out if
           ;; point is within a nested class
-          (if (and fbuffer (equal (symbol-file 'java-mode) "cc-mode"))
+          (if (and class-found fbuffer
+                   (with-current-buffer fbuffer (derived-mode-p 'java-mode)))
               (with-current-buffer fbuffer
+                (save-excursion
+                (goto-char (point-min))
+                (forward-line (1- line))
                 (let ((nclass) (syntax))
                   ;; While the c-syntactic information does not start
                   ;; with the 'topmost-intro symbol, there may be
@@ -3209,10 +3213,10 @@ class of the file (using s to separate nested class ids)."
                         (setq syntax (cdr syntax)))
                       (goto-char (syntax-point syntax))
                       ))
-                  (string-match (concat (car nclass) "$") class-found)
+                  (string-match (concat (regexp-quote (or (car nclass) "")) "$") class-found)
                   (setq class-found
                         (replace-match (mapconcat 'identity nclass "$")
-                                       t t class-found)))))
+                                       t t class-found))))))
           (if (not class-found)
               (message "gud-find-class: class for file %s not found!" f))
           class-found))
