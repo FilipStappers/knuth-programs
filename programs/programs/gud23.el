@@ -3330,12 +3330,28 @@ Treats actions as defuns."
 
 ;; Derived from cfengine.el.
 (defun gdb-script-end-of-defun ()
-  "`end-of-defun' function for Gdb script mode.
-Treats actions as defuns."
-  (end-of-line)
-  (if (re-search-forward "^end" nil t)
-      (beginning-of-line)
-    (goto-char (point-max)))
+  "Move to the closing end of an action, balancing nested GDB blocks."
+  (beginning-of-line)
+  (unless (looking-at "[ \t]*\\(?:define\\|document\\)\\_>")
+    (unless (re-search-backward "^[ \t]*\\(?:define\\|document\\)\\_>" nil t)
+      (goto-char (point-min))))
+  (let (stack finish)
+    (while (and (not finish)
+                (re-search-forward
+                 "^[ \t]*\\(define\\|document\\|if\\|while\\|commands\\|python\\|guile\\|end\\)\\_>\\(.*\\)$" nil t))
+      (let ((command (intern (match-string 1)))
+            (tail (match-string 2))
+            (position (match-beginning 0)))
+        (cond
+         ((eq command 'end)
+          (when (and stack (string-match-p "\\`[ \t]*\\(?:#.*\\)?\\'" tail))
+            (pop stack)
+            (unless stack (setq finish position))))
+         ((memq (car stack) '(document python guile)))
+         ((or (not (memq command '(python guile)))
+              (string-match-p "\\`[ \t]*\\(?:#.*\\)?\\'" tail))
+          (push command stack)))))
+    (goto-char (or finish (point-max))))
   t)
 
 ;; Besides .gdbinit, gdb documents other names to be usable for init
