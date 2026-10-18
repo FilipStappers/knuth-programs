@@ -519,7 +519,7 @@ clause cmem[clausesize]; /* the master array of clauses */
 uint nonspec; /* address in |cmem| of the first non-special clause */
 char move[nn+1]; /* one-based choices for every possible equivalence class */
 int vars,clauses,cells,sols;
-int plugs[maxsols][26];
+int plugs[maxsols][27]; /* at most 26 self-pairs followed by a sentinel */
 int solsmax,cellsmax,clausesmax;
 int cases,fails,hardcases,hardfails;
 
