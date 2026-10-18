@@ -690,9 +690,9 @@ print_move(p)
   for (j=1;j<=ll*mm*nn;j++)
     printf(" Level %d: %d sols, %#.1f syms, %#.1f cons, %#.1f frcs\n",
       j,profile[j],
-      (double)prof_syms[j]/(double)profile[j],
-      (double)prof_cons[j]/(double)profile[j],
-      (double)prof_frcs[j]/(double)profile[j]);
+      profile[j]? (double)prof_syms[j]/(double)profile[j]: 0.0,
+      profile[j]? (double)prof_cons[j]/(double)profile[j]: 0.0,
+      profile[j]? (double)prof_frcs[j]/(double)profile[j]: 0.0);
 }
 
 @ @<Initialize for level 0@>=
