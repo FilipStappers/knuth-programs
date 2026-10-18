@@ -441,7 +441,7 @@ for (j=0;j<n;j++) for (k=j+1;k<n;k++) if (kbits[j]&kbits[k])
 if (n>64) @<Make the at-least-one constraints by brute force@>@;
 else {
   for (mk=i=0;i<26;i++) {
-    for (k=0,bb=0LL;k<n;k++) if ((1<<i)&kbits[k]) bb+=1LL<<k;
+    for (k=0,bb=0ULL;k<n;k++) if ((1<<i)&kbits[k]) bb+=1ULL<<k;
     for (k=0;k<mk;k++) {
       if ((konstraint[k]&bb)==konstraint[k]) break; /* |bb| is subsumed */
       if ((konstraint[k]&bb)==bb) { /* |bb| subsumes a previous one */
