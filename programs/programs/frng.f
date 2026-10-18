@@ -44,7 +44,8 @@ C       ********* see the book for explanations and caveats! *********
       ELSE
          SSEED=MOD(SEED,MM)
       END IF
-      SS=SSEED-MOD(SSEED,2)+2
+C     Keep the bootstrap residue below MM before the first doubling.
+      SS=MOD(SSEED-MOD(SSEED,2)+2,MM)
       DO 1 J=1,KK
          X(J)=SS
          SS=SS+SS
