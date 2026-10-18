@@ -123,6 +123,7 @@ Another program reads those instructions and completes the computation.
 
 @c
 #include <stdio.h>
+#include <stdint.h>
 @<Type definitions@>@;
 @<Global variables@>@;
 @<Subroutines@>@;
@@ -1147,10 +1148,12 @@ config *hash_table[hash_mask+1]; /* heads of the hash chains */
 quality. We can keep |hash_bits[j][0]=0| without loss of universality.
 
 @<Init...@>=
-row_end=314159265; /* borrow a register temporarily (bad style, sorry) */
+{
+uint32_t hash_state=314159265;
 for (j=0;j<8;j++) for (k=1; k<256; k++) {
-  row_end=69069*row_end+1;
-  hash_bits[j][k]=row_end>>(32-hash_width);
+  hash_state=69069U*hash_state+1U;
+  hash_bits[j][k]=hash_state>>(32-hash_width);
+}
 }
 
 @ @<Local...@>=

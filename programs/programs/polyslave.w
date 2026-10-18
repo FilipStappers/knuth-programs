@@ -54,7 +54,7 @@ enough to count 49-ominoes.
 With a little extra work I could have allowed moduli up to $2^{32}$.
 But I didn't bother, because $2^{31}$ turned out to be plenty big.
 
-@d maxm (1<<31) /* the modulus $m$ must not exceed this */
+@d maxm (1U<<31) /* the modulus $m$ must not exceed this */
 
 @<Type...@>=
 typedef unsigned int counter; /* the main data type in our arrays */

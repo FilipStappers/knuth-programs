@@ -65,6 +65,7 @@ paths through it.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 @<Type definitions@>@;
 @<Global variables@>@;
 @<Subroutines@>@;
@@ -362,10 +363,12 @@ unsigned int hash[8][256]; /* random bits for universal hashing */
 quality.
 
 @<Init...@>=
-m=314159265;
+{
+uint32_t hash_state=314159265;
 for (j=1;j<8;j++) for (k=0; k<256; k++) {
-  m=69069*m+1;
-  hash[j][k]=m>>(32-hash_width);
+  hash_state=69069U*hash_state+1U;
+  hash[j][k]=hash_state>>(32-hash_width);
+}
 }
 
 @ @<Local...@>=
@@ -894,7 +897,7 @@ But if bit~6 is~1 it means, ``The low-order 26 bits are the serial number of
 the successor pattern, whose birth and death dates you already know.''
 
 @d new_pred_code 0 /* high 5 when new slice is the predecessor */
-@d new_level_code 31 /* high 5 when $m$ increases */
+@d new_level_code 31U /* high 5 when $m$ increases */
 
 @<Record the arrival of a new |m|@>=
 buf=(new_level_code<<27)+m;
@@ -959,9 +962,9 @@ void print_slice(patt *p, int m, int death)
   if (s->degree>30) panic("Surprisingly large arc multiplicity");
   if (!s->pat) buf=(1<<27)+(1<<26);
   else if (patt_code(s->pat)<=prev_pat)
-    buf=(s->degree<<27)+(1<<26)+patt_code(s->pat);
+    buf=((unsigned int)s->degree<<27)+(1U<<26)+patt_code(s->pat);
   else {
-    prev_pat++, buf=(s->degree<<27)+((s->weight+m)<<8)+s->death;
+    prev_pat++, buf=((unsigned int)s->degree<<27)+((s->weight+m)<<8)+s->death;
     slices+=s->death-(s->weight+m)+1;
   }
   if (!out_it()) panic("Bad write of transition");
