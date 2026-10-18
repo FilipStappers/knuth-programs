@@ -3739,13 +3739,9 @@ BUFFER nil or omitted means use the current buffer."
 (defun gdb-invalidate-assembler (&optional ignored)
   (if (gdb-get-buffer 'gdb-assembler-buffer)
       (progn
-        (unless (and gdb-selected-frame
-                     (string-equal gdb-selected-frame gdb-previous-frame))
-          (if (or (not (member 'gdb-invalidate-assembler
-                               gdb-pending-triggers))
-                  (not (equal (string-to-number gdb-pc-address)
-                              (string-to-number
-                               gdb-previous-frame-pc-address))))
+        (when (or (not (equal gdb-selected-frame gdb-previous-frame))
+                  (not (member 'gdb-invalidate-assembler gdb-pending-triggers))
+                  (not (equal gdb-pc-address gdb-previous-frame-pc-address)))
           (progn
             ;; take previous disassemble command, if any, off the queue
             (with-current-buffer gud-comint-buffer
@@ -3760,7 +3756,7 @@ BUFFER nil or omitted means use the current buffer."
                    'gdb-assembler-handler))
             (push 'gdb-invalidate-assembler gdb-pending-triggers)
             (setq gdb-previous-frame-pc-address gdb-pc-address)
-            (setq gdb-previous-frame gdb-selected-frame)))))))
+            (setq gdb-previous-frame gdb-selected-frame))))))
 
 (defun gdb-get-selected-frame ()
   (if (not (member 'gdb-get-selected-frame gdb-pending-triggers))

@@ -1,0 +1,15 @@
+;;; B010 disassembly address refresh. -*- lexical-binding: t; -*-
+(load (expand-file-name "debugger-fixture.el" (file-name-directory load-file-name)) nil nil t)
+(ert-deftest disassembly-pc-change-refreshes-within-the-same-function ()
+  (dolist (frames '(("main" "main") ("callee" "main")))
+    (let ((result (review-assembler-update "0x20" "0x10" (car frames) (cadr frames)
+                                           '(gdb-invalidate-assembler) nil)))
+      (should (= (length (car result)) 1))
+      (should (string-match-p "disassemble 0x20" (caar (car result))))
+      (should (equal (nth 2 result) "0x20")))))
+(ert-deftest disassembly-unchanged-pending-address-is-not-requeued ()
+  (should-not (car (review-assembler-update "0x10" "0x10" "main" "main"
+                                           '(gdb-invalidate-assembler) nil))))
+(ert-deftest disassembly-completed-address-can-be-requested-again ()
+  (should (car (review-assembler-update "0x10" "0x10" "main" "main" nil nil))))
+(ert-run-tests-batch-and-exit)
