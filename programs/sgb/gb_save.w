@@ -392,7 +392,8 @@ whenever certain aspects of the given graph have had to be changed.
 The value |-1| will be returned if |g==NULL|; the value
 |-2| will be returned if |g!=NULL| but the file |"foo.gb"| could not
 be opened for output; the value |-3| will be returned if memory is
-exhausted. In other cases a file |"foo.gb"| will be created.
+exhausted, and |-4| if writing or closing the output fails.
+A failed output can leave a partial file.
 
 Here is a list of things that might go wrong, and the corresponding
 corrective actions to be taken in each case, assuming that
@@ -422,15 +423,21 @@ long save_graph(g,f)
   Graph *g; /* graph to be saved */
   char *f; /* name of the file to be created */
 {@+@<Local variables for |save_graph|@>@;@#
+  int output_error;
   if (g==NULL || g->vertices==NULL) return -1; /* where is |g|? */
   anomalies=0;
   @<Figure out the extent of |g|'s internal records@>;
   save_file=fopen(f,"wb");
-  if (!save_file) return -2; /* oops, the operating system won't cooperate */
+  if (!save_file) {
+    gb_free(working_storage);
+    return -2; /* oops, the operating system won't cooperate */
+  }
   @<Translate |g| into external format@>;
   @<Make notes at the end of the file about any changes that were necessary@>;
-  fclose(save_file);
+  output_error=ferror(save_file);
+  if (fclose(save_file)!=0) output_error=1;
   gb_free(working_storage);
+  if (output_error) return -4;
   return anomalies;
 }
 
@@ -491,7 +498,10 @@ the |start_addr| and |end_addr| of the sentinel record will be zero.
 {@+Area t; /* variable that runs through |g->data| */
   for (*t=*(g->data),block_count=0;*t;*t=(*t)->next) block_count++;
   blocks=gb_typed_alloc(block_count+1,block_rep,working_storage);
-  if (blocks==NULL) return -3; /* out of memory */
+  if (blocks==NULL) {
+    gb_free(working_storage);
+    return -3; /* out of memory */
+  }
   for (*t=*(g->data),block_count=0;*t;*t=(*t)->next,block_count++) {
     cur_block=blocks+block_count;
     while (cur_block>blocks&&(cur_block-1)->start_addr<(*t)->first) {
