@@ -493,13 +493,19 @@ void compress(int l,unsigned long long p,int d) {
 
 @<Append |bits| to |oldmem|@>=
 if (spack+d>bitsperword) {
+  @<Check compressed storage capacity@>;
   oldmem[omp++]=pack,pack=bits,spack=d;
-  if (omp>=oldmemsize) {
+}@+else pack+=bits<<spack,spack+=d; 
+
+@ The capacity is specified in bytes, but |omp| counts full words.
+Check before every write, including the final partially filled word.
+
+@<Check compressed storage capacity@>=
+  if (omp>=oldmemsize/sizeof(*oldmem)) {
     fprintf(stderr,"Oops: oldmem overflow (more than %d bytes)!\n",
                                          oldmemsize@t)@>);
     exit(-666666);
   }
-}@+else pack+=bits<<spack,spack+=d; 
 
 @ @<Save |weight[p-1]|@>=
 {
@@ -516,6 +522,7 @@ spack=omp=owp=oms=0, omx=1;
 pack=0;
 oldq=q;
 compress(0,1,3);
+@<Check compressed storage capacity@>;
 oldmem[omp]=pack; /* save the final bits */
 if (omp>maxomp) maxomp=omp;
 
@@ -1033,8 +1040,9 @@ several cycle counts after the last $m$-config has been found.
   fprintf(stderr,"\nThat's all; there are no %d-configs!\n",
                                       m-1);
   fprintf(stderr,
-          "Storage requirements: %lld memsize, %d deg, %lld wtsize, %d maxprec.\n",
-                                 maxmemptr,maxdeg+1,maxwtptr,18*prec);
+          "Storage requirements: %lld memsize, %d deg, %lld wtsize, %d maxprec, %lld oldmemsize bytes.\n",
+          maxmemptr,maxdeg+1,maxwtptr,18*prec,
+          (long long)((maxomp+1)*sizeof(*oldmem)));
   exit(0);
 }
 
