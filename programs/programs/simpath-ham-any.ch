@@ -5,6 +5,19 @@
 @d dummy maxn+1 /* code for a dummy vertex adjacent to all */
 @z
 @x
+if (g->m>2*maxm) {  
+  fprintf(stderr,"Sorry, that graph has %ld edges; ",(g->m+1)/2);
+  fprintf(stderr,"I can't handle more than %d!\n",maxm);
+  exit(-3);
+}
+@y
+if (g->m/2+n>maxm) {
+  fprintf(stderr,"I need space for %ld ordinary and %d dummy edges (max %d)!\n",
+                  g->m/2,n,maxm);
+  exit(-3);
+}
+@z
+@x
       else printf(" -> %ld(%s,%ld) #%d\n",u->num,u->name,a->len,m);
     }
   }
