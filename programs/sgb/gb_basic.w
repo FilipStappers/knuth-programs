@@ -1773,6 +1773,7 @@ for (v=g->vertices;v<g->vertices+n;v++) {@+register Arc *a;
   for (a=vvv->arcs;a;a=a->next) {
     u=vert_offset(a->tip,ddelta);
     if (u>=new_graph->vertices+n) continue;
+    if (!directed && u<vv) continue; /* the edge was handled at its other end */
     if (u->tmp==vv) {@+long l=u->minlen;
       if (a->len>l) l=a->len; /* maximum */
       if (u->mult<0) @<Update minimum of multiple maxima@>@;
