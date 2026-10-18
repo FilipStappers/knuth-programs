@@ -1711,21 +1711,25 @@ in many of the programs below.
 @<Insert a union arc or edge from |vv| to |u|, if appropriate@>=
 {@+register Arc *b;
   if (directed) {
-    if (multi || u->tmp!=vv) gb_new_arc(vv,u,a->len);
+    if (multi || u->tmp!=vv) {
+      gb_new_arc(vv,u,a->len);
+      u->tlen=vv->arcs;
+    }
     else {
       b=u->tlen;
       if (a->len<b->len) b->len=a->len;
     }
     u->tmp=vv; /* remember that we've seen this */
-    u->tlen=vv->arcs;
   }@+else if (u>=vv) {
-    if (multi || u->tmp!=vv) gb_new_edge(vv,u,a->len);
+    if (multi || u->tmp!=vv) {
+      gb_new_edge(vv,u,a->len);
+      u->tlen=vv->arcs;
+    }
     else {
       b=u->tlen;
       if (a->len<b->len) b->len=(b+1)->len=a->len;
     }
     u->tmp=vv;
-    u->tlen=vv->arcs;
     if (u==vv && a->next==a+1) a++; /* bypass second half of self-loop */
   }
 }
