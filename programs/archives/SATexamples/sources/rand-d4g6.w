@@ -16,6 +16,8 @@ $n$ is small).
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <limits.h>
 #include "gb_flip.h"
 int nn; /* the given number */
 int seed; /* the given seed for pseudorandom numbers */
@@ -136,8 +138,8 @@ currently eligible ones, called |elig|.
 @d sanity_checking time>=0 /* should |sanity| be checked now? */
 
 @<Glob...@>=
-int time; /* the number of updates we've made */
-int wait[maxn][maxn]; /* lower bound on the time when an edge is eligible */
+unsigned long long time; /* the number of updates we've made */
+unsigned long long wait[maxn][maxn]; /* earliest eligible update time */
 int uelig[maxe],velig[maxe]; /* endpoints of available choices */
 int elig; /* the current number of choices */
 
@@ -149,6 +151,15 @@ dglen[0]=nn;
 @ Here's how to insert a new edge $uv$:
 
 @<Sub...@>=
+void advance_time(void) {
+  if (time>=ULLONG_MAX-embargo) {
+    fprintf(stderr,"Update clock exhausted!\n");
+    exit(-666);
+  }
+  time++;
+}
+
+@ @<Sub...@>=
 void insert(register int u,register int v) {
   register int d,j,k,w;
   ee[e].u=u,ee[e].v=v;
@@ -234,8 +245,8 @@ if (dglen[d1] && dglen[d2]) {
 We also use a |queue| for a breadth-first search.
 
 @<Glob...@>=
-int stamp[maxn]; /* the most recent stamp received by each vertex */
-int curstamp;
+uint32_t stamp[maxn]; /* the most recent stamp received by each vertex */
+uint32_t curstamp;
 int queue[maxn]; /* elements known to be close to |u|, in order of distance */
 int vbose; /* this variable can be set positive while debugging */
 
@@ -263,20 +274,22 @@ int vbose; /* this variable can be set positive while debugging */
 @ @<Insert a random eligible edge@>=
 j=gb_unif_rand(p);
 if (vbose)
-  fprintf(stderr,"%d: Inserting %d--%d (%d,%d; %d elig)\n",
+  fprintf(stderr,"%llu: Inserting %d--%d (%d,%d; %d elig)\n",
           time,uelig[j],velig[j],deg[uelig[j]],deg[velig[j]],p);
 insert(uelig[j],velig[j]);
-time++;
+advance_time();
 
 @ @d embargo 10
 
 @<Delete a random edge@>=
 j=gb_unif_rand(e);
 if (vbose)
-  fprintf(stderr,"%d: Deleting %d--%d (%d present)\n",
+  fprintf(stderr,"%llu: Deleting %d--%d (%d present)\n",
     time,ee[j].u,ee[j].v,e);
+u=ee[j].u,v=ee[j].v;
 delete(j);
-wait[ee[j].u][ee[j].v]=wait[ee[j].v][ee[j].u]=time+embargo;
+advance_time();
+wait[u][v]=wait[v][u]=time+embargo;
 
 @ @<Output the solution@>=
 for (j=0;j<e;j++)
