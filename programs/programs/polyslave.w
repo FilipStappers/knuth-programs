@@ -299,6 +299,7 @@ for $1\le j\le n$.
 sprintf(filename,"%.90s.ck",base_name);
 ck_file=fopen(filename,"rb");
 if (!ck_file) panic("I can't open the checksum file");
+file_extension=0; /* a retry replays the complete instruction stream */
 open_it();
 read_it();
 n=in.buf[4];
