@@ -124,6 +124,9 @@ Another program reads those instructions and completes the computation.
 @c
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <limits.h>
 @<Type definitions@>@;
 @<Global variables@>@;
 @<Subroutines@>@;
@@ -166,9 +169,21 @@ as explained below, because there might be an enormous amount of output.
 
 @d wmax 23 /* for quinary/octal packing into two tetrabytes */
 @d nmax (wmax+wmax+126)
-@d bad(k,v) sscanf(argv[k],"%d",&v)!=1
+@d bad(k,v) !scan_int(argv[k],&v)
 
-@<Scan the command line@>=
+@ @<Sub...@>=
+int scan_int(char *text,int *value)
+{
+  char *end;
+  long parsed;
+  errno=0;
+  parsed=strtol(text,&end,10);
+  if (errno || end==text || *end || parsed<INT_MIN || parsed>INT_MAX) return 0;
+  *value=(int)parsed;
+  return 1;
+}
+
+@ @<Scan the command line@>=
 if (argc!=6 || bad(1,n) || bad(2,w) || bad(3,conf_size) || bad(4,slave_size)) {
   fprintf(stderr, "Usage: %s n w confsize slavesize outfilename\n",argv[0]);
   exit(-2);
@@ -177,6 +192,8 @@ if (w>wmax) panic("Sorry, that w is too big for this implementation");
 if (w<2) panic("No, w must be at least 2");
 if (n<w+w-1) panic("There are no solutions for such a small n");
 if (n>w+w+126) panic("Eh? That n is incredible");
+if (conf_size<2) panic("Configuration capacity must be at least two");
+if (slave_size<=n+1) panic("Counter capacity must exceed the reserved totals");
 base_name=argv[5];
 
 @ @<Glob...@>=
