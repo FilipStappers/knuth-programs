@@ -1115,7 +1115,7 @@ if (!vmem) {
   exit(-12);
 }
 bytes+=(vars+1)*sizeof(variable);
-for (k=2;k<=vars;k++) o,vmem[k].value=unset,vmem[k].tloc=-1;
+for (k=2;k<=vars;k++) o,vmem[k].value=unset,vmem[k].tloc=-1,vmem[k].stamp=0;
 heap=(uint*)malloc(vars*sizeof(uint));
 if (!heap) {
   fprintf(stderr,"Oops, I can't allocate the heap array!\n");

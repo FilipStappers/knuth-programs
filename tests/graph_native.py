@@ -47,7 +47,7 @@ int main(int argc,char **argv) {
         source.write_text(text)
         subprocess.run(['ctangle',str(source),'-',str(generated)],cwd=GRAPHBASE,
                        check=True,capture_output=True)
-        subprocess.run(['gcc',*FLAGS,str(generated),*self.objects,'-o',str(program)],
+        subprocess.run(['gcc',*FLAGS,str(generated),*self.objects,'-lm','-o',str(program)],
                        check=True,capture_output=True)
         return program
 
