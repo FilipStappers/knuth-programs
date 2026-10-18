@@ -36,6 +36,8 @@ I generate lots of data points (currently 1000). The program
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
+#include <errno.h>
 #include "gb_flip.h"
 int term[M][tmax+1]={
  {-2,-3,-10,0},
@@ -46,6 +48,14 @@ int seed; /* the random number seed */
 int t; /* the number of times to {\mc AND} bits together before use */
 char x[N+1]; /* the current data point */
 unsigned int randbits; /* yet-unused random bits, preceded by 1 */
+int scan_int(char *arg,int *destination) {
+  char *end;
+  long value;
+  errno=0; value=strtol(arg,&end,10);
+  if (end==arg || *end || errno || value<INT_MIN || value>INT_MAX) return 0;
+  *destination=(int)value;
+  return 1;
+}
 main(int argc,char *argv[]) {
   register int a,b,i,j,k;
   @<Process the command line@>;
@@ -57,10 +67,15 @@ main(int argc,char *argv[]) {
 }
 
 @ @<Process the command line@>=
-if (argc!=3 || sscanf(argv[1],""O"d",&t)!=1 ||
-               sscanf(argv[2],""O"d",&seed)!=1) {
+if (argc!=3 || !scan_int(argv[1],&t) ||
+               !scan_int(argv[2],&seed)) {
   fprintf(stderr,"Usage: "O"s t seed\n",argv[0]);
   exit(-1);
+}
+
+if (t<=0) {
+  fprintf(stderr,"t must be positive!\n");
+  exit(-2);
 }
 
 @ @<Set up the first data point@>=

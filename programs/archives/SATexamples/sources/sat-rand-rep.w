@@ -19,8 +19,18 @@ can be used for comparison.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
+#include <errno.h>
 #include "gb_flip.h"
 int k,m,n,seed; /* command-line parameters */
+int scan_int(char *arg,int *destination) {
+  char *end;
+  long value;
+  errno=0; value=strtol(arg,&end,10);
+  if (end==arg || *end || errno || value<INT_MIN || value>INT_MAX) return 0;
+  *destination=(int)value;
+  return 1;
+}
 main(int argc, char*argv[]) {
   register int i,j,t,ii,kk,nn;
   @<Process the command line@>;
@@ -30,10 +40,10 @@ main(int argc, char*argv[]) {
 }
 
 @ @<Process the command line@>=
-if (argc!=5 || sscanf(argv[1],"%d",&k)!=1 ||
-               sscanf(argv[2],"%d",&m)!=1 ||
-               sscanf(argv[3],"%d",&n)!=1 ||
-               sscanf(argv[4],"%d",&seed)!=1) {
+if (argc!=5 || !scan_int(argv[1],&k) ||
+               !scan_int(argv[2],&m) ||
+               !scan_int(argv[3],&n) ||
+               !scan_int(argv[4],&seed)) {
   fprintf(stderr,"Usage: %s k m n seed\n",argv[0]);
   exit(-1);
 }

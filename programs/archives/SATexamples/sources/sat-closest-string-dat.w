@@ -15,10 +15,20 @@ It takes five parameters from the command line:
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
+#include <errno.h>
 #include "gb_flip.h"
 char secret[maxn+1]; /* a solution (probably the only one) */
 int del[maxn]; /* timestamps for divergence from the secret */
 int m,n,rmin,rmax,s; /* command-line parameters */
+int scan_int(char *arg,int *destination) {
+  char *end;
+  long value;
+  errno=0; value=strtol(arg,&end,10);
+  if (end==arg || *end || errno || value<INT_MIN || value>INT_MAX) return 0;
+  *destination=(int)value;
+  return 1;
+}
 main(int argc, char* argv[]) {
   register int c,i,j,k,o,r;
   @<Process the command line@>;
@@ -31,21 +41,16 @@ main(int argc, char* argv[]) {
 
 @ @<Process the command line@>=
 if (argc!=6 ||
-      sscanf(argv[1],"%d",
-                         &n)!=1 ||
-      sscanf(argv[2],"%d",
-                         &m)!=1 ||
-      sscanf(argv[3],"%d",
-                         &rmin)!=1 ||
-      sscanf(argv[4],"%d",
-                         &rmax)!=1 ||
-      sscanf(argv[5],"%d",
-                         &s)!=1) {
+      !scan_int(argv[1],&n) ||
+      !scan_int(argv[2],&m) ||
+      !scan_int(argv[3],&rmin) ||
+      !scan_int(argv[4],&rmax) ||
+      !scan_int(argv[5],&s)) {
   fprintf(stderr,"Usage: %s n m rmin rmax seed\n",
                                   argv[0]);
   exit(-1);
 }
-if (n==0 || n>maxn) {
+if (n<=0 || n>maxn) {
   fprintf(stderr,"Oops: n should be between 1 and %d, not %d!\n",
                                      maxn,n);
   exit(-2);
@@ -53,6 +58,10 @@ if (n==0 || n>maxn) {
 if (rmin<=0 || rmin>rmax || rmax>=n) {
   fprintf(stderr,"Oops: I assume that 0 < rmin <= rmax < n!\n");
   exit(-3);
+}
+if (m<0 || m==INT_MAX || m>INT_MAX/rmax) {
+  fprintf(stderr,"String count or total divergence attempts exceed the supported int range!\n");
+  exit(-4);
 }
 printf("! sat-closest-string-dat %d %d %d %d %d\n",
                    n,m,rmin,rmax,s);

@@ -27,10 +27,26 @@ input to {\ms SAT-OSS}.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
+#include <errno.h>
+#include <math.h>
 #include "gb_flip.h" /* the random number generator */
 int n,s,r,seed; /* integer command-line parameters */
-float p; /* the floating point command-line parameter */
+double p; /* the floating point command-line parameter */
 int w[maxn][maxn]; /* the work times */
+int scan_int(char *arg,int *destination) {
+  char *end;
+  long value;
+  errno=0; value=strtol(arg,&end,10);
+  if (end==arg || *end || errno || value<INT_MIN || value>INT_MAX) return 0;
+  *destination=(int)value;
+  return 1;
+}
+int scan_probability(char *arg,double *destination) {
+  char *end;
+  errno=0; *destination=strtod(arg,&end);
+  return end!=arg && !*end && !errno && isfinite(*destination);
+}
 main(int argc,char*argv[]) {
   register int i,j,ii,jj,del,max_take,rep;
   @<Process the command line@>;
@@ -41,19 +57,18 @@ main(int argc,char*argv[]) {
 
 @ @<Process the command line@>=
 if (argc!=6 ||
-      sscanf(argv[1],"%d",
-                          &n)!=1 ||
-      sscanf(argv[2],"%d",
-                          &s)!=1 ||
-      sscanf(argv[3],"%g",
-                          &p)!=1 ||
-      sscanf(argv[4],"%d",
-                          &r)!=1 ||
-      sscanf(argv[5],"%d",
-                          &seed)!=1 ) {
+      !scan_int(argv[1],&n) ||
+      !scan_int(argv[2],&s) ||
+      !scan_probability(argv[3],&p) ||
+      !scan_int(argv[4],&r) ||
+      !scan_int(argv[5],&seed) ) {
   fprintf(stderr,"Usage: %s n scale prob reps seed\n",
                                  argv[0]);
   exit(-1);
+}
+if (n<1 || n>maxn || s<0 || r<0 || (n==1 && r>0)) {
+  fprintf(stderr,"Require 1<=n<=%d, scale/reps>=0, and n>=2 for transfers!\n",maxn);
+  exit(-2);
 }
 if (p<0 || p>=1.0) {
   fprintf(stderr,"The probability must be between 0.0 and 1.0, not %.2g!\n",
@@ -84,7 +99,7 @@ for (i=0;i<n;i++) for (j=0;j<del;j++)
     if (j!=jj) break;
   }
   del=(w[i][j]<=w[ii][jj]? w[i][j]: w[ii][jj]);
-  max_take=(1-p)*(float)del;
+  max_take=(1-p)*(double)del;
   if (max_take) del-=gb_unif_rand(max_take);
   w[i][j]-=del;
   w[ii][j]+=del;
