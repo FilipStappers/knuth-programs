@@ -100,12 +100,13 @@ occasion to use some of the standard string operations.
 
 @* Inputting a line. The {\sc GB\_\,IO} routines get their input from
 an array called |buffer|. This array is internal to {\sc
-GB\_\,IO}---its contents are hidden from user programs. We make it 81
-characters long, since the data is supposed to have at most 79
-characters per line, followed by newline and null.
+GB\_\,IO}---its contents are hidden from user programs. We reserve 82
+characters: The data is supposed to have at most 79 characters per line,
+followed by newline and null, and a spare byte lets us safely normalize
+an overlong 80-character input chunk.
 
 @<Private...@>=
-static char buffer[81]; /* the current line of input */
+static char buffer[82]; /* current line, including a synthetic newline */
 static char *cur_pos=buffer; /* the current character of interest */
 static FILE *cur_file; /* current file, or |NULL| if none is open */
 
@@ -122,15 +123,14 @@ a null character (|'\0'|) occurs within a line.
 @<Internal...@>=
 static void fill_buf()
 {@+register char *p;
-  if (!fgets(buffer,sizeof(buffer),cur_file)) {
+  if (!fgets(buffer,sizeof(buffer)-1,cur_file)) {
     io_errors |= file_ended_prematurely; buffer[0]=more_data=0;
   }
   for (p=buffer; *p; p++) ; /* advance to first null character */
-  if (p--==buffer || *p!='\n') {
-    io_errors |= missing_newline; p++;
-  }
-  while (--p>=buffer && *p==' ') ; /* move back over trailing blanks */
-  *++p='\n'; *++p=0; /* newline and null are always present at end of line */
+  if (p>buffer && p[-1]=='\n') p--;
+  else io_errors |= missing_newline;
+  while (p>buffer && p[-1]==' ') p--; /* remove trailing blanks safely */
+  *p++='\n'; *p=0; /* synthetic newline and null fit in the spare space */
   cur_pos=buffer; /* get ready to read |buffer[0]| */
 }
 

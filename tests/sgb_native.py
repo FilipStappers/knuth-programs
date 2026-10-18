@@ -1,4 +1,4 @@
-"""Build the newly added GraphBase tree itself, including change variants."""
+"""Build the directly repaired GraphBase sources without CWEB change files."""
 from pathlib import Path
 import shutil
 import subprocess
@@ -11,25 +11,15 @@ FLAGS=['-std=gnu99','-Wno-implicit-int','-Wno-implicit-function-declaration',
 
 
 class SgbNative:
-    def __init__(self,work,modules,variant='base',changes=None):
+    def __init__(self,work,modules):
         self.work=work
         work.mkdir(parents=True,exist_ok=True)
         shutil.copyfile(SGB/'gb_types.w',work/'gb_types.w')
         shutil.copyfile(SGB/'boilerplate.w',work/'boilerplate.w')
         self.objects=[]
         for name in modules:
-            change=(changes or {}).get(name,SGB/variant/(name+'.ch'))
             source=SGB/(name+'.w')
-            repair=SGB/'repairs'/(name+'.ch')
-            if repair.exists():
-                if change.exists():
-                    merged=work/(name+'-combined.ch')
-                    result=subprocess.run(['ctie','-c',str(merged),str(source),str(change),str(repair)],
-                                          cwd=work,capture_output=True)
-                    if result.returncode:raise AssertionError(result.stdout.decode(errors='replace'))
-                    change=merged
-                else: change=repair
-            result=subprocess.run(['ctangle',str(source),str(change) if change.exists() else '-',
+            result=subprocess.run(['ctangle',str(source),'-',
                                    str(work/(name+'.c'))],cwd=work,capture_output=True)
             if result.returncode:raise AssertionError(result.stdout.decode(errors='replace'))
         for name in modules:
