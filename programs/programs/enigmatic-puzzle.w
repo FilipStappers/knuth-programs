@@ -517,7 +517,7 @@ typedef struct {
 cell mem[memsize]; /* the master array of cells */
 clause cmem[clausesize]; /* the master array of clauses */
 uint nonspec; /* address in |cmem| of the first non-special clause */
-char move[64]; /* the stack of choices made so far */
+char move[nn+1]; /* one-based choices for every possible equivalence class */
 int vars,clauses,cells,sols;
 int plugs[maxsols][26];
 int solsmax,cellsmax,clausesmax;
