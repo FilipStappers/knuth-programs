@@ -28,12 +28,14 @@ command line.
 @c
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
+#include <stdint.h>
 #include "gb_graph.h"
 #include "gb_save.h"
 unsigned long long nodes,lnodes[maxn];
 unsigned long long count,hcount,lcount[maxn],vcount[maxn];
 double pr[maxn],vpr[maxn],lpr[maxn],totalpr;
-Vertex *start,*vstack[maxn];
+Vertex *start,**vstack;
 int sptr,bestl;
 int mv[maxn],ht[maxn];
 @<Subroutines@>@;
@@ -64,6 +66,24 @@ if (g->n>=maxn) {
   exit(-6);
 }
 start=findvert(g,argv[2]);
+@<Allocate the pending-choice stack@>;
+
+@ Each active depth contributes alternatives from a different covered vertex.
+Thus there can be at most |g->m| pending arcs, plus the initial vertex.
+The stack indices are \&{int}s, so reject an unrepresentable capacity before
+allocating or entering the search.
+
+@<Allocate the pending-choice stack@>=
+if (g->m<0 || g->m>=INT_MAX ||
+    (uintmax_t)g->m>SIZE_MAX/sizeof(*vstack)-1) {
+  fprintf(stderr,"The pending-choice stack is too large!\n");
+  exit(-7);
+}
+vstack=(Vertex**)malloc(((size_t)g->m+1)*sizeof(*vstack));
+if (!vstack) {
+  fprintf(stderr,"I couldn't allocate the pending-choice stack!\n");
+  exit(-7);
+}
 
 @ @<Sub...@>=
 Vertex *findvert(Graph *g, char*str) {
