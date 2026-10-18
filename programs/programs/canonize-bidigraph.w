@@ -193,8 +193,7 @@ for (exo=j=0;j<n;j++) for (k=0;k<n;k++) if (a[j][k]) {
   if (cmax&0x2) exo=1,gb_new_arc(vvert(j),vvert(k),0);
   if (cmax&0x1) exo=1,gb_new_arc(vvert(j),vvert(k),2);
 }
-sprintf(gg->id,"canonical %.*s",
-                     ID_FIELD_SIZE-1,g->id);
+snprintf(gg->id,sizeof(gg->id),"canonical %s",g->id);
 save_graph(gg,"/tmp/makegraph.gb");
 fprintf(stderr,"OK, I've created /tmp/makegraph.gb, with %d vertices",
                                                  n);
