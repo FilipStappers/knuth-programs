@@ -36,9 +36,9 @@ boundary cells remain unoccupied.
 @c
 #include <stdio.h>
 #include <stdlib.h>
-char board[m+2][n+2]; /* cells of the current board position */
+signed char board[m+2][n+2]; /* cells include the negative empty marker */
 int move; /* the current move number */
-char deli[8]={-1,-1,-1,0,0,1,1,1},
+signed char deli[8]={-1,-1,-1,0,0,1,1,1},
      delj[8]={-1,0,1,-1,1,-1,0,1}; /* the eight directions */
 char buffer[8]; /* used for input */
 int total[p]; /* how many pieces show this color? */
