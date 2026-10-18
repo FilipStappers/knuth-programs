@@ -138,10 +138,11 @@
     (let (beg end)
       (beginning-of-line 1) (setq beg (point))
       (beginning-of-line 2) (setq end (point))
-      (put-text-property beg end 'face (nth n color-mode-faces))
-      (put-text-property beg end 'color-mode n)
-      (put-text-property beg end 'front-sticky t)
-      (put-text-property (1- end) end 'rear-nonsticky t))))
+      (when (< beg end)
+        (put-text-property beg end 'face (nth n color-mode-faces))
+        (put-text-property beg end 'color-mode n)
+        (put-text-property beg end 'front-sticky t)
+        (put-text-property (1- end) end 'rear-nonsticky t)))))
 
 (defun color-mode-unpaint-line ()
   "Removes the color-mode face, if any, associated with the current line."
@@ -173,7 +174,7 @@
     (force-mode-line-update)))
 
 (defun color-decode (from to)
- (let ((save-undos buffer-undo-list)) (setq buffer-undo-list t)
+ (let ((buffer-undo-list t))
   (save-restriction
     (narrow-to-region from to)
     (goto-char from)
@@ -185,7 +186,6 @@
               (delete-char 1)
               (color-mode-paint-line ch)))
         (forward-line 1)))
- (setq buffer-undo-list save-undos)
     (point-max))))
 
 (defun color-encode (from to orig-buf)
