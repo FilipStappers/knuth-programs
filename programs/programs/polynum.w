@@ -1096,9 +1096,9 @@ typedef struct conf_struct {
   cstring s; /* the configuration name */
   unsigned int addr; /* where the slave keeps the generating function */
   struct conf_struct *link; /* the next item in a hash chain or hole list */
-  char lo; /* smallest exponent of $z$ in the current generating function */
-  char hi; /* largest exponent of $z$ in the current generating function */
-  char lim; /* largest viable exponent of $z$, if this is a target */
+  unsigned char lo; /* smallest exponent of $z$ in the current generating function */
+  unsigned char hi; /* largest exponent of $z$ in the current generating function */
+  unsigned char lim; /* largest viable exponent of $z$, if this is a target */
   status state; /* |active|, |raw|, or |deleted| */
 } config;
 
@@ -1114,7 +1114,7 @@ to the generating function for configuration~|q|. The special case
 completed.
 
 @<Sub...@>=
-void update(config *p, config *q, char hi)
+void update(config *p, config *q, int hi)
 {
   if (!q) basic_inst(add,p->addr,p->lo,hi+1-p->lo);
   else if (q->state==raw) {
