@@ -20,6 +20,9 @@ which $\{0,1,2\}$ has rank $\le2$ and $\{1,2,3,4\}$ has rank~$\le3$.
 @d lmax 25742 /* $2({16\choose8}+1)$, a safe upper bound on list size */
 @c
 #include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <errno.h>
 int n; /* number of elements in the universe */
 int mask; /* $2^n-1$ */
 int S[lmax+1], L[lmax+1]; /* list memory */
@@ -33,7 +36,8 @@ int rank[1<<nmax]; /* $\rm 100+cardinality$, or assigned rank */
 @<Subroutines@>@;
 main() {
   register int i,j,k;
-  if (scanf("%d",&n)!=1 || n>16 || n<0) {
+  n=read_number(10,nmax,-1);
+  if (n<0) {
     fprintf(stderr,"Sorry, I can't deal with a universe of size %d.\n",n);
     exit(-1);
   }
@@ -147,10 +151,31 @@ until encountering an empty set.
 (It corresponds to ``Step~3.'')
 
 @<Sub...@>=
+int read_number(int base,int limit,int eof_value) {
+  char token[64],*end;
+  int c,k=0;
+  unsigned long value;
+  do c=getchar(); while (c!=EOF && isspace((unsigned char)c));
+  if (c==EOF) return eof_value;
+  do {
+    if (k>=sizeof(token)-1) goto bad;
+    token[k++]=c;
+    c=getchar();
+  } while (c!=EOF && !isspace((unsigned char)c));
+  token[k]=0;
+  errno=0;
+  value=strtoul(token,&end,base);
+  if (token[0]=='-' || end==token || *end || errno || value>limit) goto bad;
+  return (int)value;
+bad:
+  fprintf(stderr,"Invalid integer or set outside the universe.\n");
+  exit(-1);
+}
+
+@ @<Sub...@>=
 void enlarge(void) {
   while (1) {
-    x=0;
-    scanf("%x",&x);
+    x=read_number(16,mask,0);
     if (!x) return;
     if (rank[x]>r) insert();
   }
