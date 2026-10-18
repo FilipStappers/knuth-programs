@@ -195,6 +195,7 @@ int read_rectree(char*filename) {
   while (stack>=0) @<Process the top subtree definition on the stack@>;
   @<Bring on the clones@>;
   @<Adjust the tree if bicentroidal@>;
+  fclose(infile);
   return o,tnode[0].deg;
 }
 
@@ -242,7 +243,13 @@ if (o,buf[p]!='T') {
                 buf+p);
   exit(-100);
 }
-for (q=p++,size=0;o,(buf[p]>='0' && buf[p]<='9');p++) size=10*size+buf[p]-'0';
+for (q=p++,size=0;o,(buf[p]>='0' && buf[p]<='9');p++) {
+  if (size>(maxn-(buf[p]-'0'))/10) {
+    fprintf(stderr,"Rectree integer exceeds maxn=%d!\n",maxn);
+    exit(-102);
+  }
+  size=10*size+buf[p]-'0';
+}
 if (size==0) {
   fprintf(stderr,"Subtree size is missing or zero!\n...%s",
                  buf+q);
@@ -253,7 +260,17 @@ if (buf[p++]!='_') {
                     buf+q);
   exit(-103);
 }
-for (off=0;o,(buf[p]>='0' && buf[p]<='9');p++) off=10*off+buf[p]-'0';
+if (buf[p]<'0' || buf[p]>'9') {
+  fprintf(stderr,"Subtree offset is missing!\n");
+  exit(-103);
+}
+for (off=0;o,(buf[p]>='0' && buf[p]<='9');p++) {
+  if (off>(maxn-(buf[p]-'0'))/10) {
+    fprintf(stderr,"Rectree integer exceeds maxn=%d!\n",maxn);
+    exit(-102);
+  }
+  off=10*off+buf[p]-'0';
+}
 
 @ @<Process the top subtree definition on the stack@>=
 {
@@ -293,7 +310,13 @@ for (off=0;o,(buf[p]>='0' && buf[p]<='9');p++) off=10*off+buf[p]-'0';
 
 @ @<Define the subtrees of node |k|@>=
 while (o,buf[p]=='+') {
-  for (q=p++,rep=0;o,(buf[p]>='0' && buf[p]<='9');p++) rep=10*rep+buf[p]-'0';
+  for (q=p++,rep=0;o,(buf[p]>='0' && buf[p]<='9');p++) {
+  if (rep>(maxn-(buf[p]-'0'))/10) {
+    fprintf(stderr,"Rectree integer exceeds maxn=%d!\n",maxn);
+    exit(-102);
+  }
+  rep=10*rep+buf[p]-'0';
+}
   if (rep==0) {
     fprintf(stderr,"Replication count missing or zero!\n...%s",
                      buf+q);
@@ -304,6 +327,10 @@ while (o,buf[p]=='+') {
     fprintf(stderr,"That subtree should start at %d!\n...%s",
                          rightoff,buf+q);
     exit(-111);
+  }
+  if (rightoff>=k+s || rep>(k+s-rightoff)/size) {
+    fprintf(stderr,"Subtrees exceed the definition of T%d_%d!\n",s,k);
+    exit(-113);
   }
   oo,j=rightoff,tnode[j].deg=size,tnode[j].child=stack;
   if (rep>1) tnode[j].arc=rep; /* that mem was already charged */
