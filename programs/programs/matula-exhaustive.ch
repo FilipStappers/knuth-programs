@@ -156,7 +156,7 @@ int np[maxtrees]; /* $p_t$ coordinate in trie */
 int ptr; /* the first unused entry of |up|, |c|, and |np| */
 int cc[maxn]; /* the current level sequence */
 int pp[maxn]; /* the current parent sequence */
-int start[maxn]; /* where forests of each size begin */
+int start[maxn+1]; /* forest boundaries include start[maxn] */
 
 @ When |maketrie(n)| is done, |start[t]| will be the number of
 forests of size~|<t| that contain
@@ -227,6 +227,13 @@ if (o,cc[j-1]>=l) { /* yes, there is a left sibling */
 }
 
 @*Data structures for the trees.
+@z
+@x
+node snode[maxn]; /* the $m$ nodes of $S$ */
+node tnode[maxn]; /* the $n$ nodes of $T$ */
+@y
+node snode[maxn+1]; /* the nodes of $S$, plus its temporary reroot record */
+node tnode[maxn+1]; /* the nodes of $T$, plus its temporary reroot record */
 @z
 @x
 @ @<Input the tree $S$@>=
