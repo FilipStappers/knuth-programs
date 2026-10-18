@@ -628,6 +628,7 @@ if (s!=0) panic(impossible+1) /* can't happen */
 violating the necessary and sufficient conditions stated earlier.
 
 @<Advance to the next partial solution $(x_0,\ldots,x_k)$...@>=
+if (d==0) goto last;
 for (k=d-1;;k--) {
   if (xx[k]<sig[k] && xx[k]<nn[k]) break;
   if (k==0) goto last;
