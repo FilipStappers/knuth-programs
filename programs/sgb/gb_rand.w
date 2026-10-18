@@ -476,11 +476,12 @@ Graph *random_bigraph(n1,n2,m,multi,dist1,dist2,min_len,max_len,seed)
   @<Compute the entries of |dist_from| and |dist_to|@>;
   new_graph=random_graph(n,m,multi,0L,0L,
                 dist_from,dist_to,min_len,max_len,seed);
+  gb_free(new_dists);
+  if (new_graph==NULL) return NULL; /* retain the constructor's panic code */
   sprintf(new_graph->id,"random_bigraph(%lu,%lu,%lu,%d,%s,%s,%ld,%ld,%ld)",@|
     n1,n2,m,multi>0?1:multi<0?-1:0,dist_code(dist1),dist_code(dist2),@|
     min_len,max_len,seed);
   mark_bipartite(new_graph,n1);
-  gb_free(new_dists);
   return new_graph;
 }
 
