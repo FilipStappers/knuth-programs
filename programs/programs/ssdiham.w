@@ -143,6 +143,10 @@ if (k) {
         argv[0]);
   exit(-1);
 }
+if (nn<=0) {
+  fprintf(stderr,"I need at least one selected vertex!\n");
+  exit(-2);
+}
 if (randomizing) gb_init_rand(random_seed);
 
 @ @<Print the results@>=
