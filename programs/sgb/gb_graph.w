@@ -47,6 +47,8 @@ the general outline of \.{gb\_graph.c}:
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
+#include <stdint.h>
 @h@#
 @<Type declarations@>@;
 @<Private declarations@>@;
@@ -247,11 +249,11 @@ memory at a position |n| after any address returned by |calloc|. (This
 logic should work whenever the number of bytes in a pointer variable
 is a divisor of~256.)
 
-The upper limit on |n| here is governed by old \CEE/ conventions in
-which the first parameter to |calloc| must be less than~$2^{16}$.
-Users who need graphs with more than half a million vertices might
-want to raise this limit on their systems, but they would probably
-be better off representing large graphs in a more compact way.
+Allocation sizes are checked before alignment and rounding. The number
+of 256-byte units is passed to |calloc| as |size_t|, so large requests
+cannot be silently narrowed to an |unsigned| count. This directly
+incorporates the large-allocation support; the old bigalloc change
+is no longer needed.
 
 {\sl Important Note:\/}
 Programs of the Stanford GraphBase implicitly assume that all
@@ -271,12 +273,13 @@ char *gb_alloc(n,s)
 {@+long m=sizeof(char *); /* |m| is the size of a pointer variable */
   Area t; /* a temporary pointer */
   char *loc; /* the block address */
-  if (n<=0 || n>0xffff00-2*m) {
+  if (n<=0 || n>LONG_MAX-3*m-255 ||
+      (uintmax_t)n>(uintmax_t)SIZE_MAX-3*(size_t)m-255) {
     gb_trouble_code|=2; /* illegal request */
     return NULL;
   }
   n=((n+m-1)/m)*m; /* round up to multiple of |m| */
-  loc=(char*)calloc((unsigned)((n+2*m+255)/256),256);
+  loc=(char*)calloc((size_t)((n+2*m+255)/256),(size_t)256);
   if (loc) {
     *t=(struct area_pointers*)(loc+n);
     (*t)->first=loc;
