@@ -1041,6 +1041,7 @@ abcdefghijklmnopqrstuvwxyz_^~&@@,;.:?!%#$+-*/|<=>()[]{}`'";
 @ @<Assign a symbolic name for $(x_1,\ldots,x_n)...@>=
 {@+register char *p; register long *q;
   for (p=&buffer[n-1],q=&xtab[n];q>xtab;p--,q--) *p=short_imap[*q];
+  buffer[n]=0;
   v->name=gb_save_string(buffer);
   hash_in(v); /* enter |v->name| into the hash table
                   (via utility fields |u,v|) */
@@ -1477,6 +1478,7 @@ respectively.
 @<Assign a Polish prefix...@>=
 {@+register char *p=buffer; /* string pointer */
   for (k=0;k<=d;k++,p++) *p=(xtab[k]? '.': 'x');
+  *p=0;
   v->name=gb_save_string(buffer);
   hash_in(v); /* enter |v->name| into the hash table
                   (via utility fields |u,v|) */
