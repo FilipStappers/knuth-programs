@@ -52,7 +52,7 @@ while (1) {
     exit(-2);
   }
   if (buf[0]=='#') break;
-  fprintf(tempfile,buf);
+  fputs(buf,tempfile);
 }
 fclose(tempfile);
 for (t=1,s=2;;t++) { /* |t| is arc number, |s| is node number */
