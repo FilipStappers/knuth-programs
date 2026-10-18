@@ -64,6 +64,7 @@ paths through it.
 
 @c
 #include <stdio.h>
+#include <stdlib.h>
 @<Type definitions@>@;
 @<Global variables@>@;
 @<Subroutines@>@;
@@ -91,6 +92,7 @@ as explained below, because there might be an enormous amount of output.
 @ @<Scan the command line@>=
 if (argc!=2) {
   fprintf(stderr, "Usage: %s outfilename\n",argv[0]);
+  exit(-1);
 }
 base_name=argv[1];
 
