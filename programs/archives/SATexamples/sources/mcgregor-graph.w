@@ -28,7 +28,7 @@ with $n=3$.)
 #include "gb_graph.h" /* we use the {\sc GB\_\,GRAPH} data structures */
 #include "gb_save.h" /* and we save our results in ASCII format */
 int n; /* the order */
-char buf[16];
+char buf[32];
 int main(int argc, char* argv[]) {
   register int i,j,k;
   register Graph *g;
