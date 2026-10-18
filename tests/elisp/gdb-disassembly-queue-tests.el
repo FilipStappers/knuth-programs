@@ -1,0 +1,10 @@
+;;; B010 mixed queue cancellation. -*- lexical-binding: t; -*-
+(load (expand-file-name "debugger-fixture.el" (file-name-directory load-file-name)) nil nil t)
+(ert-deftest disassembly-mixed-command-queue-preserves-user-commands ()
+  (let* ((queue '("next\n" ("old-disassemble\n" gdb-assembler-handler)
+                  ("locals\n" gdb-stack-list-locals-handler) "print x\n"))
+         (result (review-assembler-update "0x20" "0x10" "main" "other" nil queue)))
+    (should (equal (nth 1 result)
+                   '("next\n" ("locals\n" gdb-stack-list-locals-handler) "print x\n")))
+    (should (= (length (car result)) 1))))
+(ert-run-tests-batch-and-exit)

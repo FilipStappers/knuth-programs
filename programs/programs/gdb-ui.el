@@ -3747,7 +3747,8 @@ BUFFER nil or omitted means use the current buffer."
             (with-current-buffer gud-comint-buffer
               (let ((queue gdb-input-queue))
                 (dolist (item queue)
-                  (if (equal (cdr item) '(gdb-assembler-handler))
+                  (if (and (consp item)
+                           (equal (cdr item) '(gdb-assembler-handler)))
                       (setq gdb-input-queue
                             (delete item gdb-input-queue))))))
             (gdb-enqueue-input
