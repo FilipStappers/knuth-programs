@@ -2323,6 +2323,9 @@ during jdb initialization depending on the value of
 \\(([a-zA-Z0-9.$_]+:\\|line=\\)\\([0-9.,]+\\)"
 	 gud-marker-acc)
 
+      (let ((marker-end (match-end 0))
+            (class-name (match-string 2 gud-marker-acc))
+            (line-number (match-string 4 gud-marker-acc)))
       ;; A good marker is one that:
       ;; 1) does not have a "[n] " prefix (not part of a stack backtrace)
       ;; 2) does have an "[n] " prefix and n is the lowest prefix seen
@@ -2341,19 +2344,19 @@ during jdb initialization depending on the value of
 		    (progn (setq gud-jdb-lowest-stack-level n) t)))
 	    t)
 	  (if (setq file-found
-		    (gud-jdb-find-source (match-string 2 gud-marker-acc)))
+		    (gud-jdb-find-source class-name))
 	      (setq gud-last-frame
 		    (cons file-found
 			  (string-to-number
 			   (let
-                               ((numstr (match-string 4 gud-marker-acc)))
+                               ((numstr line-number))
                              (if (string-match "[.,]" numstr)
                                  (replace-match "" nil nil numstr)
                                numstr)))))
 	    (message "Could not find source file.")))
 
       ;; Set the accumulator to the remaining text.
-      (setq gud-marker-acc (substring gud-marker-acc (match-end 0))))
+      (setq gud-marker-acc (substring gud-marker-acc marker-end))))
 
     (if (string-match comint-prompt-regexp gud-marker-acc)
 	(setq gud-jdb-lowest-stack-level 999)))

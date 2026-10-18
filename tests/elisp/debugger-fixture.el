@@ -21,3 +21,11 @@
                  (lambda (command) (push command commands))))
         (gdb-invalidate-assembler))
       (list commands gdb-input-queue gdb-previous-frame-pc-address gdb-previous-frame))))
+
+(defun review-java-marker (chunks)
+  (let ((gud-marker-acc nil) (gud-last-frame nil)
+        (gud-jdb-use-classpath nil) (gud-jdb-lowest-stack-level 999)
+        (comint-prompt-regexp "\\`(jdb) ") output)
+    (cl-letf (((symbol-function 'gud-jdb-find-source) (lambda (_) "Example.java")))
+      (dolist (chunk chunks) (push (gud-jdb-marker-filter chunk) output)))
+    (list gud-last-frame gud-marker-acc (apply #'concat (nreverse output)))))
