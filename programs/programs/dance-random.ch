@@ -52,8 +52,8 @@ int verbose; /* $>2$ to show more gory details */
 int reps=1;
 int seed;
 int r;
-double profile_est[max_level];
-double upd_prof_est[max_level];
+double profile_est[max_level+1]; /* includes the terminal level */
+double upd_prof_est[max_level+1];
 int correct_len[max_cols+2];
 @z
 @x
@@ -104,7 +104,11 @@ forward: profile_est[level]+=(factor-profile_est[level])/(double)r;
   upd_prof_est[level]+=(factor*updates-upd_prof_est[level])/(double)r;
   factor*=minlen;
   level++;
-  if (factor && root.next!=&root) goto forward;
+  if (factor) {
+    if (root.next!=&root) goto forward;
+    profile_est[level]+=(factor-profile_est[level])/(double)r;
+    upd_prof_est[level]-=upd_prof_est[level]/(double)r; /* no updates at a terminal */
+  }
   @<Restore all the data to original condition@>;
 }
 @z
@@ -116,7 +120,7 @@ forward: profile_est[level]+=(factor-profile_est[level])/(double)r;
 @*Index.
 @y
 @ @<Restore all the data to original condition@>=
-for (j=level;profile_est[j];j++)
+for (j=level+(factor!=0.0);j<=max_level && profile_est[j];j++)
   profile_est[j]-=profile_est[j]/(double)r,
   upd_prof_est[j]-=upd_prof_est[j]/(double)r;
 if (factor==0.0) {
@@ -136,7 +140,7 @@ for (cur_col=root.next;cur_col!=&root;cur_col=cur_col->next)
 @ @<Print the estimated search tree profile@>=
 {
   register double tot_nodes=0.0,tot_updates=0.0;
-  for (level=0;level<=maxl;level++) {
+  for (level=0;level<=maxl+1;level++) {
     printf("Level %d: %20.1f nodes, %20.1f updates\n",
            level,profile_est[level],upd_prof_est[level]);
     tot_nodes+=profile_est[level];
