@@ -32,17 +32,19 @@ schemes conveniently map such an ordered sequence into a single number.)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include "gb_graph.h"
 #include "gb_save.h"
 #include "gb_flip.h"
-long sg[maxn]; /* new signatures found in current class */
+uint64_t sg[maxn]; /* new signatures found in current class */
+uint64_t sig_value[maxn],old_sig_value[maxn]; /* exact 64-bit signature words */
 Vertex *hd[maxn],*tl[maxn]; /* subdivisions of current class */
 main(int argc,char*argv[]) {
   register int i,j,k,r,change;
   register Graph *g;
   register Vertex *u,*v;
   register Arc *a,*b;
-  register long x,s;
+  register uint64_t x,s;
   Vertex *v0,*prev,*head;
   @<Process the command line@>;
   @<Make the initial signatures@>;
@@ -82,19 +84,19 @@ v0=v;
 @ Vertices with the same signature are linked cyclically.
 As mentioned above, we start by simply computing distances from~$v_0$.
 
-@d sig w.I /* signature of a vertex */
+@d sig(v) sig_value[(v)-g->vertices] /* signature of a vertex */
 @d link u.V /* link field in a circular list */
 @d tag v.I /* to what extent have we processed the vertex? */
 
 @<Make the initial signatures@>=
 printf("Initial round:\n");
-for (v=g->vertices;v<g->vertices+g->n;v++) v->sig=-1,v->tag=0;
-v0->sig=0,v0->link=v0,k=1,v=v0;
+for (v=g->vertices;v<g->vertices+g->n;v++) sig(v)=UINT64_MAX,v->tag=0;
+sig(v0)=0,v0->link=v0,k=1,v=v0;
 while (v) {
   prev=head=NULL;
   while (1) {
-    printf(" %s dist %ld\n",
-                   v->name,v->sig);
+    printf(" %s dist %llu\n",
+                   v->name,(unsigned long long)sig(v));
     @<Set signature of all |v|'s unseen neighbors to |k|@>;
     v->tag=k;
     v=v->link;
@@ -108,8 +110,8 @@ while (v) {
 @ @<Set signature of all |v|'s unseen neighbors to |k|@>=
 for (a=v->arcs;a;a=a->next) {
   u=a->tip;
-  if (u->sig<0) {
-    u->sig=k;
+  if (sig(u)==UINT64_MAX) {
+    sig(u)=k;
     if (prev==NULL) head=u;
     else u->link=prev;
     prev=u;
@@ -119,14 +121,14 @@ for (a=v->arcs;a;a=a->next) {
 @ Now comes the fun part. As we pass from $\sigma_{r-1}$ to $\sigma_r$,
 each equivalence class becomes one or more classes.
 
-@d oldsig z.I
+@d oldsig(v) old_sig_value[(v)-g->vertices]
 
 @<Do round |r|@>=
 printf("Round %d:\n",
                  r);
-for (v=g->vertices;v<g->vertices+g->n;v++) v->oldsig=v->sig;
+for (v=g->vertices;v<g->vertices+g->n;v++) oldsig(v)=sig(v);
 k++; /* |k| is a unique stamp to identify this round */
-x=(gb_next_rand()<<1)+1; /* pseudorandom number used for new signatures */
+x=((uint64_t)gb_next_rand()<<1)+1; /* pseudorandom number used for new signatures */
 for (v=g->vertices;v<g->vertices+g->n;v++) if (v->tag>0) {
   if (v->tag==k) continue;
   if (v->link==v) {
@@ -138,9 +140,9 @@ for (v=g->vertices;v<g->vertices+g->n;v++) if (v->tag>0) {
   for (j=0;v->tag!=k;v=u) {
     u=v->link;
     @<Compute $s=\sigma_r(v)$@>;
-    printf(" %s %lx\n",
-                    v->name,s);
-    v->sig=s;
+    printf(" %s %llx\n",
+                    v->name,(unsigned long long)s);
+    sig(v)=s;
     for (i=0,sg[j]=s;sg[i]!=s;i++);
     if (i==j) hd[j]=tl[j]=v,j++; /* a new cyclic list begins */
     else v->link=tl[i],tl[i]=v; /* continue building an existing list */
@@ -152,6 +154,6 @@ for (v=g->vertices;v<g->vertices+g->n;v++) if (v->tag>0) {
 
 @ @<Compute $s=\sigma_r(v)$@>=
 for (s=1,a=v->arcs;a;a=a->next)
-  s*=x-a->tip->oldsig;
+  s*=x-oldsig(a->tip);
 
 @*Index.
