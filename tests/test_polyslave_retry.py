@@ -9,8 +9,36 @@ import unittest
 SOURCES=Path(__file__).resolve().parents[1]/'programs/programs'
 
 
+OWNERSHIP = r"""#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+static int test_live_allocs;
+static FILE *test_ck,*test_dump;
+static void *test_calloc(size_t n,size_t s) {
+  if(test_live_allocs>=2) { fprintf(stderr,"unreleased counters\n"); exit(73); }
+  void *p=calloc(n,s); if(p) test_live_allocs++; return p;
+}
+static void test_free(void *p) { if(p) test_live_allocs--; free(p); }
+static FILE *test_fopen(const char *path,const char *mode) {
+  int ck=strlen(path)>=3 && !strcmp(path+strlen(path)-3,".ck");
+  int dump=strlen(path)>=5 && !strcmp(path+strlen(path)-5,".dump");
+  if((ck && test_ck)||(dump && test_dump)) {
+    fprintf(stderr,"unclosed retry stream\n"); exit(72);
+  }
+  FILE *f=fopen(path,mode); if(ck) test_ck=f; if(dump) test_dump=f; return f;
+}
+static int test_fclose(FILE *f) {
+  if(f==test_ck) test_ck=NULL; if(f==test_dump) test_dump=NULL; return fclose(f);
+}
+#define calloc test_calloc
+#define free test_free
+#define fopen test_fopen
+#define fclose test_fclose
+"""
+
+
 class PolyslaveRetry(unittest.TestCase):
-    def test_base_and_restart_replay_from_part_zero(self):
+    def check_replay(self, ownership=False):
         with tempfile.TemporaryDirectory() as temp:
             work=Path(temp)
             source=work/'slave.w'
@@ -46,9 +74,14 @@ class PolyslaveRetry(unittest.TestCase):
                     code=generated.read_text()
                     # Inject after reading a genuine checksum; all fixture bytes stay valid.
                     code,count=re.subn(r'if\s*\(checkbuf!=checksum\)\s*\{',
-                        'if(file_extension==1 && !test_injected) { test_injected=1; checkbuf^=1; }\n'
+                        'if(file_extension==1 && test_injected<'+('3' if ownership else '1')+
+                        ') { test_injected++; checkbuf^=1; }\n'
                         'if(checkbuf!=checksum) {',code)
                     self.assertEqual(count,1)
+                    if ownership:
+                        code=OWNERSHIP+code
+                        code=code.replace('p= get_inst();',
+                                          'if(test_dump) { fprintf(stderr,"unclosed dump\\n"); exit(74); } p= get_inst();')
                     generated.write_text(code)
                     program=generated.with_suffix('')
                     subprocess.run(['gcc','-std=gnu99','-Wno-implicit-int','-O1',
@@ -59,9 +92,15 @@ class PolyslaveRetry(unittest.TestCase):
                     output.write_text('')
                     result=subprocess.run([str(program),str(prefix),'251'],capture_output=True,timeout=10)
                     self.assertEqual(result.returncode,0,result.stderr.decode())
-                    self.assertEqual(result.stdout.count(b'Checksum mismatch!'),1)
+                    self.assertEqual(result.stdout.count(b'Checksum mismatch!'),3 if ownership else 1)
                     self.assertIn(b'All done!',result.stdout)
                     self.assertEqual(output.read_text(),expected)
+
+    def test_base_and_restart_replay_from_part_zero(self):
+        self.check_replay()
+
+    def test_retry_resource_ownership(self):
+        self.check_replay(True)
 
 
 if __name__ == '__main__':

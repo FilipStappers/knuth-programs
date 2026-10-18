@@ -33,6 +33,8 @@ if (fread(scount,sizeof(counter),n+1,dump_file)!=n+1)
 if (fread(count,sizeof(counter),dump_data[3],dump_file)!=dump_data[3])
   panic("Can't read the dumped counters");
 prev_row=dump_data[4];
+if (fclose(dump_file)!=0) panic("I couldn't close the dump file");
+dump_file=NULL;
 @z
 
 

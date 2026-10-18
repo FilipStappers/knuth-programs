@@ -26,6 +26,10 @@ main(int argc, char *argv[])
   @<Local variables@>;
   @<Scan the command line@>;
   setjmp(restart_point); /* |longjmp| will return here if necessary */
+  if (ck_file && fclose(ck_file)!=0) panic("I couldn't close the old checksum file");
+  ck_file=NULL;
+  free(count); free(scount);
+  count=scount=NULL; /* discard counters from the failed attempt */
   @<Initialize@>;
   @<Interpret the instructions in the input@>;
   @<Print statistics@>;
