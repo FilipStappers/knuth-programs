@@ -584,8 +584,9 @@ void mult(unsigned long long x,unsigned long long y)
 @*Prime testing. I've saved the most interesting part of this program for
 last. It's a subroutine that tries to decide whether a given |long long|
 number~|z| is prime. In the experiments I'm doing, |z| lies
-between $2^{58}$ and $2^{59}$ (but the program does not require that
-|z| be in this range).
+between $2^{58}$ and $2^{59}$. The Montgomery kernel supports
+$55\le z<2^{63}$ with $z\bmod4=3$, as supplied by the sparse-sieve
+caller; smaller inputs are handled by exact trial division.
 
 If it's easy to determine that |z| is definitely
 not prime, the subroutine returns~0. 
@@ -606,10 +607,19 @@ int isprime(unsigned long long z)
   register int k,lgz,rep;
   long long x,y,q;
   unsigned long long m,zp,goal;
+  if (z<55) {
+    for (k=2;(unsigned int)(k*k)<=z;k++) if (z%k==0) return 0;
+    return z>=2;
+  }
+  if ((z&3)!=3 || z>=(1ULL<<63)) {
+    fprintf(stderr,"Unsupported Montgomery primality domain!\n");
+    exit(-15);
+  }
   @<If $z$ is divisible by a prime $\le53$, |return 0|@>;
   @<Get ready for Montgomery's method@>;
   for (rep=0;rep<32;rep++) {
-P1: x=ran_arr_next();
+P1: x=ran_arr_next()%z;
+    if (!x) goto P1; /* Montgomery operands must be nonzero residues below |z| */
 P2: q=z>>1;
     for (y=x,m=1LL<<(lgz-2); m; m>>=1) {
       @<Set $y\gets (y^2\!/2^{64})\bmod z$@>;
