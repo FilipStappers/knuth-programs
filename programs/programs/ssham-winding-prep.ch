@@ -108,16 +108,17 @@ at comparatively few bunches that match one of the rare extremes.
 
 @d rows 6 /* this code is for $m=6$ */
 @d cols 6 /* this code is for $n=6$ */
-@d row(x) ((x) mod rows)
-@d col(x) ((x) / rows)
+@d row(x) (iperm[x] mod rows)
+@d col(x) (iperm[x] / rows)
 
 @<Analyze the solution@>=
 {
   register int i,j,k,ii,jj,kk,s,wmin,wmax,w,q;
   for (i=0;i<rows;i++) for (j=0;j<cols;j++) for (k=0;k<21;k++)
     winding[i][j][k]=0;
+  pathi[0]=row(path[0]),pathj[0]=col(path[0]);
   for (kk=0;kk<nn;kk++) {
-    i=pathi[kk],j=pathj[kk];  /* |pathi[0]=pathj[0]=0| */
+    i=pathi[kk],j=pathj[kk]; /* coordinates in the original board order */
     ii=pathi[kk+1]=row(path[kk+1]), jj=pathj[kk+1]=col(path[kk+1]);
     if (i<ii) s=+1;
     else s=-1,i=pathi[kk+1],j=pathj[kk+1],ii=pathi[kk],jj=pathj[kk];
