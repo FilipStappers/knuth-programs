@@ -2912,24 +2912,17 @@ Obeying it means displaying in another window the specified file and line."
     (concat result str)))
 
 (defun gud-read-address ()
-  "Return a string containing the core-address found in the buffer at point."
+  "Return the complete hexadecimal or decimal address at point."
   (save-match-data
     (save-excursion
-      (let ((pt (point)) found begin)
-	(setq found (if (search-backward "0x" (- pt 7) t) (point)))
-	(cond
-	 (found (forward-char 2)
-		(buffer-substring found
-				  (progn (re-search-forward "[^0-9a-f]")
-					 (forward-char -1)
-					 (point))))
-	 (t (setq begin (progn (re-search-backward "[^0-9]")
-			       (forward-char 1)
-			       (point)))
-	    (forward-char 1)
-	    (re-search-forward "[^0-9]")
-	    (forward-char -1)
-	    (buffer-substring begin (point))))))))
+      (let ((position (point)) (limit (line-end-position)) address)
+        (beginning-of-line)
+        (while (and (not address)
+                    (re-search-forward "\\_<\\(?:0[xX][[:xdigit:]]+\\|[0-9]+\\)\\_>" limit t))
+          (when (and (<= (match-beginning 0) position)
+                     (<= position (match-end 0)))
+            (setq address (match-string-no-properties 0))))
+        (or address (user-error "No address at point"))))))
 
 (defun gud-call (fmt &optional arg)
   (let ((msg (gud-format-command fmt arg)))

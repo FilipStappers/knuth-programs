@@ -1,0 +1,20 @@
+;;; B011 addresses at arbitrary point and buffer boundaries. -*- lexical-binding: t; -*-
+(load (expand-file-name "debugger-fixture.el" (file-name-directory load-file-name)) nil nil t)
+(ert-deftest address-selection-covers-full-width-hex-and-decimal-boundaries ()
+  (dolist (address '("0x123456789ABCDEF0" "0XABCDEF0123456789" "12345678901234567890" "7"))
+    (dolist (suffix '("" " rest"))
+      (with-temp-buffer
+        (insert "old 0x10, target " address suffix)
+        (let ((start (+ 1 (length "old 0x10, target "))))
+          (dotimes (offset (1+ (length address)))
+            (goto-char (+ start offset))
+            (string-match "seed" "seed")
+            (let ((saved (match-data)) (saved-point (point)))
+              (should (equal (gud-read-address) address))
+              (should (= (point) saved-point))
+              (should (equal (match-data) saved)))))))))
+(ert-deftest address-selection-rejects-text-without-an-address-at-point ()
+  (with-temp-buffer
+    (insert "0x10 unrelated") (goto-char (point-max))
+    (should-error (gud-read-address) :type 'user-error)))
+(ert-run-tests-batch-and-exit)
