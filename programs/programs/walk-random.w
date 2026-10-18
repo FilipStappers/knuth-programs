@@ -26,6 +26,8 @@ that they increase the verbosity of output.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include <limits.h>
 #include "gb_graph.h"
 #include "gb_save.h"
 #include "gb_flip.h"
@@ -40,7 +42,9 @@ main(int argc, char* argv[]) {
   register Vertex *u,*v,*vv,*head,*tail;
   register double e;
   Vertex *source=NULL,*target=NULL;
+  Vertex **choices; /* one slot per possible eligible arc, including parallel arcs */
   @<Process the command line@>;
+  @<Allocate the choice array@>;
   @<Initialize the table of distances@>;
   if (source->dist==infty) {
     fprintf(stderr,"There's no path from %s to %s!\n",
@@ -48,6 +52,18 @@ main(int argc, char* argv[]) {
     exit(-99);
   }
   @<Do a random walk and print the estimate@>;
+  free(choices);
+}
+
+@ @<Allocate the choice array@>=
+if (g->m<0 || g->m>INT_MAX || (uintmax_t)g->m>SIZE_MAX/sizeof(*choices)) {
+  fprintf(stderr,"The arc choice array is too large!\n");
+  exit(-8);
+}
+choices=(Vertex**)malloc((g->m? (size_t)g->m: 1)*sizeof(*choices));
+if (!choices) {
+  fprintf(stderr,"I can't allocate the arc choice array!\n");
+  exit(-8);
 }
 
 @ @<Process the command line@>=
@@ -117,7 +133,7 @@ for (target->dist=0,head=tail=target;;head=head->link) {
   if (head==tail) break;
 }
 
-@ @d choice(k) ((g->vertices+(k))->z.V)
+@ @d choice(k) choices[k]
 
 @<Do a random walk...@>=
 for (v=source,e=1.0,l=0;v!=target;l++,v=vv,e*=d) {
