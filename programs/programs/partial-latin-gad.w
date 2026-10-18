@@ -851,7 +851,7 @@ for (marks=l=i=0,q=f;;l++) {
 int queue[maxn]; /* girls seen during the breadth-first search */
 int marked[maxn]; /* which boys have been marked */
 int dlink; /* head of the list of free boys in the dag */
-Arc arc[maxn+maxn]; /* suitable partners and links */
+Arc arc[maxn*(maxn+1)+1]; /* at most maxn^2 partners, maxn free-boy links, and slot 0 */
 int lboy[maxn]; /* the boys being explored during the SAP demolition */
 
 @ @<Enter |boy| into the dag@>=
