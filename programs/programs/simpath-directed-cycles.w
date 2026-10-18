@@ -222,7 +222,7 @@ arc~|i+1|.
 
 @<Initialize the queue@>=
 jj=1,ss=0;
-while (firstarc[jj+1]==0) jj++; /* unnecessary unless vertex 1 is isolated */
+while (jj<=n && firstarc[jj+1]==0) jj++; /* also handles edgeless graphs */
 tail=head=0;
 serial=2;
 
