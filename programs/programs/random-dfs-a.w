@@ -21,6 +21,8 @@ The number of repetitions, $reps$, and the random seed, $seed$.
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <errno.h>
+#include <limits.h>
 #include "gb_flip.h"
 int m,n,reps,seed; /* command-line parameters */
 @<Type definitions@>;
@@ -38,15 +40,26 @@ int main (int argc,char*argv[]) {
   @<Print the statistics@>;
 }
 
+@ @<Subroutines@>=
+int scan_int(char *text,int *value) {
+  char *end; long parsed;
+  errno=0;
+  parsed=strtol(text,&end,10);
+  if (errno || end==text || *end || parsed<INT_MIN || parsed>INT_MAX) return 0;
+  *value=(int)parsed;
+  return 1;
+}
+
 @ @<Process the command line@>=
-if (argc!=5 || sscanf(argv[1],"%d",
-                 &m)!=1 || sscanf(argv[2],"%d",
-                 &n)!=1 || sscanf(argv[3],"%d",
-                 &reps)!=1 || sscanf(argv[4],"%d",
-                 &seed)!=1) {
+if (argc!=5 || !scan_int(argv[1],&m) || !scan_int(argv[2],&n) ||
+    !scan_int(argv[3],&reps) || !scan_int(argv[4],&seed)) {
   fprintf(stderr,"Usage: %s m n reps seed\n",
                        argv[0]);
   exit(-1);
+}
+if (m<0 || n<1 || reps<0) {
+  fprintf(stderr,"I require m>=0, n>=1 and reps>=0!\n");
+  exit(-2);
 }
 if (m>maxm || n>maxm) {
   fprintf(stderr,"Recompile me: I can only handle m,n<=%d!\n",
