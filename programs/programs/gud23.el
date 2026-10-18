@@ -964,7 +964,9 @@ It is passed through FILTER before we look at it."
   (setq string (funcall filter string))
   (setq string (concat gud-gdb-fetch-lines-string string))
   (while (string-match "\n" string)
-    (push (substring string gud-gdb-fetch-lines-break (match-beginning 0))
+    (push (substring string (if (<= gud-gdb-fetch-lines-break (match-beginning 0))
+                               gud-gdb-fetch-lines-break 0)
+                     (match-beginning 0))
 	  gud-gdb-fetched-lines)
     (setq string (substring string (match-end 0))))
   (if (string-match comint-prompt-regexp string)
@@ -1035,6 +1037,11 @@ It is passed through FILTER before we look at it."
 ;  "Learn GDB information for the currently selected stack frame in BUFFER."
 ;  )
 
+(defcustom gud-gdb-fetch-lines-timeout 10.0
+  "Maximum seconds to wait for a GDB completion or stack response."
+  :type 'number
+  :group 'gud)
+
 (defun gud-gdb-run-command-fetch-lines (command buffer &optional skip)
   "Run COMMAND, and return the list of lines it outputs.
 BUFFER is the current buffer which may be the GUD buffer in which to run.
@@ -1054,12 +1061,17 @@ SKIP is the number of chars to skip on each line, it defaults to 0."
 	    (gud-gdb-fetch-lines-break (or skip 0))
 	    (gud-marker-filter
 	     `(lambda (string)
-		(gud-gdb-fetch-lines-filter23 string ',gud-marker-filter))))
+		(gud-gdb-fetch-lines-filter23 string ',gud-marker-filter)))
+            (process (get-buffer-process gud-comint-buffer))
+            (deadline (+ (float-time) gud-gdb-fetch-lines-timeout)))
 	;; Issue the command to GDB.
+        (unless (process-live-p process) (user-error "GDB is not running"))
 	(gud-basic-call command)
 	;; Slurp the output.
 	(while gud-gdb-fetch-lines-in-progress
-	  (accept-process-output (get-buffer-process gud-comint-buffer)))
+          (unless (process-live-p process) (user-error "GDB exited before responding"))
+          (when (>= (float-time) deadline) (user-error "Timed out waiting for GDB response"))
+	  (accept-process-output process 0.1))
 	(nreverse gud-gdb-fetched-lines)))))
 
 
