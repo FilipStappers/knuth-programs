@@ -702,7 +702,9 @@ to be filled in.
   total++;
   if (total mod abs(modulus)==0 || verbose) {
     curo[l]=ocount;
-    source[ocount]=head->rlink, dest[ocount++]=head->llink; vprint();
+    if (ocount<g->n) {
+      source[ocount]=head->rlink, dest[ocount++]=head->llink; vprint();
+    }
     curi[l]=maxi[l]=1;
     if (modulus<0) {
       printf("\n%llu:\n",total);@+print_state(stdout);
