@@ -42,10 +42,10 @@ int main(int argc,char **argv) {
         subprocess.run(['gcc',*FLAGS,str(fixture),*self.objects,'-o',str(self.writer)],
                        check=True,capture_output=True)
 
-    def build(self, name, text):
+    def build(self, name, text, change=None):
         source, generated, program = [self.work/(name+s) for s in ['.w','.c','']]
         source.write_text(text)
-        subprocess.run(['ctangle',str(source),'-',str(generated)],cwd=GRAPHBASE,
+        subprocess.run(['ctangle',str(source),str(change) if change else '-',str(generated)],cwd=GRAPHBASE,
                        check=True,capture_output=True)
         subprocess.run(['gcc',*FLAGS,str(generated),*self.objects,'-lm','-o',str(program)],
                        check=True,capture_output=True)

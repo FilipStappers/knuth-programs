@@ -345,7 +345,7 @@ chop some of its leaves away.
 
 @<Input the tree $S$@>=
 n=read_rectree(argv[1]);
-if (n<=del+2) {
+if (del<0 || del>n-3) {
   fprintf(stderr,"I don't want to delete %d nodes from a tree of size %d!\n",
                      del,n);
   exit(-200);
