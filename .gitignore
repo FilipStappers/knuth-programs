@@ -8,3 +8,13 @@ __pycache__/
 *.dvi
 build/
 .DS_Store
+
+# Keep local review work and private configuration out of the publication.
+/findings/
+/review/
+/.git-rewrite/
+/.codex/
+/.agents/
+/.codex-*
+.env
+.env.*
