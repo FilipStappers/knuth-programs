@@ -93,7 +93,7 @@ if (!math_file) panic("I can't open the output file");
 
 @ @<Glob...@>=
 unsigned int modulus; /* results will discard multiples of this number */
-char *base_name, filename[100];
+char *base_name, filename[108]; /* 90-byte prefix, modulus/part, suffix, terminator */
 FILE *math_file; /* the output file */
 
 @ @<Local...@>=

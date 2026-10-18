@@ -10,7 +10,7 @@ FILE *out_file;
 @y
 FILE *out_file;
 FILE *dump_file;
-char dfilename[100];
+char dfilename[108]; /* match the base's longest dump-file name */
 
 @ This is the data reconstituter just mentioned.
 If the dumped data had a different value of |slave_size|,
