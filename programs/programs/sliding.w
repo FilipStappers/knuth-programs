@@ -266,8 +266,8 @@ int fill_board(int board[],int piece[],int place[])
 
 @ @<Glob...@>=
 int bcount; /* the number of blocks on the board */
-int piece[maxsize], apiece[maxsize]; /* the piece names of each block */
-int place[maxsize], aplace[maxsize]; /* the topmost/leftmost
+int piece[maxsize+1], apiece[maxsize+1]; /* one-based piece names of each block */
+int place[maxsize+1], aplace[maxsize+1]; /* the topmost/leftmost
                                          positions of each block */
 
 @ The next subroutine prints a given board on standard output,
