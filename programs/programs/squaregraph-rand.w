@@ -9,7 +9,7 @@
 #include "gb_flip.h"
 int a[2*maxn+4],d[2*maxn+8];
 int move[8*maxn];
-int count[maxn];
+int count[maxn+1]; /* labels range from 0 through steps+1 */
 int seed;
 int steps;
 main (int argc, char*argv[]) {
@@ -68,9 +68,9 @@ if (move[k]<maxn) {
 }
 
 @ @<Check for pairs@>=
-for (k=0;k<j+2;k++) count[k]=0;
+for (k=0;k<=j+2;k++) count[k]=0;
 for (k=0;k<w;k++) count[a[k]]++;
-for (k=0;k<j+2;k++)
+for (k=0;k<=j+2;k++)
   if (count[k]!=0 && count[k]!=2)
     fprintf(stderr,"count[%d] is %d!\n",k,count[k]);
 

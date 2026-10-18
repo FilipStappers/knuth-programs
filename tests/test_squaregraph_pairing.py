@@ -32,6 +32,18 @@ class SquaregraphPairing(unittest.TestCase):
                 self.assertEqual(set(counts.values()),{2})
                 self.assertTrue(all(0<=k<=steps+1 for k in counts))
 
+    def test_maximum_accepted_label(self):
+        for steps in [998,999]:
+            for seed in [0,1,2,11]:
+                with self.subTest(steps=steps,seed=seed):
+                    result=subprocess.run([str(self.program),str(steps),str(seed)],
+                                          capture_output=True,timeout=10)
+                    self.assertEqual(result.returncode,0,result.stderr.decode())
+                    self.assertEqual(result.stderr,b'')
+                    counts=Counter(map(int,result.stdout.split()))
+                    self.assertEqual(set(counts.values()),{2})
+                    self.assertTrue(all(0<=k<=steps+1 for k in counts))
+
 
 if __name__ == '__main__':
     unittest.main()
