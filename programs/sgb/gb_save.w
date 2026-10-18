@@ -176,6 +176,8 @@ while (1) {
   if (sscanf(str_buf,"* GraphBase graph (util_types %14[ZIVSA],%ldV,%ldA",
        str_buf+80,&n,&m)==3 && strlen(str_buf+80)==14) break;
   if (str_buf[0]!='*') panic(syntax_error); /* first line is unreadable */
+  gb_newline();
+  if (gb_eof() || io_errors) panic(early_data_fault);
 }
 
 @ The previous code has placed the graph's |util_types| into
