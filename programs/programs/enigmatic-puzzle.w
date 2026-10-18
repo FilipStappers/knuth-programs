@@ -93,9 +93,9 @@ if (argc!=3) {
 }
 m=strlen(argv[1]),mc=strlen(argv[2]);
 plainsize=m,ciphersize=mc;
-if (m>maxm || mc>maxmc || m>mc) {
+if (m<2 || m>maxm || mc>maxmc || m>mc) {
   fprintf(stderr,
-   "Sorry: I require |plaintext|<=%d, |plaintext|<=|ciphertext|<=%d!\n",
+   "Sorry: I require 2<=|plaintext|<=%d, |plaintext|<=|ciphertext|<=%d!\n",
                  maxm,maxmc);
   exit(-2);
 }
@@ -884,8 +884,14 @@ for (k=0;k<plainsize;k++) if (plntxt[k+prefix]!=plaintext[k])
   fprintf(stderr,"Ouch, I blew it.\n");
 
 @ @<Compute the score of |plntxt| and possibly output it@>=
-for (s=0,k=4;k<ciphersize;k++) s+=
-  score[plntxt[k-4]][plntxt[k-3]][plntxt[k-2]][plntxt[k-1]][plntxt[k]];
+for (s=0,k=4;k<ciphersize;k++) {
+  v=score[plntxt[k-4]][plntxt[k-3]][plntxt[k-2]][plntxt[k-1]][plntxt[k]];
+  if (v<0 || v>=maxscore-s) {
+    fprintf(stderr,"The quingram score total must be between 0 and %d!\n",maxscore-1);
+    exit(-7);
+  }
+  s+=v;
+}
 tally[s]++;
 if (s>=bestscore || s>=6000) {
   for (k=0;k<ciphersize;k++) printf("%c",
