@@ -3308,7 +3308,7 @@ if (cc-kk<max_cells_used) {
           max_learned-(cc-kk));
   exit(-6666);
 }
-bytes+=2*(size(c)+clause_extra)*sizeof(cel);
+bytes+=2*(size(cc)+clause_extra)*sizeof(cel);
 
 @ @<Append the same clause but with arcs reversed@>=
 for (k=0;k<size(cc);k++) oo,mem[cc-kk+k].lit=mem[cc+k].lit^2;
