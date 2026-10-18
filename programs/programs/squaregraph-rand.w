@@ -13,7 +13,7 @@ int count[maxn];
 int seed;
 int steps;
 main (int argc, char*argv[]) {
-  register int j,k,m,t,w;
+  register int j,k,m,t,w,k1,k2,k3;
   @<Process the command line@>;
   a[0]=0,a[1]=1,a[2]=0,a[3]=1;
   d[0]=d[1]=d[2]=d[3]=2;
@@ -59,10 +59,12 @@ if (move[k]<maxn) {
   if (k+1>=w) for (t=0;t+w<=k+1;t++) d[t]=d[w+t],a[t]=a[w+t];
 }@+else {
   k=move[k]-maxn-maxn;
-  for (t=0;t<w;t++) if (a[t]==a[k+2] && t!=k+2) a[t]=a[k];
-  a[k]=a[k+1], a[k+1]=a[k+3], d[k]=d[k]+1, d[k+1]=d[k+3]+1;
-  w-=2;
-  for (t=k+2;t<w;t++) a[t]=a[t+2], d[t]=d[t+2];
+  k1=(k+1)%w, k2=(k+2)%w, k3=(k+3)%w;
+  for (t=0;t<w;t++) if (a[t]==a[k2] && t!=k2) a[t]=a[k];
+  a[k]=a[k1], a[k1]=a[k3], d[k]=d[k]+1, d[k1]=d[k3]+1;
+  for (t=m=0;t<w;t++) if (t!=k2 && t!=k3)
+    a[m]=a[t], d[m]=d[t],m++;
+  w=m;
 }
 
 @ @<Check for pairs@>=
