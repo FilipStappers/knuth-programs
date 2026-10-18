@@ -127,7 +127,7 @@ for (v=g->vertices;v<g->vertices+n;v++) {
     b=vert(k)->tmp;
     vert(k)->tmp=vert(j-i-1)->tmp;
   }
-  b->next=NULL;
+  if (j) b->next=NULL;
 }
 for (pathhash=0,j=1;j<pathlen;j++) {
   if (!adj[path[j-1]][path[j]]) {
