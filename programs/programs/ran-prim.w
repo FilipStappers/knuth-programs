@@ -19,6 +19,10 @@ it is extremely likely that the true asymptotic behavior is $\sim 2n^2$.
 @c
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <limits.h>
+#include <errno.h>
 #include "gb_flip.h"
 
 int *perm;
@@ -38,9 +42,21 @@ main(argc,argv)
 }
 
 @ @<Scan the command line@>=
-if (argc!=3 || sscanf(argv[1],"%d",&n)!=1 || sscanf(argv[2],"%d",&seed)!=1) {
+if (argc!=3 || sscanf(argv[2],"%d",&seed)!=1) {
   fprintf(stderr,"Usage: %s n seed\n",argv[0]);
   exit(-1);
+}
+
+{
+  char *end; long parsed;
+  errno=0;
+  parsed=strtol(argv[1],&end,10);
+  if (errno || end==argv[1] || *end || parsed<1 || parsed>INT_MAX-2 ||
+      (size_t)parsed>SIZE_MAX/sizeof(*perm)-2) {
+    fprintf(stderr,"The size must be a supported positive int!\n");
+    exit(-1);
+  }
+  n=(int)parsed;
 }
 
 @ We maintain the following invariants: the indices |i| where
@@ -48,8 +64,17 @@ if (argc!=3 || sscanf(argv[1],"%d",&n)!=1 || sscanf(argv[2],"%d",&seed)!=1) {
 
 @<Initialize everything@>=
 gb_init_rand(seed);
-perm=(int*)malloc(4*(n+2));
-list=(int*)malloc(4*(n-1));
+perm=(int*)malloc(((size_t)n+2)*sizeof(*perm));
+if (!perm) {
+  fprintf(stderr,"Can't allocate the permutation!\n");
+  exit(-2);
+}
+list=(int*)malloc((size_t)n*sizeof(*list)); /* one spare also covers n=1 */
+if (!list) {
+  free(perm);
+  fprintf(stderr,"Can't allocate the active list!\n");
+  exit(-2);
+}
 for (k=1;k<=n;k++) perm[k]=n+1-k;
 perm[0]=0;@+perm[n+1]=n+1;
 for (k=1;k<n;k++) list[k-1]=k;

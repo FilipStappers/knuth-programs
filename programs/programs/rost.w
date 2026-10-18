@@ -9,6 +9,10 @@ are out of order.
 @c
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <limits.h>
+#include <errno.h>
 #include "gb_flip.h"
 
 char *bit;
@@ -27,18 +31,39 @@ main(argc,argv)
 }
 
 @ @<Scan the command line@>=
-if (argc!=3 || sscanf(argv[1],"%d",&n)!=1 || sscanf(argv[2],"%d",&seed)!=1) {
+if (argc!=3 || sscanf(argv[2],"%d",&seed)!=1) {
   fprintf(stderr,"Usage: %s n seed >! output.ps\n",argv[0]);
   exit(-1);
 }
+{
+  char *end; long parsed;
+  errno=0;
+  parsed=strtol(argv[1],&end,10);
+  if (errno || end==argv[1] || *end || parsed<1 || parsed>(INT_MAX-2)/2 ||
+      (size_t)parsed+1>SIZE_MAX/sizeof(*list)) {
+    fprintf(stderr,"The size must be a supported positive int!\n");
+    exit(-1);
+  }
+  n=(int)parsed;
+}
+
 @ We maintain the following invariants: |bit[k]=1| for |k<=l|;
 |bit[k]=0| for |k=u|; the indices |i| where |bit[i]>bit[i+1]|
 are |list[j]| for $0\le j<t$.
 
 @<Initialize everything@>=
 gb_init_rand(seed);
-bit=(char*)malloc(2*n+2);
-list=(int*)malloc(4*n+4);
+bit=(char*)malloc(((size_t)n*2+2)*sizeof(*bit));
+if (!bit) {
+  fprintf(stderr,"Can't allocate the bit array!\n");
+  exit(-2);
+}
+list=(int*)malloc(((size_t)n+1)*sizeof(*list));
+if (!list) {
+  free(bit);
+  fprintf(stderr,"Can't allocate the active list!\n");
+  exit(-2);
+}
 for (k=0;k<=n;k++) bit[k]=1;
 for (;k<=n+n+1;k++) bit[k]=0;
 l=u=n;
