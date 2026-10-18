@@ -1109,7 +1109,7 @@ static void pr_gate(v)
   }
   for (a=v->arcs;a;a=a->next) {
     if (a!=v->arcs) printf(" %c ",(char)v->typ);
-    printf(a->tip->name);
+    printf("%s",a->tip->name);
   }
   printf("\n");
 }
