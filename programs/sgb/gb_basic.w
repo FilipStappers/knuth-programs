@@ -1294,7 +1294,7 @@ Graph *binary(n,max_height,directed)
   unsigned long max_height; /* maximum height of a leaf */
   long directed; /* should the graph be directed? */
 {@+@<Vanilla local variables@>@;@#
-  if (2*n+2>BUF_SIZE) panic(bad_specs); /* |n| is too huge for us */
+  if (n>(BUF_SIZE-2)/2) panic(bad_specs); /* |n| is too huge for us */
   if (max_height==0 || max_height>n) max_height=n;
   if (max_height>30) panic(very_bad_specs); /* more than a billion vertices */
   @<Create a graph with one vertex for each binary tree@>;
@@ -1323,7 +1323,8 @@ $$R_0=1,\qquad R_{h+1}=R_h^2+z^{1-2^{h+1}}.$$
 
 @<Create a graph with one vertex for each binary tree@>=
 {@+long nverts; /* the number of vertices */
-  if (n>=20 && max_height>=6) @<Compute |nverts| using the $R$ series@>@;
+  if (n>=(1UL<<max_height)) nverts=0; /* no tree can fit this height */
+  else if (n>=20 && max_height>=6) @<Compute |nverts| using the $R$ series@>@;
   else {
     nn[0]=nn[1]=1;
     for (k=2;k<=n;k++) nn[k]=0;
