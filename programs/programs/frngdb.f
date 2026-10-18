@@ -88,9 +88,11 @@ C       ********* see the book for explanations and caveats! *********
 
        PROGRAM MAIN
 C      a rudimentary test program:
-       IMPLICIT DOUBLE PRECISION (A)
+       IMPLICIT DOUBLE PRECISION (A,R)
        DIMENSION A(2009)
        EXTERNAL RNFARR, RNFSTR
+       PARAMETER (KK=100)
+       COMMON /RSTATE/ RANX(KK)
        CALL RNFSTR(310952)
        DO 1 I=1,2009
           CALL RNFARR(A,1009)
