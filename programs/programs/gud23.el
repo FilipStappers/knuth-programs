@@ -2320,10 +2320,10 @@ during jdb initialization depending on the value of
          ;; period at the thousands positions (how ingenious!).
 
 	 "\\(\\[[0-9]+] \\)*\\([a-zA-Z0-9.$_]+\\)\\.[a-zA-Z0-9$_<>(),]+ \
-\\(([a-zA-Z0-9.$_]+:\\|line=\\)\\([0-9.,]+\\)"
+\\(([a-zA-Z0-9.$_]+:\\|line=\\)\\([0-9.,]+\\)[) \t\r\n]"
 	 gud-marker-acc)
 
-      (let ((marker-end (match-end 0))
+      (let ((marker-end (match-end 4))
             (class-name (match-string 2 gud-marker-acc))
             (line-number (match-string 4 gud-marker-acc)))
       ;; A good marker is one that:
@@ -2348,11 +2348,7 @@ during jdb initialization depending on the value of
 	      (setq gud-last-frame
 		    (cons file-found
 			  (string-to-number
-			   (let
-                               ((numstr line-number))
-                             (if (string-match "[.,]" numstr)
-                                 (replace-match "" nil nil numstr)
-                               numstr)))))
+                           (replace-regexp-in-string "[.,]" "" line-number))))
 	    (message "Could not find source file.")))
 
       ;; Set the accumulator to the remaining text.

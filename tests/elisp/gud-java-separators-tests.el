@@ -1,0 +1,11 @@
+;;; B011 complete localized line numbers across arbitrary chunks. -*- lexical-binding: t; -*-
+(load (expand-file-name "debugger-fixture.el" (file-name-directory load-file-name)) nil nil t)
+(ert-deftest java-localized-line-number-removes-every-separator ()
+  (dolist (number '("1,234,567" "1.234.567" "1234567"))
+    (let ((stream (concat "Stopped p.Example.run (Example:" number ")\nTAIL\n")))
+      (dotimes (split (1+ (length stream)))
+        (should (equal (review-java-marker (list (substring stream 0 split) (substring stream split)))
+                       (list '("Example.java" . 1234567) ")\nTAIL\n" stream))))
+      (should (equal (review-java-marker (mapcar #'char-to-string stream))
+                     (list '("Example.java" . 1234567) ")\nTAIL\n" stream))))))
+(ert-run-tests-batch-and-exit)
