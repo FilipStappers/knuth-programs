@@ -3418,7 +3418,8 @@ Kills the gdb buffers, and resets variables and the source buffers."
               (gdb-remove-breakpoint-icons (point-min) (point-max) t)
               (setq gud-minor-mode nil)
               (kill-local-variable 'tool-bar-map)
-              (kill-local-variable 'gdb-define-alist))))))
+              (kill-local-variable 'gdb-define-alist)
+              (remove-hook 'after-save-hook 'gdb-create-define-alist t))))))
   (setq gdb-overlay-arrow-position nil)
   (setq overlay-arrow-variable-list
         (delq 'gdb-overlay-arrow-position overlay-arrow-variable-list))
