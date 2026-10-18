@@ -42,6 +42,7 @@ the oriented {\it Hamiltonian\/} paths as well.)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include "gb_graph.h"
 #include "gb_save.h"
 char mem[memsize]; /* the big workspace */
@@ -61,7 +62,8 @@ int serial,newserial; /* state numbers */
 @<Subroutines@>@;
 @#
 main(int argc, char* argv[]) {
-  register int i,j,jj,jm,k,km,l,ll,m,n,p,t,hash,sign;
+  register int i,j,jj,jm,k,km,l,ll,m,n,p,t,sign;
+  register uint32_t hash;
   register Graph *g;
   register Arc *a,*b;
   register Vertex *u,*v;
@@ -233,10 +235,10 @@ and its two successors, in hexadecimal.
 
 @<Process arc |i|@>=
 if (ss==0) head++; /* put a dummy byte into the queue */
-boundary=head,htcount=0,htid=(i+wrap)<<logmemsize;
+boundary=head,htcount=0,htid=((uint32_t)i+(uint32_t)wrap)<<logmemsize;
 if (htid==0) {
   for (hash=0;hash<htsize;hash++) htable[hash]=0;
-  wrap++, htid=1<<logmemsize;
+  wrap++, htid=1U<<logmemsize;
 }
 newserial=serial+(head-tail)/(ss?ss:1);
 j=jj,sign=arcto[i],k=(sign>0?sign:-sign),s=ss;
@@ -337,7 +339,8 @@ Hamiltonian cycles only (I mean, simple cycles that include every vertex).
 
 @<Sub...@>=
 void printstate(int j,int jj,int i,int k) {
-  register int h,hh,p,t,tt,hash;
+  register int h,hh,p,t,tt;
+  register uint32_t hash;
   for (p=0;p<s;p++) {
     t=f[p];
     if (nextfront[t]!=i+1 && mate[t] && mate[t]!=t) break;
@@ -365,7 +368,7 @@ void printstate(int j,int jj,int i,int k) {
 for (p=0,h=trunc(head),hash=0;p<ss;p++,h=trunc(h+1)) {
   t=ff[p];
   mem[h]=mate[t];
-  hash=hash*31415926525+mate[t];
+  hash=hash*31415926525ULL+mate[t];
 }
 
 @ The hash table is automatically cleared whenever |htid| is increased,

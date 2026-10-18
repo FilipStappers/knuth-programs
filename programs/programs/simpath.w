@@ -25,6 +25,7 @@ out of my way to be inefficient.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include "gb_graph.h"
 #include "gb_save.h"
 unsigned char mem[memsize]; /* the big workspace */
@@ -41,7 +42,8 @@ int serial,newserial; /* state numbers */
 @<Subroutines@>@;
 @#
 main(int argc, char* argv[]) {
-  register int i,j,jj,jm,k,km,l,ll,m,n,t,hash;
+  register int i,j,jj,jm,k,km,l,ll,m,n,t;
+  register uint32_t hash;
   register Graph *g;
   register Arc *a,*b;
   register Vertex *u,*v;
@@ -245,10 +247,10 @@ and its two successors, in hexadecimal.
 @d trunc(addr) ((addr)&(memsize-1))
 
 @<Process arc |i|@>=
-boundary=head,htcount=0,htid=(i+wrap)<<logmemsize;
+boundary=head,htcount=0,htid=((uint32_t)i+(uint32_t)wrap)<<logmemsize;
 if (htid==0) {
   for (hash=0;hash<htsize;hash++) htable[hash]=0;
-  wrap++, htid=1<<logmemsize;
+  wrap++, htid=1U<<logmemsize;
 }
 newserial=serial+((head-tail)/(ll+1-jj));
 j=jj,k=arcto[i],l=ll;
@@ -313,7 +315,8 @@ Hamiltonian paths only (I mean, simple paths that include every vertex).
 
 @<Sub...@>=
 void printstate(int j,int jj,int ll) {
-  register int h,hh,ss,t,tt,hash;
+  register int h,hh,ss,t,tt;
+  register uint32_t hash;
   for (t=j;t<jj;t++)
     if (mate[t] && mate[t]!=t) break;
   if (t<jj) printf("0"); /* incomplete junk mustn't be left hanging */
@@ -336,7 +339,7 @@ void printstate(int j,int jj,int ll) {
 @ @<Move the current state into position after |head|...@>=
 for (t=jj,h=trunc(head),hash=0;t<=ll;t++,h=trunc(h+1)) {
   mem[h]=mate[t];
-  hash=hash*31415926525+mate[t];
+  hash=hash*31415926525ULL+mate[t];
 }
 
 @ The hash table is automatically cleared whenever |htid| is increased,
