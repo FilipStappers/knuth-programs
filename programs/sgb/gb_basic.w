@@ -1153,6 +1153,12 @@ characterize the legal values of~$x_j$.
 
 @<Name the partitions and create the arcs or edges@>=
 v=new_graph->vertices;
+if (n==0) { /* the empty partition */
+  v->name=gb_save_string("");
+  hash_in(v);
+  v++;
+  goto last;
+}
 xx[0]=max_size;@+sig[1]=n;
 for (k=max_parts,s=1;k>0;k--,s++) yy[k]=s;
 if (max_size*max_parts>=n) {
