@@ -145,10 +145,9 @@ Vertex *prompt_for_team(s)
   while (1) {
     printf("%s team: ",s);
     fflush(stdout); /* make sure the user sees the prompt */
-    fgets(buffer,30,stdin);
+    if (fgets(buffer,sizeof(buffer),stdin)==NULL) return NULL;
     if (buffer[0]=='\n') return NULL; /* the user just hit \<return> */
-    buffer[29]='\n';
-    for (q=buffer;*q!='\n';q++) ; /* scan to end of input */
+    for (q=buffer;*q && *q!='\n';q++) ; /* scan to end of input */
     *q='\0';
     for (v=g->vertices;v<g->vertices+g->n;v++)
       if (strcmp(buffer,v->name)==0) return v; /* aha, we found it */
